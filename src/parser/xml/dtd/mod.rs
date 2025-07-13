@@ -24,7 +24,7 @@ use crate::parser::xml::dtd::intsubset::intsubset;
 use crate::parser::xml::qname::name;
 use crate::parser::xml::reference::reference;
 use crate::parser::{ParseError, ParseInput};
-use crate::qname::QualifiedName;
+use crate::qname::{Interner, QualifiedName};
 use crate::xmldecl::{AttType, DTDPattern, DefaultDecl};
 
 #[derive(Clone)]
@@ -35,8 +35,8 @@ pub(crate) enum Occurances {
     ZeroOrOne,
 }
 
-pub(crate) fn doctypedecl<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn doctypedecl<'a, 'i, I: Interner, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, ()), ParseError> {
     move |input| match tuple8(
         tag("<!DOCTYPE"),
         whitespace1(),
@@ -49,15 +49,16 @@ pub(crate) fn doctypedecl<N: Node>(
     )(input)
     {
         Ok(((input1, mut state1), (_, _, n, _, _, _, _inss, _))) => {
-            let q: QualifiedName = if n.contains(':') {
+            let q: QualifiedName<'i, I> = if n.contains(':') {
                 let mut nameparts = n.split(':');
                 QualifiedName::new(
+                    nameparts.next().unwrap(),
                     None,
                     Some(nameparts.next().unwrap().parse().unwrap()),
-                    nameparts.next().unwrap(),
+                    state1.interner,
                 )
             } else {
-                QualifiedName::new(None, None, n)
+                QualifiedName::new(n, None, None, state1.interner)
             };
             state1.dtd.name = Some(q);
             /*  We're doing nothing with the below, just evaluating the external entity to check its well formed */
@@ -78,12 +79,12 @@ pub(crate) fn doctypedecl<N: Node>(
             for (k, (v, _)) in state1.clone().dtd.generalentities {
                 if v != *"<" {
                     /* A single < on its own will generate an error if used, but doesn't actually generate a not well formed error! */
-                    if let Err(ParseError::NotWellFormed(v)) = reference()((
-                        ["&".to_string(), k, ";".to_string()].join("").as_str(),
-                        state1.clone(),
-                    )) {
+                    let u = ["&".to_string(), k, ";".to_string()].join("");
+                    if let Err(ParseError::NotWellFormed(v)) =
+                        reference()((u.as_str(), state1.clone()))
+                    {
                         return Err(ParseError::NotWellFormed(v));
-                    }
+                    };
                 }
             }
 

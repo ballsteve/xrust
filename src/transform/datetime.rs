@@ -8,46 +8,55 @@ use url::Url;
 
 use crate::item::{Item, Node, Sequence, SequenceTrait};
 use crate::parser::datetime::parse as picture_parse;
+use crate::qname::Interner;
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::Transform;
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 
 /// XPath current-date-time function.
-pub fn current_date_time<N: Node>(_ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
+pub fn current_date_time<'i, I: Interner, N: Node>(
+    _ctxt: &Context<'i, I, N>,
+) -> Result<Sequence<N>, Error> {
     Ok(vec![Item::Value(Rc::new(Value::DateTime(Local::now())))])
 }
 
 /// XPath current-date function.
-pub fn current_date<N: Node>(_ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
+pub fn current_date<'i, I: Interner, N: Node>(
+    _ctxt: &Context<'i, I, N>,
+) -> Result<Sequence<N>, Error> {
     Ok(vec![Item::Value(Rc::new(Value::Date(
         Local::now().date_naive(),
     )))])
 }
 
 /// XPath current-time function.
-pub fn current_time<N: Node>(_ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
+pub fn current_time<'i, I: Interner, N: Node>(
+    _ctxt: &Context<'i, I, N>,
+) -> Result<Sequence<N>, Error> {
     Ok(vec![Item::Value(Rc::new(Value::Time(Local::now())))])
 }
 
 /// XPath format-date-time function.
 /// NB. language, calendar, and place are not implemented.
 pub fn format_date_time<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    value: &Transform<N>,
-    picture: &Transform<N>,
-    _language: &Option<Box<Transform<N>>>,
-    _calendar: &Option<Box<Transform<N>>>,
-    _place: &Option<Box<Transform<N>>>,
+    value: &Transform<'i, I, N>,
+    picture: &Transform<'i, I, N>,
+    _language: &Option<Box<Transform<'i, I, N>>>,
+    _calendar: &Option<Box<Transform<'i, I, N>>>,
+    _place: &Option<Box<Transform<'i, I, N>>>,
 ) -> Result<Sequence<N>, Error> {
     let dt = ctxt.dispatch(stctxt, value)?;
-    let pic = picture_parse::<N>(&ctxt.dispatch(stctxt, picture)?.to_string())?;
+    let pic = picture_parse::<I, N>(&ctxt.dispatch(stctxt, picture)?.to_string(), ctxt.intern)?;
     match dt.len() {
         0 => Ok(vec![]), // Empty value returns empty sequence
         1 => {
@@ -89,21 +98,23 @@ pub fn format_date_time<
 /// XPath format-date function.
 /// NB. language, calendar, and place are not implemented.
 pub fn format_date<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    value: &Transform<N>,
-    picture: &Transform<N>,
-    _language: &Option<Box<Transform<N>>>,
-    _calendar: &Option<Box<Transform<N>>>,
-    _place: &Option<Box<Transform<N>>>,
+    value: &Transform<'i, I, N>,
+    picture: &Transform<'i, I, N>,
+    _language: &Option<Box<Transform<'i, I, N>>>,
+    _calendar: &Option<Box<Transform<'i, I, N>>>,
+    _place: &Option<Box<Transform<'i, I, N>>>,
 ) -> Result<Sequence<N>, Error> {
     let dt = ctxt.dispatch(stctxt, value)?;
-    let pic = picture_parse::<N>(&ctxt.dispatch(stctxt, picture)?.to_string())?;
+    let pic = picture_parse::<I, N>(&ctxt.dispatch(stctxt, picture)?.to_string(), ctxt.intern)?;
     match dt.len() {
         0 => Ok(vec![]), // Empty value returns empty sequence
         1 => {
@@ -146,21 +157,23 @@ pub fn format_date<
 /// XPath format-time function.
 /// NB. language, calendar, and place are not implemented.
 pub fn format_time<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    value: &Transform<N>,
-    picture: &Transform<N>,
-    _language: &Option<Box<Transform<N>>>,
-    _calendar: &Option<Box<Transform<N>>>,
-    _place: &Option<Box<Transform<N>>>,
+    value: &Transform<'i, I, N>,
+    picture: &Transform<'i, I, N>,
+    _language: &Option<Box<Transform<'i, I, N>>>,
+    _calendar: &Option<Box<Transform<'i, I, N>>>,
+    _place: &Option<Box<Transform<'i, I, N>>>,
 ) -> Result<Sequence<N>, Error> {
     let dt = ctxt.dispatch(stctxt, value)?;
-    let pic = picture_parse::<N>(&ctxt.dispatch(stctxt, picture)?.to_string())?;
+    let pic = picture_parse::<I, N>(&ctxt.dispatch(stctxt, picture)?.to_string(), ctxt.intern)?;
     match dt.len() {
         0 => Ok(vec![]), // Empty value returns empty sequence
         1 => {

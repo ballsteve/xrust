@@ -1,14 +1,15 @@
 mod derive;
 
 use crate::item::NodeType;
+use crate::qname::Interner;
 use crate::validators::dtd::derive::{child_deriv, is_nullable};
 use crate::validators::ValidationError;
 use crate::Node;
 
-pub(crate) fn validate_dtd(doc: impl Node) -> Result<(), ValidationError> {
+pub(crate) fn validate_dtd<'i, I: Interner>(doc: impl Node) -> Result<(), ValidationError> {
     match doc.node_type() {
         NodeType::Document => {
-            match doc.get_dtd() {
+            match doc.get_dtd::<I>() {
                 None => Err(ValidationError::DocumentError(
                     "No DTD Information on the document".to_string(),
                 )),

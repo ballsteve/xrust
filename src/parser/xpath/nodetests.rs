@@ -7,18 +7,23 @@ use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::tuple3;
 use crate::parser::{ParseError, ParseInput};
+use crate::qname::Interner;
 use crate::transform::{KindTest, NameTest, NodeTest, WildcardOrName};
 use std::rc::Rc;
 //use crate::parser::combinators::debug::inspect;
 use crate::parser::xml::qname::{ncname, qualname};
 use crate::value::Value;
 
-pub(crate) fn qualname_test<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, NodeTest), ParseError> + 'a> {
+pub(crate) fn qualname_test<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, NodeTest), ParseError>
+        + 'a,
+> {
     Box::new(alt2(prefixed_name(), unprefixed_name()))
 }
-fn unprefixed_name<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, NodeTest), ParseError> + 'a> {
+fn unprefixed_name<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, NodeTest), ParseError>
+        + 'a,
+> {
     Box::new(map(ncname(), |localpart| {
         NodeTest::Name(NameTest {
             ns: None,
@@ -27,8 +32,10 @@ fn unprefixed_name<'a, N: Node + 'a>(
         })
     }))
 }
-fn prefixed_name<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, NodeTest), ParseError> + 'a> {
+fn prefixed_name<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, NodeTest), ParseError>
+        + 'a,
+> {
     Box::new(map(
         tuple3(ncname(), tag(":"), ncname()),
         |(prefix, _, localpart)| {
@@ -43,14 +50,18 @@ fn prefixed_name<'a, N: Node + 'a>(
 
 // NodeTest ::= KindTest | NameTest
 // NameTest ::= EQName | Wildcard
-pub(crate) fn nodetest<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, NodeTest), ParseError> + 'a> {
+pub(crate) fn nodetest<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, NodeTest), ParseError>
+        + 'a,
+> {
     Box::new(alt2(kindtest(), nametest()))
 }
 
 // KindTest ::= DocumentTest | ElementTest | AttributeTest | SchemaElementTest | SchemaAttributeTest | PITest | CommentTest | TextTest | NamespaceNodeTest | AnyKindTest
-pub(crate) fn kindtest<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, NodeTest), ParseError> + 'a> {
+pub(crate) fn kindtest<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, NodeTest), ParseError>
+        + 'a,
+> {
     // Need alt10
     Box::new(alt2(
         alt5(
@@ -70,16 +81,20 @@ pub(crate) fn kindtest<'a, N: Node + 'a>(
     ))
 }
 // DocumentTest ::= "document-node" "(" ElementTest | SchemaElementTest ")"
-fn document_test<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, NodeTest), ParseError> + 'a> {
+fn document_test<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, NodeTest), ParseError>
+        + 'a,
+> {
     // TODO: ElementTest|SchemaElementTest
     Box::new(map(tag("document-node()"), |_| {
         NodeTest::Kind(KindTest::Document)
     }))
 }
 // ElementTest ::= "element" "(" (ElementNameOrWildcard ("," TypeName)?)? ")"
-fn element_test<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, NodeTest), ParseError> + 'a> {
+fn element_test<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, NodeTest), ParseError>
+        + 'a,
+> {
     // TODO: ElementTest|SchemaElementTest
     Box::new(map(
         tuple3(
@@ -94,8 +109,10 @@ fn element_test<'a, N: Node + 'a>(
     ))
 }
 // SchemaElementTest ::= "schema-element" "(" ElementNameDeclaration ")"
-fn schema_element_test<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, NodeTest), ParseError> + 'a> {
+fn schema_element_test<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, NodeTest), ParseError>
+        + 'a,
+> {
     // TODO: ElementTest|SchemaElementTest
     Box::new(map(
         tuple3(tag("schema-element("), qualname(), tag(")")),
@@ -103,8 +120,10 @@ fn schema_element_test<'a, N: Node + 'a>(
     ))
 }
 // AttributeTest ::= "attribute" "(" (AttribNameOrWildcard ("," TypeName))? ")"
-fn attribute_test<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, NodeTest), ParseError> + 'a> {
+fn attribute_test<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, NodeTest), ParseError>
+        + 'a,
+> {
     Box::new(map(
         tuple3(
             tag("attribute("),
@@ -118,8 +137,10 @@ fn attribute_test<'a, N: Node + 'a>(
     ))
 }
 // SchemaAttributeTest ::= "attribute" "(" AttributeDeclaration ")"
-fn schema_attribute_test<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, NodeTest), ParseError> + 'a> {
+fn schema_attribute_test<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, NodeTest), ParseError>
+        + 'a,
+> {
     // TODO: AttributeDeclaration
     Box::new(map(
         tuple3(tag("schema-attribute("), qualname(), tag(")")),
@@ -127,47 +148,61 @@ fn schema_attribute_test<'a, N: Node + 'a>(
     ))
 }
 // PITest ::= "processing-instruction" "(" (NCName | StringLiteral)? ")"
-fn pi_test<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, NodeTest), ParseError> + 'a> {
+fn pi_test<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, NodeTest), ParseError>
+        + 'a,
+> {
     // TODO: NCName | StringLiteral
     Box::new(map(tag("processing-instruction()"), |_| {
         NodeTest::Kind(KindTest::PI)
     }))
 }
 // CommentTest ::= "comment" "(" ")"
-fn comment_test<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, NodeTest), ParseError> + 'a> {
+fn comment_test<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, NodeTest), ParseError>
+        + 'a,
+> {
     Box::new(map(tag("comment()"), |_| NodeTest::Kind(KindTest::Comment)))
 }
 // TextTest ::= "text" "(" ")"
-fn text_test<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, NodeTest), ParseError> + 'a> {
+fn text_test<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, NodeTest), ParseError>
+        + 'a,
+> {
     Box::new(map(tag("text()"), |_| NodeTest::Kind(KindTest::Text)))
 }
 // NamespaceNodeTest ::= "namespace-node" "(" ")"
-fn namespace_node_test<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, NodeTest), ParseError> + 'a> {
+fn namespace_node_test<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, NodeTest), ParseError>
+        + 'a,
+> {
     Box::new(map(tag("namespace-node()"), |_| {
         NodeTest::Kind(KindTest::Namespace)
     }))
 }
 // NamespaceNodeTest ::= "namespace-node" "(" ")"
-fn any_kind_test<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, NodeTest), ParseError> + 'a> {
+fn any_kind_test<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, NodeTest), ParseError>
+        + 'a,
+> {
     Box::new(map(tag("node()"), |_| NodeTest::Kind(KindTest::Any)))
 }
 
 // NameTest ::= EQName | Wildcard
 // TODO: allow EQName rather than QName
-fn nametest<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, NodeTest), ParseError> + 'a> {
+fn nametest<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, NodeTest), ParseError>
+        + 'a,
+> {
     Box::new(alt2(qualname_test(), wildcard()))
 }
 
 // Wildcard ::= '*' | (NCName ':*') | ('*:' NCName) | (BracedURILiteral '*')
 // TODO: more specific wildcards
-fn wildcard<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, NodeTest), ParseError> + 'a> {
+fn wildcard<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, NodeTest), ParseError>
+        + 'a,
+> {
     Box::new(map(tag("*"), |_| {
         NodeTest::Name(NameTest {
             ns: Some(WildcardOrName::Wildcard),

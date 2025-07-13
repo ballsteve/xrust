@@ -2,7 +2,7 @@
 //!
 //! An atomic value that is an item in a sequence.
 
-use crate::qname::QualifiedName;
+use crate::qname::UriQualifiedName;
 use crate::xdmerror::{Error, ErrorKind};
 use chrono::{DateTime, Local, NaiveDate};
 use core::fmt;
@@ -14,7 +14,6 @@ use rust_decimal_macros::dec;
 use std::cmp::Ordering;
 use std::convert::TryFrom;
 use std::fmt::Formatter;
-use std::rc::Rc;
 
 /// Comparison operators for values
 #[derive(Copy, Clone, Debug)]
@@ -144,10 +143,12 @@ pub enum Value {
     //base64binary,
     //hexBinary,
     //anyURI,
-    /// Qualified Name
-    QName(QualifiedName),
-    /// Rc-shared Qualified Name
-    RQName(Rc<QualifiedName>),
+    // SRB: 2025-04-26: If QN is included in Value, then <'i, I: Interner> becomes a dependency.
+    // Qualified Name
+    //QName(QualifiedName),
+    UriQualifiedName(UriQualifiedName),
+    // Rc-shared Qualified Name
+    //RQName(Rc<QualifiedName>),
     //NOTATION
 }
 
@@ -175,8 +176,9 @@ impl fmt::Display for Value {
             Value::Time(t) => t.format("%H:%M:%S.%f").to_string(),
             Value::DateTime(dt) => dt.format("%Y-%m-%dT%H:%M:%S%z").to_string(),
             Value::Date(d) => d.format("%Y-%m-%d").to_string(),
-            Value::QName(q) => q.to_string(),
-            Value::RQName(q) => q.to_string(),
+            //Value::QName(q) => q.to_string(),
+            //Value::RQName(q) => q.to_string(),
+            Value::UriQualifiedName(qn) => qn.to_string(),
             Value::ID(s) => s.to_string(),
             Value::IDREF(s) => s.to_string(),
             Value::IDREFS(s) => s.join(" ").to_string(),
@@ -277,8 +279,9 @@ impl Value {
             Value::IDREF(_) => "IDREF",
             Value::ENTITY => "ENTITY",
             Value::Boolean(_) => "boolean",
-            Value::QName(_) => "QName",
-            Value::RQName(_) => "QName",
+            //Value::QName(_) => "QName",
+            //Value::RQName(_) => "QName",
+            Value::UriQualifiedName(_) => "URIQualifiedName",
         }
     }
     pub fn compare(&self, other: &Value, op: Operator) -> Result<bool, Error> {
@@ -353,7 +356,22 @@ impl Value {
                     }
                 }
             }
-            Value::QName(q) => match (op, other) {
+            Value::UriQualifiedName(qn) => {
+                let i = qn.to_string();
+                let c = other.to_string();
+                match op {
+                    Operator::Equal => Ok(*i == c),
+                    Operator::NotEqual => Ok(*i != c),
+                    Operator::LessThan => Ok(i < c),
+                    Operator::LessThanEqual => Ok(i <= c),
+                    Operator::GreaterThan => Ok(i > c),
+                    Operator::GreaterThanEqual => Ok(i >= c),
+                    Operator::Is | Operator::Before | Operator::After => {
+                        Err(Error::new(ErrorKind::TypeError, String::from("type error")))
+                    }
+                }
+            }
+            /* Value::QName(q) => match (op, other) {
                 (Operator::Equal, Value::QName(r)) => Ok(*q == *r),
                 (Operator::Equal, Value::RQName(r)) => Ok(*q == **r),
                 (Operator::NotEqual, Value::QName(r)) => Ok(*q != *r),
@@ -366,7 +384,7 @@ impl Value {
                 (Operator::NotEqual, Value::QName(r)) => Ok(**q != *r),
                 (Operator::NotEqual, Value::RQName(r)) => Ok(**q != **r),
                 _ => Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
-            },
+            },*/
             _ => Result::Err(Error::new(
                 ErrorKind::Unknown,
                 format!(
@@ -382,6 +400,7 @@ impl PartialEq for Value {
     fn eq(&self, other: &Value) -> bool {
         match self {
             Value::String(s) => s.eq(&other.to_string()),
+            Value::UriQualifiedName(s) => s.to_string().eq(&other.to_string()),
             Value::Boolean(b) => match other {
                 Value::Boolean(c) => b == c,
                 _ => false, // type error?
@@ -408,6 +427,10 @@ impl PartialOrd for Value {
             Value::String(s) => {
                 let o: String = other.to_string();
                 s.partial_cmp(&o)
+            }
+            Value::UriQualifiedName(s) => {
+                let o: String = other.to_string();
+                s.to_string().partial_cmp(&o)
             }
             Value::Boolean(_) => None,
             Value::Decimal(d) => match other {
@@ -436,6 +459,10 @@ impl Ord for Value {
             Value::String(s) => {
                 let o: String = other.to_string();
                 s.cmp(&o)
+            }
+            Value::UriQualifiedName(s) => {
+                let o: String = other.to_string();
+                s.to_string().cmp(&o)
             }
             Value::Boolean(_) => Ordering::Equal,
             Value::Decimal(d) => match other {
@@ -530,7 +557,12 @@ impl From<bool> for Value {
         Value::Boolean(b)
     }
 }
-impl From<QualifiedName> for Value {
+impl From<UriQualifiedName> for Value {
+    fn from(q: UriQualifiedName) -> Self {
+        Value::UriQualifiedName(q)
+    }
+}
+/*impl From<QualifiedName> for Value {
     fn from(q: QualifiedName) -> Self {
         Value::QName(q)
     }
@@ -539,7 +571,7 @@ impl From<Rc<QualifiedName>> for Value {
     fn from(q: Rc<QualifiedName>) -> Self {
         Value::RQName(q)
     }
-}
+}*/
 
 #[derive(Clone, Debug, Hash)]
 pub struct NonPositiveInteger(i64);

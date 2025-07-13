@@ -1,13 +1,13 @@
 /*! How to serialise a tree structure.
 */
 
-use crate::qname::QualifiedName;
+use crate::qname::UriQualifiedName;
 use core::fmt;
 
 /// An output definition. See XSLT v3.0 26 Serialization
 #[derive(Clone, Debug)]
 pub struct OutputDefinition {
-    name: Option<QualifiedName>, // TODO: EQName
+    name: Option<UriQualifiedName>, // Don't use QualifiedName to avoid dependency on Interner
     indent: bool,
     // TODO: all the other myriad output parameters
 }
@@ -25,10 +25,10 @@ impl OutputDefinition {
             indent: false,
         }
     }
-    pub fn get_name(&self) -> Option<QualifiedName> {
+    pub fn get_name(&self) -> Option<UriQualifiedName> {
         self.name.clone()
     }
-    pub fn set_name(&mut self, name: Option<QualifiedName>) {
+    pub fn set_name(&mut self, name: Option<UriQualifiedName>) {
         match name {
             Some(n) => {
                 self.name.replace(n);

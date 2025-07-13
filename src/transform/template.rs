@@ -5,30 +5,30 @@ use std::fmt::{Debug, Formatter};
 use std::rc::Rc;
 use url::Url;
 
-use crate::qname::QualifiedName;
+use crate::qname::{Interner, QualifiedName};
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::{do_sort, Order, Transform};
 use crate::xdmerror::Error;
 use crate::{Node, Pattern, Sequence};
 
 #[derive(Clone)]
-pub struct Template<N: Node> {
-    pub(crate) pattern: Pattern<N>,
-    pub(crate) body: Transform<N>,
+pub struct Template<'i, I: Interner, N: Node> {
+    pub(crate) pattern: Pattern<'i, I, N>,
+    pub(crate) body: Transform<'i, I, N>,
     pub(crate) priority: Option<f64>,
     pub(crate) import: Vec<usize>,
     pub(crate) document_order: Option<usize>,
-    pub(crate) mode: Option<Rc<QualifiedName>>,
+    pub(crate) mode: Option<QualifiedName<'i, I>>,
 }
 
-impl<N: Node> Template<N> {
+impl<'i, I: Interner, N: Node> Template<'i, I, N> {
     pub fn new(
-        pattern: Pattern<N>,
-        body: Transform<N>,
+        pattern: Pattern<'i, I, N>,
+        body: Transform<'i, I, N>,
         priority: Option<f64>,
         import: Vec<usize>,
         document_order: Option<usize>,
-        mode: Option<Rc<QualifiedName>>,
+        mode: Option<QualifiedName<'i, I>>,
     ) -> Self {
         Template {
             pattern,
@@ -42,19 +42,19 @@ impl<N: Node> Template<N> {
 }
 
 /// Two templates are equal if they have the same priority, import precedence, and mode.
-impl<N: Node> PartialEq for Template<N> {
+impl<'i, I: Interner, N: Node> PartialEq for Template<'i, I, N> {
     fn eq(&self, other: &Self) -> bool {
         self.priority == other.priority && self.import == other.import && self.mode == other.mode
     }
 }
-impl<N: Node> Eq for Template<N> {}
+impl<'i, I: Interner, N: Node> Eq for Template<'i, I, N> {}
 
-impl<N: Node> PartialOrd for Template<N> {
+impl<'i, I: Interner, N: Node> PartialOrd for Template<'i, I, N> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
-impl<N: Node> Ord for Template<N> {
+impl<'i, I: Interner, N: Node> Ord for Template<'i, I, N> {
     fn cmp(&self, other: &Self) -> Ordering {
         self.priority.map_or_else(
             || {
@@ -78,7 +78,7 @@ impl<N: Node> Ord for Template<N> {
     }
 }
 
-impl<N: Node> Debug for Template<N> {
+impl<'i, I: Interner, N: Node> Debug for Template<'i, I, N> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -90,16 +90,18 @@ impl<N: Node> Debug for Template<N> {
 
 /// Apply templates to the select expression.
 pub(crate) fn apply_templates<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    s: &Transform<N>,
-    m: &Option<Rc<QualifiedName>>,
-    o: &Vec<(Order, Transform<N>)>, // sort keys
+    s: &Transform<'i, I, N>,
+    m: &Option<QualifiedName<'i, I>>,
+    o: &Vec<(Order, Transform<'i, I, N>)>, // sort keys
 ) -> Result<Sequence<N>, Error> {
     // s is the select expression. Evaluate it, and then iterate over its items.
     // Each iteration becomes an item in the result sequence.
@@ -112,7 +114,7 @@ pub(crate) fn apply_templates<
             if templates[0].priority == templates[1].priority
                 && templates[0].import.len() == templates[1].import.len()
             {
-                let mut candidates: Vec<Rc<Template<N>>> = templates
+                let mut candidates: Vec<Rc<Template<'i, I, N>>> = templates
                     .iter()
                     .take_while(|t| {
                         t.priority == templates[0].priority
@@ -146,18 +148,20 @@ pub(crate) fn apply_templates<
 
 /// Apply template with a higher import precedence.
 pub(crate) fn apply_imports<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
 ) -> Result<Sequence<N>, Error> {
     // Find the template with the next highest level within the same import tree
     // current_templates[0] is the currently matching template
     let cur = &(ctxt.current_templates[0]);
-    let next: Vec<Rc<Template<N>>> = ctxt
+    let next: Vec<Rc<Template<'i, I, N>>> = ctxt
         .current_templates
         .iter()
         .skip(1)
@@ -177,12 +181,14 @@ pub(crate) fn apply_imports<
 
 /// Apply the next template that matches.
 pub(crate) fn next_match<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
 ) -> Result<Sequence<N>, Error> {
     if ctxt.current_templates.len() > 2 {

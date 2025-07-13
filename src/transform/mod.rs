@@ -58,7 +58,7 @@ pub(crate) mod variables;
 use crate::item::Sequence;
 use crate::item::{Item, Node, NodeType, SequenceTrait};
 use crate::namespace::NamespaceMap;
-use crate::qname::QualifiedName;
+use crate::qname::{Interner, QualifiedName};
 use crate::transform::callable::ActualParameters;
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::numbers::Numbering;
@@ -74,7 +74,7 @@ use url::Url;
 
 /// Specifies how a [Sequence] is constructed.
 #[derive(Clone)]
-pub enum Transform<N: Node> {
+pub enum Transform<'i, I: Interner, N: Node> {
     /// Produces the root node of the tree containing the context item.
     Root,
     /// Produces a copy of the context item.
@@ -84,7 +84,7 @@ pub enum Transform<N: Node> {
 
     /// A path in a tree. Each element of the outer vector is a step in the path.
     /// The result of each step becomes the new context for the next step.
-    Compose(Vec<Transform<N>>),
+    Compose(Vec<Transform<'i, I, N>>),
     /// A step in a path.
     Step(NodeMatch),
     ///
@@ -92,90 +92,97 @@ pub enum Transform<N: Node> {
     /// Each item in the context is evaluated against the predicate.
     /// If the resulting sequence has an effective boolean value of 'true' then it is kept,
     /// otherwise it is discarded.
-    Filter(Box<Transform<N>>),
+    Filter(Box<Transform<'i, I, N>>),
 
     /// An empty sequence
     Empty,
     /// A literal, atomic value.
     Literal(Item<N>),
     /// A literal element. Consists of the element name and content.
-    LiteralElement(Rc<QualifiedName>, Box<Transform<N>>),
+    LiteralElement(QualifiedName<'i, I>, Box<Transform<'i, I, N>>),
     /// A constructed element. Consists of the name and content.
-    Element(Box<Transform<N>>, Box<Transform<N>>),
+    Element(Box<Transform<'i, I, N>>, Box<Transform<'i, I, N>>),
     /// A literal text node. Consists of the value of the node. Second argument gives whether to disable output escaping.
-    LiteralText(Box<Transform<N>>, bool),
+    LiteralText(Box<Transform<'i, I, N>>, bool),
     /// A literal attribute. Consists of the attribute name and value.
     /// NB. The value may be produced by an Attribute Value Template, so must be dynamic.
-    LiteralAttribute(Rc<QualifiedName>, Box<Transform<N>>),
+    LiteralAttribute(QualifiedName<'i, I>, Box<Transform<'i, I, N>>),
     /// A literal comment. Consists of the value.
-    LiteralComment(Box<Transform<N>>),
+    LiteralComment(Box<Transform<'i, I, N>>),
     /// A literal processing instruction. Consists of the name and value.
-    LiteralProcessingInstruction(Box<Transform<N>>, Box<Transform<N>>),
+    LiteralProcessingInstruction(Box<Transform<'i, I, N>>, Box<Transform<'i, I, N>>),
     /// Produce a [Sequence]. Each element in the vector becomes one, or more, item in the sequence.
-    SequenceItems(Vec<Transform<N>>),
+    SequenceItems(Vec<Transform<'i, I, N>>),
 
     /// A shallow copy of an item. Consists of the selector of the item to be copied,
     /// and the content of the target.
-    Copy(Box<Transform<N>>, Box<Transform<N>>),
+    Copy(Box<Transform<'i, I, N>>, Box<Transform<'i, I, N>>),
     /// A deep copy of an item. That is, it copies an item including its descendants.
-    DeepCopy(Box<Transform<N>>),
+    DeepCopy(Box<Transform<'i, I, N>>),
 
     /// Logical OR. Each element of the outer vector is an operand.
-    Or(Vec<Transform<N>>),
+    Or(Vec<Transform<'i, I, N>>),
     /// Logical AND. Each element of the outer vector is an operand.
-    And(Vec<Transform<N>>),
+    And(Vec<Transform<'i, I, N>>),
 
     /// XPath general comparison.
     /// Each item in the first sequence is compared against all items in the second sequence.
-    GeneralComparison(Operator, Box<Transform<N>>, Box<Transform<N>>),
+    GeneralComparison(Operator, Box<Transform<'i, I, N>>, Box<Transform<'i, I, N>>),
     /// XPath value comparison.
     /// The first singleton sequence is compared against the second singleton sequence.
-    ValueComparison(Operator, Box<Transform<N>>, Box<Transform<N>>),
+    ValueComparison(Operator, Box<Transform<'i, I, N>>, Box<Transform<'i, I, N>>),
 
     /// Concatenate string values
-    Concat(Vec<Transform<N>>),
+    Concat(Vec<Transform<'i, I, N>>),
     /// Produce a range of integer values.
     /// Consists of the start value and end value.
-    Range(Box<Transform<N>>, Box<Transform<N>>),
+    Range(Box<Transform<'i, I, N>>, Box<Transform<'i, I, N>>),
     /// Perform arithmetic operations
-    Arithmetic(Vec<ArithmeticOperand<N>>),
+    Arithmetic(Vec<ArithmeticOperand<'i, I, N>>),
 
     /// A repeating transformation. Consists of variable declarations and the loop body.
-    Loop(Vec<(String, Transform<N>)>, Box<Transform<N>>),
+    Loop(Vec<(String, Transform<'i, I, N>)>, Box<Transform<'i, I, N>>),
     /// A branching transformation. Consists of (test, body) clauses and an otherwise clause.
-    Switch(Vec<(Transform<N>, Transform<N>)>, Box<Transform<N>>),
+    Switch(
+        Vec<(Transform<'i, I, N>, Transform<'i, I, N>)>,
+        Box<Transform<'i, I, N>>,
+    ),
 
     /// Evaluate a transformation for each selected item, with possible grouping and sorting.
     ForEach(
-        Option<Grouping<N>>,
-        Box<Transform<N>>,
-        Box<Transform<N>>,
-        Vec<(Order, Transform<N>)>,
+        Option<Grouping<'i, I, N>>,
+        Box<Transform<'i, I, N>>,
+        Box<Transform<'i, I, N>>,
+        Vec<(Order, Transform<'i, I, N>)>,
     ),
     /// Find a template that matches an item and evaluate its body with the item as the context.
     /// Consists of the selector for items to be matched, the mode, and sort keys.
     ApplyTemplates(
-        Box<Transform<N>>,
-        Option<Rc<QualifiedName>>,
-        Vec<(Order, Transform<N>)>,
+        Box<Transform<'i, I, N>>,
+        Option<QualifiedName<'i, I>>,
+        Vec<(Order, Transform<'i, I, N>)>,
     ),
     /// Find templates at the next import level and evaluate its body.
     ApplyImports,
     NextMatch,
 
     /// Set union
-    Union(Vec<Transform<N>>),
+    Union(Vec<Transform<'i, I, N>>),
 
     /// Evaluate a named template or function, with arguments.
     /// Consists of the body of the template/function, the actual arguments (variable declarations), and in-scope namespace declarations.
-    Call(Box<Transform<N>>, Vec<Transform<N>>, Rc<NamespaceMap>),
+    Call(
+        Box<Transform<'i, I, N>>,
+        Vec<Transform<'i, I, N>>,
+        Rc<NamespaceMap>,
+    ),
 
     /// Declare a variable in the current context.
     /// Consists of the variable name, its value, a transformation to perform with the variable in scope, and in-scope namespace declarations.
     VariableDeclaration(
         String,
-        Box<Transform<N>>,
-        Box<Transform<N>>,
+        Box<Transform<'i, I, N>>,
+        Box<Transform<'i, I, N>>,
         Rc<NamespaceMap>,
     ),
     /// Reference a variable.
@@ -184,108 +191,120 @@ pub enum Transform<N: Node> {
 
     /// Set the value of an attribute. The context item must be an element-type node.
     /// Consists of the name of the attribute and its value. The [Sequence] produced will be cast to a [Value].
-    SetAttribute(Rc<QualifiedName>, Box<Transform<N>>),
+    SetAttribute(QualifiedName<'i, I>, Box<Transform<'i, I, N>>),
 
     /// XPath functions
     Position,
     Last,
-    Count(Box<Transform<N>>),
-    LocalName(Option<Box<Transform<N>>>),
-    Name(Option<Box<Transform<N>>>),
-    String(Box<Transform<N>>),
-    StartsWith(Box<Transform<N>>, Box<Transform<N>>),
-    EndsWith(Box<Transform<N>>, Box<Transform<N>>),
-    Contains(Box<Transform<N>>, Box<Transform<N>>),
+    Count(Box<Transform<'i, I, N>>),
+    LocalName(Option<Box<Transform<'i, I, N>>>),
+    Name(Option<Box<Transform<'i, I, N>>>),
+    String(Box<Transform<'i, I, N>>),
+    StartsWith(Box<Transform<'i, I, N>>, Box<Transform<'i, I, N>>),
+    EndsWith(Box<Transform<'i, I, N>>, Box<Transform<'i, I, N>>),
+    Contains(Box<Transform<'i, I, N>>, Box<Transform<'i, I, N>>),
     Substring(
-        Box<Transform<N>>,
-        Box<Transform<N>>,
-        Option<Box<Transform<N>>>,
+        Box<Transform<'i, I, N>>,
+        Box<Transform<'i, I, N>>,
+        Option<Box<Transform<'i, I, N>>>,
     ),
-    SubstringBefore(Box<Transform<N>>, Box<Transform<N>>),
-    SubstringAfter(Box<Transform<N>>, Box<Transform<N>>),
-    NormalizeSpace(Option<Box<Transform<N>>>),
-    Translate(Box<Transform<N>>, Box<Transform<N>>, Box<Transform<N>>),
-    GenerateId(Option<Box<Transform<N>>>),
-    Boolean(Box<Transform<N>>),
-    Not(Box<Transform<N>>),
+    SubstringBefore(Box<Transform<'i, I, N>>, Box<Transform<'i, I, N>>),
+    SubstringAfter(Box<Transform<'i, I, N>>, Box<Transform<'i, I, N>>),
+    NormalizeSpace(Option<Box<Transform<'i, I, N>>>),
+    Translate(
+        Box<Transform<'i, I, N>>,
+        Box<Transform<'i, I, N>>,
+        Box<Transform<'i, I, N>>,
+    ),
+    GenerateId(Option<Box<Transform<'i, I, N>>>),
+    Boolean(Box<Transform<'i, I, N>>),
+    Not(Box<Transform<'i, I, N>>),
     True,
     False,
-    Number(Box<Transform<N>>),
-    Sum(Box<Transform<N>>),
-    Avg(Box<Transform<N>>),
-    Min(Box<Transform<N>>),
-    Max(Box<Transform<N>>),
-    Floor(Box<Transform<N>>),
-    Ceiling(Box<Transform<N>>),
-    Round(Box<Transform<N>>, Option<Box<Transform<N>>>),
+    Number(Box<Transform<'i, I, N>>),
+    Sum(Box<Transform<'i, I, N>>),
+    Avg(Box<Transform<'i, I, N>>),
+    Min(Box<Transform<'i, I, N>>),
+    Max(Box<Transform<'i, I, N>>),
+    Floor(Box<Transform<'i, I, N>>),
+    Ceiling(Box<Transform<'i, I, N>>),
+    Round(Box<Transform<'i, I, N>>, Option<Box<Transform<'i, I, N>>>),
     CurrentDateTime,
     CurrentDate,
     CurrentTime,
     FormatDateTime(
-        Box<Transform<N>>,
-        Box<Transform<N>>,
-        Option<Box<Transform<N>>>,
-        Option<Box<Transform<N>>>,
-        Option<Box<Transform<N>>>,
+        Box<Transform<'i, I, N>>,
+        Box<Transform<'i, I, N>>,
+        Option<Box<Transform<'i, I, N>>>,
+        Option<Box<Transform<'i, I, N>>>,
+        Option<Box<Transform<'i, I, N>>>,
     ),
     FormatDate(
-        Box<Transform<N>>,
-        Box<Transform<N>>,
-        Option<Box<Transform<N>>>,
-        Option<Box<Transform<N>>>,
-        Option<Box<Transform<N>>>,
+        Box<Transform<'i, I, N>>,
+        Box<Transform<'i, I, N>>,
+        Option<Box<Transform<'i, I, N>>>,
+        Option<Box<Transform<'i, I, N>>>,
+        Option<Box<Transform<'i, I, N>>>,
     ),
     FormatTime(
-        Box<Transform<N>>,
-        Box<Transform<N>>,
-        Option<Box<Transform<N>>>,
-        Option<Box<Transform<N>>>,
-        Option<Box<Transform<N>>>,
+        Box<Transform<'i, I, N>>,
+        Box<Transform<'i, I, N>>,
+        Option<Box<Transform<'i, I, N>>>,
+        Option<Box<Transform<'i, I, N>>>,
+        Option<Box<Transform<'i, I, N>>>,
     ),
     FormatNumber(
-        Box<Transform<N>>,
-        Box<Transform<N>>,
-        Option<Box<Transform<N>>>,
+        Box<Transform<'i, I, N>>,
+        Box<Transform<'i, I, N>>,
+        Option<Box<Transform<'i, I, N>>>,
     ),
     /// Convert a number to a string.
     /// This is one half of the functionality of xsl:number, as well as format-integer().
     /// See XSLT 12.4.
     /// First argument is the integer to be formatted.
     /// Second argument is the format specification.
-    FormatInteger(Box<Transform<N>>, Box<Transform<N>>),
+    FormatInteger(Box<Transform<'i, I, N>>, Box<Transform<'i, I, N>>),
     /// Generate a sequence of integers. This is one half of the functionality of xsl:number.
     /// First argument is the start-at specification.
     /// Second argument is the select expression.
     /// Third argument is the level.
     /// Fourth argument is the count pattern.
     /// Fifth argument is the from pattern.
-    GenerateIntegers(Box<Transform<N>>, Box<Transform<N>>, Box<Numbering<N>>),
+    GenerateIntegers(
+        Box<Transform<'i, I, N>>,
+        Box<Transform<'i, I, N>>,
+        Box<Numbering<'i, I, N>>,
+    ),
     CurrentGroup,
     CurrentGroupingKey,
     /// Look up a key. The first argument is the key name, the second argument is the key value,
     /// the third argument is the top of the tree for the resulting nodes,
     /// the fourth argument is the in-scope namespaces.
     Key(
-        Box<Transform<N>>,
-        Box<Transform<N>>,
-        Option<Box<Transform<N>>>,
+        Box<Transform<'i, I, N>>,
+        Box<Transform<'i, I, N>>,
+        Option<Box<Transform<'i, I, N>>>,
         Rc<NamespaceMap>,
     ),
     /// Get information about the processor
-    SystemProperty(Box<Transform<N>>, Rc<NamespaceMap>),
+    SystemProperty(Box<Transform<'i, I, N>>, Rc<NamespaceMap>),
     AvailableSystemProperties,
     /// Read an external document
-    Document(Box<Transform<N>>, Option<Box<Transform<N>>>),
+    Document(Box<Transform<'i, I, N>>, Option<Box<Transform<'i, I, N>>>),
 
     /// Invoke a callable component. Consists of a name, an actual argument list, and in-scope namespace declarations.
-    Invoke(Rc<QualifiedName>, ActualParameters<N>, Rc<NamespaceMap>),
+    Invoke(
+        QualifiedName<'i, I>,
+        ActualParameters<'i, I, N>,
+        Rc<NamespaceMap>,
+    ),
 
     /// Emit a message. Consists of a select expression, a terminate attribute, an error-code, and a body.
     Message(
-        Box<Transform<N>>,
-        Option<Box<Transform<N>>>,
-        Box<Transform<N>>,
-        Box<Transform<N>>,
+        Box<Transform<'i, I, N>>,
+        Option<Box<Transform<'i, I, N>>>,
+        Box<Transform<'i, I, N>>,
+        Box<Transform<'i, I, N>>,
     ),
 
     /// For things that are not yet implemented, such as:
@@ -296,7 +315,7 @@ pub enum Transform<N: Node> {
     Error(ErrorKind, String),
 }
 
-impl<N: Node> Debug for Transform<N> {
+impl<'i, I: Interner, N: Node> Debug for Transform<'i, I, N> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Transform::Root => write!(f, "root node"),
@@ -402,10 +421,13 @@ impl<N: Node> Debug for Transform<N> {
 }
 
 /// A convenience function to create a namespace mapping from a [Node].
-pub fn in_scope_namespaces<N: Node>(n: Option<N>) -> Rc<NamespaceMap> {
+pub fn in_scope_namespaces<'i, I: Interner, N: Node>(n: Option<N>) -> Rc<NamespaceMap> {
     if let Some(nn) = n {
         Rc::new(nn.namespace_iter().fold(NamespaceMap::new(), |mut hm, ns| {
-            hm.insert(Some(ns.name().localname()), ns.value());
+            hm.insert(
+                Some(ns.name::<I>().unwrap().local_part()),
+                ns.value().to_string(),
+            );
             hm
         }))
     } else {
@@ -422,14 +444,16 @@ pub enum Order {
 
 /// Performing sorting of a [Sequence] using the given sort keys.
 pub(crate) fn do_sort<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     seq: &mut Sequence<N>,
-    o: &Vec<(Order, Transform<N>)>,
-    ctxt: &Context<N>,
+    o: &Vec<(Order, Transform<'i, I, N>)>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
 ) -> Result<(), Error> {
     // Optionally sort the select sequence
@@ -458,14 +482,14 @@ pub(crate) fn do_sort<
 /// This value would normally be inside an Option.
 /// A None value for the option means that the collection is not to be grouped.
 #[derive(Clone, Debug)]
-pub enum Grouping<N: Node> {
-    By(Vec<Transform<N>>),
-    StartingWith(Vec<Transform<N>>),
-    EndingWith(Vec<Transform<N>>),
-    Adjacent(Vec<Transform<N>>),
+pub enum Grouping<'i, I: Interner, N: Node> {
+    By(Vec<Transform<'i, I, N>>),
+    StartingWith(Vec<Transform<'i, I, N>>),
+    EndingWith(Vec<Transform<'i, I, N>>),
+    Adjacent(Vec<Transform<'i, I, N>>),
 }
 
-impl<N: Node> Grouping<N> {
+impl<'i, I: Interner, N: Node> Grouping<'i, I, N> {
     fn to_string(&self) -> String {
         match self {
             Grouping::By(_) => "group-by".to_string(),
@@ -476,7 +500,7 @@ impl<N: Node> Grouping<N> {
     }
 }
 
-impl<N: Node> fmt::Display for Grouping<N> {
+impl<'i, I: Interner, N: Node> fmt::Display for Grouping<'i, I, N> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.to_string())
     }
@@ -492,13 +516,13 @@ impl NodeMatch {
     pub fn new(axis: Axis, nodetest: NodeTest) -> Self {
         NodeMatch { axis, nodetest }
     }
-    pub fn matches_item<N: Node>(&self, i: &Item<N>) -> bool {
+    pub fn matches_item<'i, I: Interner, N: Node>(&self, i: &Item<N>) -> bool {
         match i {
-            Item::Node(n) => self.matches(n),
+            Item::Node(n) => self.matches::<I, N>(n),
             _ => false,
         }
     }
-    pub fn matches<N: Node>(&self, n: &N) -> bool {
+    pub fn matches<'i, I: Interner, N: Node>(&self, n: &N) -> bool {
         match &self.nodetest {
             NodeTest::Name(t) => {
                 match n.node_type() {
@@ -507,7 +531,9 @@ impl NodeMatch {
                         match &t.name {
                             Some(a) => match a {
                                 WildcardOrName::Wildcard => true,
-                                WildcardOrName::Name(s) => *s == n.name().localname(),
+                                WildcardOrName::Name(s) => {
+                                    *s == Rc::new(Value::from(n.name::<I>().unwrap().local_part()))
+                                }
                             },
                             None => false,
                         }
@@ -547,11 +573,11 @@ pub enum NodeTest {
 }
 
 impl NodeTest {
-    pub fn matches<N: Node>(&self, i: &Item<N>) -> bool {
+    pub fn matches<I: Interner, N: Node>(&self, i: &Item<N>) -> bool {
         match i {
             Item::Node(_) => match self {
-                NodeTest::Kind(k) => k.matches(i),
-                NodeTest::Name(nm) => nm.matches(i),
+                NodeTest::Kind(k) => k.matches::<I, N>(i),
+                NodeTest::Name(nm) => nm.matches::<I, N>(i),
             },
             _ => false,
         }
@@ -661,7 +687,7 @@ impl fmt::Display for KindTest {
 
 impl KindTest {
     /// Does an item match the Kind Test?
-    pub fn matches<N: Node>(&self, i: &Item<N>) -> bool {
+    pub fn matches<'i, I: Interner, N: Node>(&self, i: &Item<N>) -> bool {
         match i {
             Item::Node(n) => {
                 match (self, n.node_type()) {
@@ -719,7 +745,7 @@ impl NameTest {
     }
     /// Does an Item match this name test? To match, the item must be a node, have a name,
     /// have the namespace URI and local name be equal or a wildcard
-    pub fn matches<N: Node>(&self, i: &Item<N>) -> bool {
+    pub fn matches<'i, I: Interner, N: Node>(&self, i: &Item<N>) -> bool {
         match i {
             Item::Node(n) => {
                 match n.node_type() {
@@ -729,8 +755,8 @@ impl NameTest {
                         match (
                             self.ns.as_ref(),
                             self.name.as_ref(),
-                            n.name().namespace_uri(),
-                            n.name().localname_to_string().as_str(),
+                            n.name::<I>().unwrap().namespace_uri(),
+                            n.name::<I>().unwrap().local_part().as_str(),
                         ) {
                             (None, None, _, _) => false,
                             (None, Some(WildcardOrName::Wildcard), None, _) => true,
@@ -765,7 +791,7 @@ impl NameTest {
                                 Some(WildcardOrName::Name(wn)),
                                 Some(qnsuri),
                                 qn,
-                            ) => wnsuri.clone() == qnsuri && wn.to_string() == qn,
+                            ) => wnsuri.to_string() == qnsuri && wn.to_string() == qn,
                             _ => false, // maybe should panic?
                         }
                     }
@@ -869,13 +895,13 @@ impl fmt::Display for Axis {
 }
 
 #[derive(Clone, Debug)]
-pub struct ArithmeticOperand<N: Node> {
+pub struct ArithmeticOperand<'i, I: Interner, N: Node> {
     pub op: ArithmeticOperator,
-    pub operand: Transform<N>,
+    pub operand: Transform<'i, I, N>,
 }
 
-impl<N: Node> ArithmeticOperand<N> {
-    pub fn new(op: ArithmeticOperator, operand: Transform<N>) -> Self {
+impl<'i, I: Interner, N: Node> ArithmeticOperand<'i, I, N> {
+    pub fn new(op: ArithmeticOperator, operand: Transform<'i, I, N>) -> Self {
         ArithmeticOperand { op, operand }
     }
 }

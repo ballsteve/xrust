@@ -2,7 +2,7 @@ use crate::item::Node;
 use crate::parser::combinators::alt::{alt2, alt3, alt9};
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::many::many0;
-use crate::parser::combinators::map::map;
+use crate::parser::combinators::map::{map, map_with_state};
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::take_while;
@@ -15,13 +15,13 @@ use crate::parser::xml::dtd::enumerated::enumeratedtype;
 use crate::parser::xml::qname::{name, qualname};
 use crate::parser::xml::reference::textreference;
 use crate::parser::{ParseError, ParseInput};
-use crate::qname::QualifiedName;
+use crate::qname::{Interner, QualifiedName};
 use crate::xmldecl::{AttType, DefaultDecl};
 use std::collections::HashMap;
 
 //AttlistDecl ::= '<!ATTLIST' S Name AttDef* S? '>'
-pub(crate) fn attlistdecl<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn attlistdecl<'a, 'i, I: Interner, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, ()), ParseError> {
     move |(input, state)| match tuple6(
         tag("<!ATTLIST"),
         whitespace1(),
@@ -183,7 +183,7 @@ pub(crate) fn attlistdecl<N: Node>(
                     _ => {}
                 }
                 //xml:id datatype checking
-                if qn == QualifiedName::new(None, Some("xml".to_string()), "id".to_string())
+                if qn == QualifiedName::new("id", None, Some("xml".to_string()), state2.interner)
                     && att != AttType::ID
                 {
                     return Err(ParseError::IDError(
@@ -235,10 +235,16 @@ pub(crate) fn attlistdecl<N: Node>(
 }
 
 //AttDef ::= S Name S AttType S DefaultDecl
-fn attdef<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, (QualifiedName, AttType, DefaultDecl)), ParseError>
-{
-    map(
+fn attdef<'a, 'i, I: Interner + 'i, N: Node>() -> impl Fn(
+    ParseInput<'a, 'i, I, N>,
+) -> Result<
+    (
+        ParseInput<'a, 'i, I, N>,
+        (QualifiedName<'i, I>, AttType, DefaultDecl),
+    ),
+    ParseError,
+> {
+    map_with_state(
         tuple6(
             whitespace1(),
             name(),
@@ -247,14 +253,14 @@ fn attdef<N: Node>(
             whitespace1(),
             defaultdecl(),
         ),
-        |(_, an, _, at, _, dd)| {
+        |(_, an, _, at, _, dd), state| {
             let qn = if an.contains(':') {
                 let mut attnamesplit = an.split(':');
                 let prefix = Some(attnamesplit.next().unwrap().to_string());
                 let local = attnamesplit.collect::<String>();
-                QualifiedName::new(None, prefix, local)
+                QualifiedName::new(local, None, prefix, state.interner)
             } else {
-                QualifiedName::new(None, None, an)
+                QualifiedName::new(an, None, None, state.interner)
             };
             (qn, at, dd)
         },
@@ -262,7 +268,8 @@ fn attdef<N: Node>(
 }
 
 //AttType ::= StringType | TokenizedType | EnumeratedType
-fn atttype<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, AttType), ParseError> {
+fn atttype<'a, 'i, I: Interner + 'i, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, AttType), ParseError> {
     alt9(
         //map(petextreference(), |_| {}), //TODO
         value(tag("CDATA"), AttType::CDATA), //Stringtype
@@ -279,8 +286,9 @@ fn atttype<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, AttTyp
 }
 
 //DefaultDecl ::= '#REQUIRED' | '#IMPLIED' | (('#FIXED' S)? AttValue)
-fn defaultdecl<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, DefaultDecl), ParseError> {
+fn defaultdecl<'a, 'i, I: Interner + 'i, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, DefaultDecl), ParseError>
+{
     alt3(
         value(tag("#REQUIRED"), DefaultDecl::Required),
         value(tag("#IMPLIED"), DefaultDecl::Implied),
@@ -301,7 +309,8 @@ fn defaultdecl<N: Node>(
 }
 
 //AttValue ::= '"' ([^<&"] | Reference)* '"' | "'" ([^<&'] | Reference)* "'"
-fn attvalue<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+fn attvalue<'a, 'i, I: Interner + 'i, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, String), ParseError> {
     alt2(
         delimited(
             tag("\'"),

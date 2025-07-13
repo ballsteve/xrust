@@ -14,16 +14,22 @@ use crate::parser::xml::chardata::chardata_unicode_codepoint;
 use crate::parser::xml::qname::qualname;
 use crate::parser::xml::reference::textreference;
 use crate::parser::{ParseError, ParseInput};
-use crate::qname::QualifiedName;
+use crate::qname::{Interner, QualifiedName};
 use crate::{Error, ErrorKind};
 use std::collections::HashSet;
 use std::rc::Rc;
 
 /// Parse all of the attributes in an element's start tag.
 /// Returns (attribute nodes, namespace declaration nodes).
-pub(crate) fn attributes<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, (Vec<(QualifiedName, String)>, Vec<N>)), ParseError>
-{
+pub(crate) fn attributes<'a, 'i, I: Interner, N: Node>() -> impl Fn(
+    ParseInput<'a, 'i, I, N>,
+) -> Result<
+    (
+        ParseInput<'a, 'i, I, N>,
+        (Vec<(QualifiedName<'i, I>, String)>, Vec<N>),
+    ),
+    ParseError,
+> {
     move |input| match many0(attribute())(input) {
         Ok(((input1, mut state1), nodes)) => {
             let doc = state1.doc.clone().unwrap().clone();
@@ -39,9 +45,9 @@ pub(crate) fn attributes<N: Node>(
             for (qn, val) in nodes.clone() {
                 // Cache qn, val string values for faster comparison
                 let qn_str = qn.to_string();
-                let qn_prefix = qn.prefix_to_string();
+                let qn_prefix = qn.prefix();
                 let qn_prefix_str = qn_prefix.map_or(String::from(""), |p| p);
-                let qn_localname = qn.localname_to_string();
+                let qn_localname = qn.local_part();
                 let val_str = val.to_string();
 
                 //Return error if someone attempts to redefine namespaces.
@@ -102,10 +108,10 @@ pub(crate) fn attributes<N: Node>(
 
                 if qn_prefix_str == "xmlns" {
                     new_namespaces.push(
-                        doc.new_namespace(state1.get_value(val), Some(qn.localname()))
+                        doc.new_namespace(val, Some(qn.local_part()))
                             .expect("unable to create namespace node"),
                     );
-                    match new_namespace_prefixes.insert(Some(qn.localname())) {
+                    match new_namespace_prefixes.insert(Some(qn.local_part())) {
                         true => {}
                         false => {
                             return Err(ParseError::NotWellFormed(String::from(
@@ -117,7 +123,7 @@ pub(crate) fn attributes<N: Node>(
                     //resnsnodes.insert(Some(qn.get_localname()), val.to_string());
                 } else if qn_localname == "xmlns" && !val_str.is_empty() {
                     new_namespaces.push(
-                        doc.new_namespace(state1.get_value(val), None)
+                        doc.new_namespace(val, None)
                             .expect("unable to create default namespace node"),
                     );
                     match new_namespace_prefixes.insert(None) {
@@ -159,13 +165,13 @@ pub(crate) fn attributes<N: Node>(
                     new_ns_hm.insert(old_prefix.clone(), old_nsuri.clone());
                 });
                 new_namespaces.iter().for_each(|nsnode| {
-                    let prefix = nsnode.name().localname();
+                    let prefix = nsnode.name::<I>().unwrap().local_part();
                     let o = if prefix.to_string().is_empty() {
                         None
                     } else {
                         Some(prefix)
                     };
-                    new_ns_hm.insert(o, nsnode.value());
+                    new_ns_hm.insert(o, nsnode.value().to_string());
                 });
                 state1.namespace = Rc::new(new_ns_hm);
             } // else just reuse the existing hashmap
@@ -179,8 +185,8 @@ pub(crate) fn attributes<N: Node>(
             let mut resnodenames = vec![];
 
             for (mut qn, attrval) in nodes {
-                let qn_prefix = qn.prefix_to_string().map_or(String::from(""), |s| s);
-                let qn_localname = qn.localname_to_string();
+                let qn_prefix = qn.prefix().map_or(String::from(""), |s| s);
+                let qn_localname = qn.local_part();
                 if qn_prefix != "xmlns" && qn_localname != "xmlns" {
                     if qn
                         .resolve(|p| {
@@ -215,12 +221,12 @@ pub(crate) fn attributes<N: Node>(
                     resnodes.push((qn.clone(), attrval));
 
                     /* Why not just use resnodes.contains()  ? I don't know how to do partial matching */
-                    if resnodenames.contains(&(qn.namespace_uri(), qn.localname())) {
+                    if resnodenames.contains(&(qn.namespace_uri(), qn.local_part())) {
                         return Err(ParseError::NotWellFormed(String::from(
                             "duplicate attributes",
                         )));
                     } else {
-                        resnodenames.push((qn.namespace_uri(), qn.localname()));
+                        resnodenames.push((qn.namespace_uri(), qn.local_part()));
                     }
                 }
             }
@@ -230,8 +236,12 @@ pub(crate) fn attributes<N: Node>(
     }
 }
 // Attribute ::= Name '=' AttValue
-fn attribute<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, (QualifiedName, String)), ParseError> {
+fn attribute<'a, 'i, I: Interner, N: Node>() -> impl Fn(
+    ParseInput<'a, 'i, I, N>,
+) -> Result<
+    (ParseInput<'a, 'i, I, N>, (QualifiedName<'i, I>, String)),
+    ParseError,
+> {
     move |(input, state)| match tuple6(
         whitespace1(),
         qualname(),
@@ -246,8 +256,8 @@ fn attribute<N: Node>(
     }
 }
 
-fn attribute_value<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+fn attribute_value<'a, 'i, I: Interner, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, String), ParseError> {
     move |(input, state)| {
         let parse = alt2(
             delimited(
@@ -281,17 +291,16 @@ fn attribute_value<N: Node>(
                    For a white space character (#x20, #xD, #xA, #x9), append a space character (#x20) to the normalized value.
                    For another character, append the character to the normalized value.
                 */
-                let r = if state1.xmlversion == "1.1"{
-                    rn
-                    .concat()
-                    .replace(['\u{85}','\u{2028}','\n', '\r', '\t', '\n'], " ")
-                    .trim()
-                    .to_string()
-                } else {rn
-                    .concat()
-                    .replace(['\n', '\r', '\t', '\n'], " ")
-                    .trim()
-                    .to_string()
+                let r = if state1.xmlversion == "1.1" {
+                    rn.concat()
+                        .replace(['\u{85}', '\u{2028}', '\n', '\r', '\t', '\n'], " ")
+                        .trim()
+                        .to_string()
+                } else {
+                    rn.concat()
+                        .replace(['\n', '\r', '\t', '\n'], " ")
+                        .trim()
+                        .to_string()
                 };
                 //NEL character cannot be in attributes.
                 if state1.xmlversion == "1.1" && r.find(|c| !is_char11(&c)).is_some() {

@@ -6,6 +6,7 @@ use unicode_segmentation::UnicodeSegmentation;
 use url::Url;
 
 use crate::item::{Item, Node, Sequence, SequenceTrait};
+use crate::qname::Interner;
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::Transform;
 use crate::value::Value;
@@ -13,21 +14,25 @@ use crate::xdmerror::{Error, ErrorKind};
 
 /// XPath local-name function.
 pub fn local_name<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    s: &Option<Box<Transform<N>>>,
+    s: &Option<Box<Transform<'i, I, N>>>,
 ) -> Result<Sequence<N>, Error> {
     s.as_ref().map_or_else(
         || {
             // Get the name of the context item
             // TODO: handle the case of there not being a context item
             match ctxt.cur[ctxt.i] {
-                Item::Node(ref m) => Ok(vec![Item::Value(m.name().localname().clone())]),
+                Item::Node(ref m) => Ok(vec![Item::Value(Rc::new(Value::from(
+                    m.name::<I>().unwrap().local_part().clone(),
+                )))]),
                 _ => Err(Error::new(
                     ErrorKind::TypeError,
                     String::from("type error: not a node"),
@@ -40,7 +45,9 @@ pub fn local_name<
             match n.len() {
                 0 => Ok(vec![Item::Value(Rc::new(Value::from("")))]),
                 1 => match n[0] {
-                    Item::Node(ref m) => Ok(vec![Item::Value(m.name().localname())]),
+                    Item::Node(ref m) => Ok(vec![Item::Value(Rc::new(Value::from(
+                        m.name::<I>().unwrap().local_part(),
+                    )))]),
                     _ => Err(Error::new(
                         ErrorKind::TypeError,
                         String::from("type error: not a node"),
@@ -57,21 +64,25 @@ pub fn local_name<
 
 /// XPath name function.
 pub fn name<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    s: &Option<Box<Transform<N>>>,
+    s: &Option<Box<Transform<'i, I, N>>>,
 ) -> Result<Sequence<N>, Error> {
     s.as_ref().map_or_else(
         || {
             // Get the name of the context item
             // TODO: handle the case of there being no context item
             match ctxt.cur[ctxt.i] {
-                Item::Node(ref m) => Ok(vec![Item::Value(Rc::new(Value::from(m.name().clone())))]),
+                Item::Node(ref m) => Ok(vec![Item::Value(Rc::new(Value::from(
+                    m.name::<I>().unwrap().to_string(),
+                )))]),
                 _ => Err(Error::new(
                     ErrorKind::TypeError,
                     String::from("type error: not a node"),
@@ -85,7 +96,7 @@ pub fn name<
                 0 => Ok(vec![Item::Value(Rc::new(Value::from("")))]),
                 1 => match n[0] {
                     Item::Node(ref m) => Ok(vec![Item::Value(Rc::new(Value::from(
-                        m.name().to_string(),
+                        m.name::<I>().unwrap().to_string(),
                     )))]),
                     _ => Err(Error::new(
                         ErrorKind::TypeError,
@@ -103,14 +114,16 @@ pub fn name<
 
 /// XPath string function.
 pub fn string<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    s: &Transform<N>,
+    s: &Transform<'i, I, N>,
 ) -> Result<Sequence<N>, Error> {
     Ok(vec![Item::Value(Rc::new(Value::from(
         ctxt.dispatch(stctxt, s)?.to_string(),
@@ -119,15 +132,17 @@ pub fn string<
 
 /// XPath starts-with function.
 pub fn starts_with<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    s: &Transform<N>,
-    t: &Transform<N>,
+    s: &Transform<'i, I, N>,
+    t: &Transform<'i, I, N>,
 ) -> Result<Sequence<N>, Error> {
     // s is the string to search, t is what to search for
     Ok(vec![Item::Value(Rc::new(Value::from(
@@ -139,15 +154,17 @@ pub fn starts_with<
 
 /// XPath ends-with function.
 pub fn ends_with<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    s: &Transform<N>,
-    t: &Transform<N>,
+    s: &Transform<'i, I, N>,
+    t: &Transform<'i, I, N>,
 ) -> Result<Sequence<N>, Error> {
     // s is the string to search, t is what to search for
     Ok(vec![Item::Value(Rc::new(Value::from(
@@ -159,15 +176,17 @@ pub fn ends_with<
 
 /// XPath contains function.
 pub fn contains<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    s: &Transform<N>,
-    t: &Transform<N>,
+    s: &Transform<'i, I, N>,
+    t: &Transform<'i, I, N>,
 ) -> Result<Sequence<N>, Error> {
     // s is the string to search, t is what to search for
     Ok(vec![Item::Value(Rc::new(Value::from(
@@ -179,16 +198,18 @@ pub fn contains<
 
 /// XPath substring function.
 pub fn substring<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    s: &Transform<N>,
-    t: &Transform<N>,
-    l: &Option<Box<Transform<N>>>,
+    s: &Transform<'i, I, N>,
+    t: &Transform<'i, I, N>,
+    l: &Option<Box<Transform<'i, I, N>>>,
 ) -> Result<Sequence<N>, Error> {
     // must have two or three arguments.
     // s is the string to search,
@@ -215,15 +236,17 @@ pub fn substring<
 
 /// XPath substring-before function.
 pub fn substring_before<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    s: &Transform<N>,
-    t: &Transform<N>,
+    s: &Transform<'i, I, N>,
+    t: &Transform<'i, I, N>,
 ) -> Result<Sequence<N>, Error> {
     // s is the string to search,
     // t is the string to find.
@@ -247,15 +270,17 @@ pub fn substring_before<
 
 /// XPath substring-after function.
 pub fn substring_after<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    s: &Transform<N>,
-    t: &Transform<N>,
+    s: &Transform<'i, I, N>,
+    t: &Transform<'i, I, N>,
 ) -> Result<Sequence<N>, Error> {
     // s is the string to search,
     // t is the string to find.
@@ -280,14 +305,16 @@ pub fn substring_after<
 
 /// XPath normalize-space function.
 pub fn normalize_space<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    n: &Option<Box<Transform<N>>>,
+    n: &Option<Box<Transform<'i, I, N>>>,
 ) -> Result<Sequence<N>, Error> {
     let s: Result<String, Error> = n.as_ref().map_or_else(
         || {
@@ -309,16 +336,18 @@ pub fn normalize_space<
 
 /// XPath translate function.
 pub fn translate<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    s: &Transform<N>,
-    map: &Transform<N>,
-    trn: &Transform<N>,
+    s: &Transform<'i, I, N>,
+    map: &Transform<'i, I, N>,
+    trn: &Transform<'i, I, N>,
 ) -> Result<Sequence<N>, Error> {
     // s is the string to search
     // map are the map chars
@@ -359,14 +388,16 @@ pub fn translate<
 
 /// XPath concat function. All arguments are concatenated into a single string value.
 pub(crate) fn tr_concat<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    arguments: &Vec<Transform<N>>,
+    arguments: &Vec<Transform<'i, I, N>>,
 ) -> Result<Sequence<N>, Error> {
     match arguments
         .iter()

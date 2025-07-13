@@ -5,13 +5,14 @@ use crate::parser::combinators::take::take_until;
 use crate::parser::xml::dtd::extsubset::extsubset;
 use crate::parser::xml::element::content;
 use crate::parser::{ParseError, ParseInput};
+use crate::qname::Interner;
 use crate::value::Value;
 use std::rc::Rc;
 
 // Reference ::= EntityRef | CharRef
 // \Its important to note, we pre-populate the standard char references in the DTD.
-pub(crate) fn reference<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<N>), ParseError> {
+pub(crate) fn reference<'a, 'i, I: Interner, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, Vec<N>), ParseError> {
     move |(input, state)| {
         let e = delimited(tag("&"), take_until(";"), tag(";"))((input, state.clone()));
         match e {
@@ -85,8 +86,9 @@ pub(crate) fn reference<N: Node>(
                                      */
                                     let mut e2 = entval.clone();
                                     e2.push('<');
+                                    let result = content()((e2.as_str(), tempstate));
 
-                                    match content()((e2.as_str(), tempstate)) {
+                                    match result {
                                         Ok(((outstr, _), nodes)) => {
                                             if outstr != "<" {
                                                 Err(ParseError::NotWellFormed(outstr.to_string()))
@@ -142,8 +144,12 @@ pub(crate) fn reference<N: Node>(
                                                                      */
                                                                     let mut e2 = entval.clone();
                                                                     e2.push('<');
+                                                                    let result = content()((
+                                                                        e2.as_str(),
+                                                                        tempstate,
+                                                                    ));
 
-                                                                    match content()((e2.as_str(), tempstate)) {
+                                                                    match result {
                                                                         Ok(((outstr, _), nodes)) => {
                                                                             if outstr != "<" {
                                                                                 Err(ParseError::NotWellFormed(outstr.to_string()))
@@ -177,8 +183,8 @@ pub(crate) fn reference<N: Node>(
     }
 }
 
-pub(crate) fn textreference<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn textreference<'a, 'i, I: Interner, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, String), ParseError> {
     move |(input, state)| {
         let e = delimited(tag("&"), take_until(";"), tag(";"))((input, state));
         match e {
@@ -214,7 +220,9 @@ pub(crate) fn textreference<N: Node>(
                                     let mut e2 = entval.clone();
                                     e2.push('<');
 
-                                    match content()((e2.as_str(), tempstate)) {
+                                    let result = content()((e2.as_str(), tempstate));
+
+                                    match result {
                                         Ok(((outstr, _), nodes)) => {
                                             if outstr != "<" {
                                                 Err(ParseError::NotWellFormed(outstr.to_string()))

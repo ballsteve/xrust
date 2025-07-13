@@ -1,11 +1,12 @@
 use crate::item::Node;
 use crate::parser::{ParseError, ParseInput};
+use crate::qname::Interner;
 
-pub(crate) fn opt<P1, R1, N: Node>(
+pub(crate) fn opt<'a, 'i, P1, R1, I: Interner + 'i, N: Node>(
     parser1: P1,
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Option<R1>), ParseError>
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, Option<R1>), ParseError>
 where
-    P1: Fn(ParseInput<N>) -> Result<(ParseInput<N>, R1), ParseError>,
+    P1: Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, R1), ParseError>,
 {
     move |input| match parser1(input.clone()) {
         Ok((input1, result1)) => Ok((input1, Some(result1))),

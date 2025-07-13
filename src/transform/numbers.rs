@@ -9,7 +9,7 @@ use italian_numbers::roman_converter;
 
 use crate::item::{Item, Node, NodeType, Sequence, SequenceTrait};
 use crate::pattern::{Branch, Pattern, Step};
-use crate::qname::QualifiedName;
+use crate::qname::Interner;
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::{
     ArithmeticOperand, ArithmeticOperator, Axis, KindTest, NameTest, NodeTest, Transform,
@@ -29,29 +29,35 @@ pub enum Level {
 
 /// Specification for generating numbers. This is avoid recursive types in [Transform] and [Pattern].
 #[derive(Clone, Debug)]
-pub struct Numbering<N: Node> {
+pub struct Numbering<'i, I: Interner, N: Node> {
     level: Level,
-    count: Option<Pattern<N>>,
-    from: Option<Pattern<N>>,
+    count: Option<Pattern<'i, I, N>>,
+    from: Option<Pattern<'i, I, N>>,
 }
-impl<N: Node> Numbering<N> {
-    pub fn new(level: Level, count: Option<Pattern<N>>, from: Option<Pattern<N>>) -> Self {
+impl<'i, I: Interner, N: Node> Numbering<'i, I, N> {
+    pub fn new(
+        level: Level,
+        count: Option<Pattern<'i, I, N>>,
+        from: Option<Pattern<'i, I, N>>,
+    ) -> Self {
         Numbering { level, count, from }
     }
 }
 
 /// Generate a sequence of integers
 pub fn generate_integers<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    _start_at: &Transform<N>,
-    select: &Transform<N>,
-    num: &Numbering<N>,
+    _start_at: &Transform<'i, I, N>,
+    select: &Transform<'i, I, N>,
+    num: &Numbering<'i, I, N>,
 ) -> Result<Sequence<N>, Error> {
     // This implements "single" level. "multiple" and "any" are TODO
     if num.level != Level::Single {
@@ -74,9 +80,14 @@ pub fn generate_integers<
                             Axis::SelfAxis,
                             Axis::SelfAxis,
                             NodeTest::Name(NameTest::new(
-                                m.name().namespace_uri().map(WildcardOrName::Name),
+                                m.name::<I>()
+                                    .unwrap()
+                                    .namespace_uri()
+                                    .map(|s| WildcardOrName::Name(Rc::new(Value::from(s)))),
                                 None,
-                                Some(WildcardOrName::Name(m.name().localname())),
+                                Some(WildcardOrName::Name(Rc::new(Value::from(
+                                    m.name::<I>().unwrap().local_part(),
+                                )))),
                             )),
                         ),
                         NodeType::Text => Step::new(
@@ -146,28 +157,30 @@ pub fn generate_integers<
             Err(Error::new_with_code(
                 ErrorKind::TypeError,
                 "not a singleton node",
-                Some(QualifiedName::new(None, None, "XTTE1000")),
+                Some("XTTE1000".to_string()),
             ))
         }
     } else {
         Err(Error::new_with_code(
             ErrorKind::TypeError,
             "not a singleton node",
-            Some(QualifiedName::new(None, None, "XTTE1000")),
+            Some("XTTE1000".to_string()),
         ))
     }
 }
 
 /// XPath number function.
 pub fn number<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    num: &Transform<N>,
+    num: &Transform<'i, I, N>,
 ) -> Result<Sequence<N>, Error> {
     let n = ctxt.dispatch(stctxt, num)?;
     match n.len() {
@@ -191,14 +204,16 @@ pub fn number<
 
 /// XPath sum function.
 pub fn sum<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    s: &Transform<N>,
+    s: &Transform<'i, I, N>,
 ) -> Result<Sequence<N>, Error> {
     Ok(vec![Item::Value(Rc::new(Value::Double(
         ctxt.dispatch(stctxt, s)?.iter().fold(0.0, |mut acc, i| {
@@ -210,14 +225,16 @@ pub fn sum<
 
 /// XPath 2.0 avg function.
 pub fn avg<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    s: &Transform<N>,
+    s: &Transform<'i, I, N>,
 ) -> Result<Sequence<N>, Error> {
     let seq = ctxt.dispatch(stctxt, s)?;
     if seq.is_empty() {
@@ -236,14 +253,16 @@ pub fn avg<
 
 /// XPath 2.0 min function.
 pub fn min<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    s: &Transform<N>,
+    s: &Transform<'i, I, N>,
 ) -> Result<Sequence<N>, Error> {
     let seq = ctxt.dispatch(stctxt, s)?;
     // XPath 2.0 has rules for type conversion
@@ -264,14 +283,16 @@ pub fn min<
 
 /// XPath 2.0 max function.
 pub fn max<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    s: &Transform<N>,
+    s: &Transform<'i, I, N>,
 ) -> Result<Sequence<N>, Error> {
     let seq = ctxt.dispatch(stctxt, s)?;
     // XPath 2.0 has rules for type conversion
@@ -292,14 +313,16 @@ pub fn max<
 
 /// XPath floor function.
 pub fn floor<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    f: &Transform<N>,
+    f: &Transform<'i, I, N>,
 ) -> Result<Sequence<N>, Error> {
     let n = ctxt.dispatch(stctxt, f)?;
     match n.len() {
@@ -315,14 +338,16 @@ pub fn floor<
 
 /// XPath ceiling function.
 pub fn ceiling<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    c: &Transform<N>,
+    c: &Transform<'i, I, N>,
 ) -> Result<Sequence<N>, Error> {
     let n = ctxt.dispatch(stctxt, c)?;
     match n.len() {
@@ -338,15 +363,17 @@ pub fn ceiling<
 
 /// XPath round function.
 pub fn round<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    r: &Transform<N>,
-    pr: &Option<Box<Transform<N>>>,
+    r: &Transform<'i, I, N>,
+    pr: &Option<Box<Transform<'i, I, N>>>,
 ) -> Result<Sequence<N>, Error> {
     match pr {
         Some(p) => {
@@ -381,15 +408,17 @@ pub fn round<
 
 /// Generate a sequence with a range of integers.
 pub(crate) fn tr_range<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    start: &Transform<N>,
-    end: &Transform<N>,
+    start: &Transform<'i, I, N>,
+    end: &Transform<'i, I, N>,
 ) -> Result<Sequence<N>, Error> {
     let s = ctxt.dispatch(stctxt, start)?;
     let e = ctxt.dispatch(stctxt, end)?;
@@ -423,14 +452,16 @@ pub(crate) fn tr_range<
 
 /// Perform an arithmetic operation.
 pub(crate) fn arithmetic<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    ops: &Vec<ArithmeticOperand<N>>,
+    ops: &Vec<ArithmeticOperand<'i, I, N>>,
 ) -> Result<Sequence<N>, Error> {
     // Type: the result will be a number, but integer or double?
     // If all of the operands are integers, then the result is integer otherwise double
@@ -465,16 +496,18 @@ pub(crate) fn arithmetic<
 
 /// XPath format-number function.
 pub fn format_number<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    num: &Transform<N>,
-    picture: &Transform<N>,
-    _name: &Option<Box<Transform<N>>>,
+    num: &Transform<'i, I, N>,
+    picture: &Transform<'i, I, N>,
+    _name: &Option<Box<Transform<'i, I, N>>>,
 ) -> Result<Sequence<N>, Error> {
     let p = ctxt.dispatch(stctxt, picture)?.to_string();
     let n = ctxt.dispatch(stctxt, num)?;
@@ -503,15 +536,17 @@ pub fn format_number<
 
 /// XSLT xsl:number and XPath format-integer function.
 pub fn format_integer<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    num: &Transform<N>,
-    picture: &Transform<N>,
+    num: &Transform<'i, I, N>,
+    picture: &Transform<'i, I, N>,
 ) -> Result<Sequence<N>, Error> {
     let p = ctxt.dispatch(stctxt, picture)?.to_string();
     let numbers = ctxt.dispatch(stctxt, num)?;

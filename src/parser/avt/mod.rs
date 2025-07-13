@@ -9,6 +9,7 @@ use crate::parser::combinators::alt::alt2;
 use crate::parser::combinators::many::{many0, many1};
 use crate::parser::combinators::map::map;
 use crate::parser::{ParseError, ParseInput, ParserState};
+use crate::qname::Interner;
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 use std::rc::Rc;
@@ -19,8 +20,12 @@ use crate::transform::Transform;
 
 /// AVT ::= text* "{" xpath "}" text*
 /// A [Node] is required to resolve in-scope XML Namespaces
-pub fn parse<N: Node>(input: &str, n: Option<N>) -> Result<Transform<N>, Error> {
-    let state = ParserState::new(None, n, None);
+pub fn parse<'i, I: Interner, N: Node>(
+    input: &str,
+    n: Option<N>,
+    intern: &'i I,
+) -> Result<Transform<'i, I, N>, Error> {
+    let state = ParserState::new(None, n, None, intern);
     match avt_expr((input, state)) {
         Ok((_, x)) => Ok(x),
         Err(err) => match err {
@@ -41,8 +46,10 @@ pub fn parse<N: Node>(input: &str, n: Option<N>) -> Result<Transform<N>, Error> 
     }
 }
 
-fn avt_expr<N: Node>(input: ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> {
-    match avt::<N>()(input) {
+fn avt_expr<'a, 'i: 'a, I: Interner, N: Node + 'a>(
+    input: ParseInput<'a, 'i, I, N>,
+) -> Result<(ParseInput<'a, 'i, I, N>, Transform<'i, I, N>), ParseError> {
+    match avt::<I, N>()(input) {
         Err(err) => Err(err),
         Ok(((input1, state1), e)) => {
             //Check nothing remaining in iterator, nothing after the end of the AVT.
@@ -58,8 +65,12 @@ fn avt_expr<N: Node>(input: ParseInput<N>) -> Result<(ParseInput<N>, Transform<N
     }
 }
 
-fn avt<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn avt<'a, 'i: 'a, I: Interner + 'i, N: Node + 'a>() -> Box<
+    dyn Fn(
+            ParseInput<'a, 'i, I, N>,
+        ) -> Result<(ParseInput<'a, 'i, I, N>, Transform<'i, I, N>), ParseError>
+        + 'a,
+> {
     Box::new(map(
         many0(alt2(
             map(many1(none_of("{")), |v| {
@@ -80,8 +91,12 @@ fn avt<'a, N: Node + 'a>(
 }
 
 /// A XPath expression in the AVT. Braces do not nest.
-fn braced_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn braced_expr<'a, 'i, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(
+            ParseInput<'a, 'i, I, N>,
+        ) -> Result<(ParseInput<'a, 'i, I, N>, Transform<'i, I, N>), ParseError>
+        + 'a,
+> {
     // Can't use combinator directly, since the close brace will be unexpected.
     // Instead, extract the string up to the close brace, then feed that to the combinator.
     //    Box::new(map(

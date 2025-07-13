@@ -1,15 +1,16 @@
 use crate::item::Node;
 use crate::parser::{ParseError, ParseInput};
+use crate::qname::Interner;
 
-pub(crate) fn delimited<P1, P2, P3, R1, R2, R3, N: Node>(
+pub(crate) fn delimited<'a, 'i, P1, P2, P3, R1, R2, R3, I: Interner + 'i, N: Node>(
     parser1: P1,
     parser2: P2,
     parser3: P3,
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, R2), ParseError>
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, R2), ParseError>
 where
-    P1: Fn(ParseInput<N>) -> Result<(ParseInput<N>, R1), ParseError>,
-    P2: Fn(ParseInput<N>) -> Result<(ParseInput<N>, R2), ParseError>,
-    P3: Fn(ParseInput<N>) -> Result<(ParseInput<N>, R3), ParseError>,
+    P1: Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, R1), ParseError>,
+    P2: Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, R2), ParseError>,
+    P3: Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, R3), ParseError>,
 {
     move |input| match parser1(input) {
         Ok((input1, _)) => match parser2(input1) {

@@ -7,6 +7,7 @@ use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::{tuple10, tuple3, tuple5, tuple6};
 use crate::parser::combinators::whitespace::xpwhitespace;
+use crate::qname::Interner;
 //use crate::parser::combinators::debug::inspect;
 use crate::parser::xpath::nodetests::qualname_test;
 use crate::parser::xpath::support::get_nt_localname;
@@ -15,8 +16,12 @@ use crate::parser::{ParseError, ParseInput};
 use crate::transform::{in_scope_namespaces, Transform};
 
 // IfExpr ::= 'if' '(' Expr ')' 'then' ExprSingle 'else' ExprSingle
-pub(crate) fn if_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+pub(crate) fn if_expr<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(
+            ParseInput<'a, 'i, I, N>,
+        ) -> Result<(ParseInput<'a, 'i, I, N>, Transform<'i, I, N>), ParseError>
+        + 'a,
+> {
     Box::new(map(
         pair(
             // need tuple15
@@ -25,7 +30,7 @@ pub(crate) fn if_expr<'a, N: Node + 'a>(
                 xpwhitespace(),
                 tag("("),
                 xpwhitespace(),
-                expr_wrapper::<N>(true),
+                expr_wrapper::<I, N>(true),
                 xpwhitespace(),
                 tag(")"),
                 xpwhitespace(),
@@ -33,11 +38,11 @@ pub(crate) fn if_expr<'a, N: Node + 'a>(
                 xpwhitespace(),
             ),
             tuple5(
-                expr_single_wrapper::<N>(true),
+                expr_single_wrapper::<I, N>(true),
                 xpwhitespace(),
                 tag("else"),
                 xpwhitespace(),
-                expr_single_wrapper::<N>(true),
+                expr_single_wrapper::<I, N>(true),
             ),
         ),
         |((_, _, _, _, i, _, _, _, _, _), (t, _, _, _, e))| {
@@ -47,13 +52,17 @@ pub(crate) fn if_expr<'a, N: Node + 'a>(
 }
 
 // ForExpr ::= SimpleForClause 'return' ExprSingle
-pub(crate) fn for_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+pub(crate) fn for_expr<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(
+            ParseInput<'a, 'i, I, N>,
+        ) -> Result<(ParseInput<'a, 'i, I, N>, Transform<'i, I, N>), ParseError>
+        + 'a,
+> {
     Box::new(map(
         tuple3(
-            simple_for_clause::<N>(),
+            simple_for_clause::<I, N>(),
             tuple3(xpwhitespace(), tag("return"), xpwhitespace()),
-            expr_single_wrapper::<N>(true),
+            expr_single_wrapper::<I, N>(true),
         ),
         |(f, _, e)| Transform::Loop(f, Box::new(e)), // tc_loop does not yet support multiple variable bindings
     ))
@@ -61,8 +70,12 @@ pub(crate) fn for_expr<'a, N: Node + 'a>(
 
 // SimpleForClause ::= 'for' SimpleForBinding (',' SimpleForBinding)*
 // SimpleForBinding ::= '$' VarName 'in' ExprSingle
-fn simple_for_clause<'a, N: Node + 'a>() -> Box<
-    dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<(String, Transform<N>)>), ParseError> + 'a,
+fn simple_for_clause<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(
+            ParseInput<'a, 'i, I, N>,
+        )
+            -> Result<(ParseInput<'a, 'i, I, N>, Vec<(String, Transform<'i, I, N>)>), ParseError>
+        + 'a,
 > {
     Box::new(map(
         tuple3(
@@ -77,7 +90,7 @@ fn simple_for_clause<'a, N: Node + 'a>() -> Box<
                         xpwhitespace(),
                         tag("in"),
                         xpwhitespace(),
-                        expr_single_wrapper::<N>(true),
+                        expr_single_wrapper::<I, N>(true),
                     ),
                     |(_, qn, _, _, _, e)| (get_nt_localname(&qn), e),
                 ),
@@ -88,13 +101,17 @@ fn simple_for_clause<'a, N: Node + 'a>() -> Box<
 }
 
 // LetExpr ::= SimpleLetClause 'return' ExprSingle
-pub(crate) fn let_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+pub(crate) fn let_expr<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(
+            ParseInput<'a, 'i, I, N>,
+        ) -> Result<(ParseInput<'a, 'i, I, N>, Transform<'i, I, N>), ParseError>
+        + 'a,
+> {
     Box::new(map_with_state(
         tuple3(
-            simple_let_clause::<N>(),
+            simple_let_clause::<I, N>(),
             tuple3(xpwhitespace(), tag("return"), xpwhitespace()),
-            expr_single_wrapper::<N>(true),
+            expr_single_wrapper::<I, N>(true),
         ),
         |(mut v, _, e), state| {
             let (qn, f) = v.pop().unwrap();
@@ -102,7 +119,7 @@ pub(crate) fn let_expr<'a, N: Node + 'a>(
                 qn,
                 Box::new(f),
                 Box::new(e),
-                in_scope_namespaces(state.cur.clone()),
+                in_scope_namespaces::<I, N>(state.cur.clone()),
             );
             loop {
                 if v.is_empty() {
@@ -113,7 +130,7 @@ pub(crate) fn let_expr<'a, N: Node + 'a>(
                         qn,
                         Box::new(f),
                         Box::new(result),
-                        in_scope_namespaces(state.cur.clone()),
+                        in_scope_namespaces::<I, N>(state.cur.clone()),
                     );
                     result = inter;
                 }
@@ -126,8 +143,12 @@ pub(crate) fn let_expr<'a, N: Node + 'a>(
 // SimpleLetClause ::= 'let' SimpleLetBinding (',' SimpleLetBinding)*
 // SimpleLetBinding ::= '$' VarName ':=' ExprSingle
 // TODO: handle multiple bindings
-fn simple_let_clause<'a, N: Node + 'a>() -> Box<
-    dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<(String, Transform<N>)>), ParseError> + 'a,
+fn simple_let_clause<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(
+            ParseInput<'a, 'i, I, N>,
+        )
+            -> Result<(ParseInput<'a, 'i, I, N>, Vec<(String, Transform<'i, I, N>)>), ParseError>
+        + 'a,
 > {
     Box::new(map(
         tuple3(
@@ -142,7 +163,7 @@ fn simple_let_clause<'a, N: Node + 'a>() -> Box<
                         xpwhitespace(),
                         tag(":="),
                         xpwhitespace(),
-                        expr_single_wrapper::<N>(true),
+                        expr_single_wrapper::<I, N>(true),
                     ),
                     |(_, qn, _, _, _, e)| (get_nt_localname(&qn), e),
                 ),

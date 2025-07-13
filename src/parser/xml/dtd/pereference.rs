@@ -4,9 +4,10 @@ use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::take_until;
 use crate::parser::xml::dtd::extsubset::extsubsetdecl;
 use crate::parser::{ParseError, ParseInput};
+use crate::qname::Interner;
 
-pub(crate) fn pereference<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn pereference<'a, 'i, I: Interner, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, ()), ParseError> {
     move |(input, state)| {
         let e = delimited(tag("%"), take_until(";"), tag(";"))((input, state));
         match e {
@@ -30,7 +31,8 @@ pub(crate) fn pereference<N: Node>(
                             tempstate.currententitydepth += 1;
 
                             let e2 = entval.clone();
-                            match extsubsetdecl()((e2.as_str(), tempstate)) {
+                            let result = extsubsetdecl()((e2.as_str(), tempstate));
+                            match result {
                                 Ok(((outstr, _), _)) => {
                                     if !outstr.is_empty() {
                                         Err(ParseError::NotWellFormed(outstr.to_string()))
@@ -54,8 +56,8 @@ pub(crate) fn pereference<N: Node>(
     }
 }
 
-pub(crate) fn petextreference<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn petextreference<'a, 'i, I: Interner, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, String), ParseError> {
     move |(input, state)| {
         let e = delimited(tag("%"), take_until(";"), tag(";"))((input, state));
         match e {

@@ -6,7 +6,7 @@
 // TODO: tunneling parameters
 
 use crate::item::Node;
-use crate::qname::QualifiedName;
+use crate::qname::{Interner, QualifiedName};
 use crate::transform::context::StaticContext;
 use crate::transform::{NamespaceMap, Transform};
 use crate::{Context, Error, ErrorKind, Sequence};
@@ -14,41 +14,43 @@ use std::collections::HashMap;
 use url::Url;
 
 #[derive(Clone, Debug)]
-pub struct Callable<N: Node> {
-    pub(crate) body: Transform<N>,
-    pub(crate) parameters: FormalParameters<N>,
+pub struct Callable<'i, I: Interner, N: Node> {
+    pub(crate) body: Transform<'i, I, N>,
+    pub(crate) parameters: FormalParameters<'i, I, N>,
     // TODO: return type
 }
 
-impl<N: Node> Callable<N> {
-    pub fn new(body: Transform<N>, parameters: FormalParameters<N>) -> Self {
+impl<'i, I: Interner, N: Node> Callable<'i, I, N> {
+    pub fn new(body: Transform<'i, I, N>, parameters: FormalParameters<'i, I, N>) -> Self {
         Callable { body, parameters }
     }
 }
 
 // TODO: parameter type ("as" attribute)
 #[derive(Clone, Debug)]
-pub enum FormalParameters<N: Node> {
-    Named(Vec<(QualifiedName, Option<Transform<N>>)>), // parameter name, default value
-    Positional(Vec<QualifiedName>),
+pub enum FormalParameters<'i, I: Interner, N: Node> {
+    Named(Vec<(QualifiedName<'i, I>, Option<Transform<'i, I, N>>)>), // parameter name, default value
+    Positional(Vec<QualifiedName<'i, I>>),
 }
 #[derive(Clone, Debug)]
-pub enum ActualParameters<N: Node> {
-    Named(Vec<(QualifiedName, Transform<N>)>), // parameter name, value
-    Positional(Vec<Transform<N>>),
+pub enum ActualParameters<'i, I: Interner, N: Node> {
+    Named(Vec<(QualifiedName<'i, I>, Transform<'i, I, N>)>), // parameter name, value
+    Positional(Vec<Transform<'i, I, N>>),
 }
 
 /// Invoke a callable component
 pub(crate) fn invoke<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    qn: &QualifiedName,
-    a: &ActualParameters<N>,
+    qn: &QualifiedName<'i, I>,
+    a: &ActualParameters<'i, I, N>,
     ns: &NamespaceMap,
 ) -> Result<Sequence<N>, Error> {
     let mut qnr = qn.clone();

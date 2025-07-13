@@ -1,7 +1,7 @@
 /*! Defines common features of XML documents.
  */
 
-use crate::qname::QualifiedName;
+use crate::qname::{Interner, QualifiedName};
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Formatter;
@@ -97,23 +97,23 @@ impl XMLDeclBuilder {
 /// the needs of any validators implemented.
 ///
 #[derive(Clone, PartialEq, Debug)]
-pub struct DTD {
+pub struct DTD<'i, I: Interner> {
     /// This struct is for internal consumption mainly, it holding the DTD in various incomplete forms
     /// before construction into useful patterns for validation
-    pub(crate) elements: HashMap<QualifiedName, DTDPattern>,
+    pub(crate) elements: HashMap<QualifiedName<'i, I>, DTDPattern<'i, I>>,
     pub(crate) attlists:
-        HashMap<QualifiedName, HashMap<QualifiedName, (AttType, DefaultDecl, bool)>>, // Boolean for is_editable;
-    pub(crate) notations: HashMap<String, DTDDecl>,
+        HashMap<QualifiedName<'i, I>, HashMap<QualifiedName<'i, I>, (AttType, DefaultDecl, bool)>>, // Boolean for is_editable;
+    pub(crate) notations: HashMap<String, DTDDecl<'i, I>>,
     pub(crate) generalentities: HashMap<String, (String, bool)>, // Boolean for is_editable;
     pub(crate) paramentities: HashMap<String, (String, bool)>,   // Boolean for is_editable;
     publicid: Option<String>,
     systemid: Option<String>,
-    pub(crate) name: Option<QualifiedName>,
-    pub(crate) patterns: HashMap<QualifiedName, DTDPattern>,
+    pub(crate) name: Option<QualifiedName<'i, I>>,
+    pub(crate) patterns: HashMap<QualifiedName<'i, I>, DTDPattern<'i, I>>,
 }
 
-impl DTD {
-    pub fn new() -> DTD {
+impl<'i, I: Interner> DTD<'i, I> {
+    pub fn new() -> DTD<'i, I> {
         let default_entities = vec![
             ("amp".to_string(), ("&".to_string(), false)),
             ("gt".to_string(), (">".to_string(), false)),
@@ -135,17 +135,17 @@ impl DTD {
     }
 }
 
-impl Default for DTD {
+impl<'i, I: Interner> Default for DTD<'i, I> {
     fn default() -> Self {
         Self::new()
     }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum DTDDecl {
-    Notation(QualifiedName, String),
-    GeneralEntity(QualifiedName, String),
-    ParamEntity(QualifiedName, String),
+pub enum DTDDecl<'i, I: Interner> {
+    Notation(QualifiedName<'i, I>, String),
+    GeneralEntity(QualifiedName<'i, I>, String),
+    ParamEntity(QualifiedName<'i, I>, String),
 }
 
 #[allow(clippy::upper_case_acronyms)]
@@ -173,23 +173,23 @@ pub(crate) enum DefaultDecl {
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub(crate) enum DTDPattern {
-    Choice(Box<DTDPattern>, Box<DTDPattern>),
-    Interleave(Box<DTDPattern>, Box<DTDPattern>),
-    Group(Box<DTDPattern>, Box<DTDPattern>),
-    OneOrMore(Box<DTDPattern>),
-    After(Box<DTDPattern>, Box<DTDPattern>),
+pub(crate) enum DTDPattern<'i, I: Interner> {
+    Choice(Box<DTDPattern<'i, I>>, Box<DTDPattern<'i, I>>),
+    Interleave(Box<DTDPattern<'i, I>>, Box<DTDPattern<'i, I>>),
+    Group(Box<DTDPattern<'i, I>>, Box<DTDPattern<'i, I>>),
+    OneOrMore(Box<DTDPattern<'i, I>>),
+    After(Box<DTDPattern<'i, I>>, Box<DTDPattern<'i, I>>),
     Empty,
     NotAllowed,
     Text,
     Value(String),
-    Attribute(QualifiedName, Box<DTDPattern>),
-    Element(QualifiedName, Box<DTDPattern>),
-    Ref(QualifiedName),
+    Attribute(QualifiedName<'i, I>, Box<DTDPattern<'i, I>>),
+    Element(QualifiedName<'i, I>, Box<DTDPattern<'i, I>>),
+    Ref(QualifiedName<'i, I>),
     Any,
     /*
        This Enum is never used, but it might see application when properly validating ENTITYs.
     */
     #[allow(dead_code)]
-    List(Box<DTDPattern>),
+    List(Box<DTDPattern<'i, I>>),
 }

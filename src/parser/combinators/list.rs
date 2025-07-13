@@ -1,13 +1,14 @@
 use crate::item::Node;
 use crate::parser::{ParseError, ParseInput};
+use crate::qname::Interner;
 
-pub fn separated_list0<P1, P2, R1, N: Node>(
+pub fn separated_list0<'a, 'i, P1, P2, R1, I: Interner + 'i, N: Node>(
     sep: P1,
     f: P2,
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<R1>), ParseError>
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, Vec<R1>), ParseError>
 where
-    P1: Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError>,
-    P2: Fn(ParseInput<N>) -> Result<(ParseInput<N>, R1), ParseError>,
+    P1: Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, ()), ParseError>,
+    P2: Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, R1), ParseError>,
 {
     move |mut input| {
         let mut res = Vec::new();
@@ -49,13 +50,13 @@ where
     }
 }
 
-pub(crate) fn separated_list1<P1, P2, R1, N: Node>(
+pub(crate) fn separated_list1<'a, 'i, P1, P2, R1, I: Interner + 'i, N: Node>(
     sep: P1,
     f: P2,
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<R1>), ParseError>
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, Vec<R1>), ParseError>
 where
-    P1: Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError>,
-    P2: Fn(ParseInput<N>) -> Result<(ParseInput<N>, R1), ParseError>,
+    P1: Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, ()), ParseError>,
+    P2: Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, R1), ParseError>,
 {
     move |mut input| {
         let mut res = Vec::new();

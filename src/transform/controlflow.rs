@@ -5,6 +5,7 @@ use std::rc::Rc;
 use url::Url;
 
 use crate::item::{Node, Sequence, SequenceTrait};
+use crate::qname::Interner;
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::{do_sort, Grouping, Order, Transform};
 use crate::value::{Operator, Value};
@@ -13,15 +14,17 @@ use crate::xdmerror::{Error, ErrorKind};
 /// Iterate over the items in a sequence.
 // TODO: Allow multiple variables
 pub(crate) fn tr_loop<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    v: &Vec<(String, Transform<N>)>,
-    b: &Transform<N>,
+    v: &Vec<(String, Transform<'i, I, N>)>,
+    b: &Transform<'i, I, N>,
 ) -> Result<Sequence<N>, Error> {
     if v.is_empty() {
         return Ok(vec![]);
@@ -43,15 +46,17 @@ pub(crate) fn tr_loop<
 
 /// Choose a sequence to return.
 pub(crate) fn switch<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    v: &Vec<(Transform<N>, Transform<N>)>,
-    o: &Transform<N>,
+    v: &Vec<(Transform<'i, I, N>, Transform<'i, I, N>)>,
+    o: &Transform<'i, I, N>,
 ) -> Result<Sequence<N>, Error> {
     let mut candidate = ctxt.dispatch(stctxt, o)?;
     for (t, w) in v {
@@ -66,17 +71,19 @@ pub(crate) fn switch<
 
 /// Evaluate a combinator for each item.
 pub fn for_each<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    g: &Option<Grouping<N>>,
-    s: &Transform<N>,
-    body: &Transform<N>,
-    o: &Vec<(Order, Transform<N>)>,
+    g: &Option<Grouping<'i, I, N>>,
+    s: &Transform<'i, I, N>,
+    body: &Transform<'i, I, N>,
+    o: &Vec<(Order, Transform<'i, I, N>)>,
 ) -> Result<Sequence<N>, Error> {
     match g {
         None => {
@@ -102,17 +109,19 @@ pub fn for_each<
 
 /// Evaluate a combinator for each group of items.
 fn group_by<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    by: &Vec<Transform<N>>,
-    s: &Transform<N>,
-    body: &Transform<N>,
-    o: &Vec<(Order, Transform<N>)>,
+    by: &Vec<Transform<'i, I, N>>,
+    s: &Transform<'i, I, N>,
+    body: &Transform<'i, I, N>,
+    o: &Vec<(Order, Transform<'i, I, N>)>,
 ) -> Result<Sequence<N>, Error> {
     // Each 'by' expression is evaluated to a string key and stored in the hashmap
     // TODO: this implementation is only supporting a single key
@@ -184,17 +193,19 @@ fn group_by<
 
 /// Evaluate a combinator for each group of items. 'adj' is an expression that is evaluated for each selected item. It must resolve to a singleton item. The first item starts the first group. For the second and subsequent items, if the 'adj' item is the same as the previous item then the item is added to the same group. Otherwise a new group is started.
 fn group_adjacent<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    adj: &Vec<Transform<N>>,
-    s: &Transform<N>,
-    body: &Transform<N>,
-    o: &Vec<(Order, Transform<N>)>,
+    adj: &Vec<Transform<'i, I, N>>,
+    s: &Transform<'i, I, N>,
+    body: &Transform<'i, I, N>,
+    o: &Vec<(Order, Transform<'i, I, N>)>,
 ) -> Result<Sequence<N>, Error> {
     // TODO: this implementation is only supporting a single key
     let t = adj[0].clone();
@@ -292,17 +303,19 @@ fn group_adjacent<
 
 /// Evaluate a combinator for each group of items.
 fn group_starting_with<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    _ctxt: &Context<N>,
+    _ctxt: &Context<'i, I, N>,
     _stctxt: &mut StaticContext<N, F, G, H>,
-    _pat: &Vec<Transform<N>>,
-    _s: &Transform<N>,
-    _body: &Transform<N>,
-    _o: &Vec<(Order, Transform<N>)>,
+    _pat: &Vec<Transform<'i, I, N>>,
+    _s: &Transform<'i, I, N>,
+    _body: &Transform<'i, I, N>,
+    _o: &Vec<(Order, Transform<'i, I, N>)>,
 ) -> Result<Sequence<N>, Error> {
     Err(Error::new(
         ErrorKind::NotImplemented,
@@ -312,17 +325,19 @@ fn group_starting_with<
 
 /// Evaluate a combinator for each group of items.
 pub fn group_ending_with<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    _ctxt: &Context<N>,
+    _ctxt: &Context<'i, I, N>,
     _stctxt: &mut StaticContext<N, F, G, H>,
-    _pat: &Vec<Transform<N>>,
-    _s: &Transform<N>,
-    _body: &Transform<N>,
-    _o: &Vec<(Order, Transform<N>)>,
+    _pat: &Vec<Transform<'i, I, N>>,
+    _s: &Transform<'i, I, N>,
+    _body: &Transform<'i, I, N>,
+    _o: &Vec<(Order, Transform<'i, I, N>)>,
 ) -> Result<Sequence<N>, Error> {
     Err(Error::new(
         ErrorKind::NotImplemented,

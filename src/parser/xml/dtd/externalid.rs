@@ -10,10 +10,11 @@ use crate::parser::common::{is_pubid_char, is_pubid_charwithapos};
 use crate::parser::xml::dtd::extsubset::extsubset;
 use crate::parser::xml::dtd::textdecl::textdecl;
 use crate::parser::{ParseError, ParseInput};
+use crate::qname::Interner;
 use crate::Node;
 
-pub(crate) fn externalid<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn externalid<'a, 'i, I: Interner, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, ()), ParseError> {
     move |(input, state)| {
         match alt2(
             map(
@@ -68,8 +69,8 @@ pub(crate) fn externalid<N: Node>(
     }
 }
 
-pub(crate) fn textexternalid<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn textexternalid<'a, 'i, I: Interner, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, String), ParseError> {
     move |(input, state)| {
         match alt2(
             map(
@@ -120,7 +121,7 @@ pub(crate) fn textexternalid<N: Node>(
                             s.replace("\r\n", "\n").replace('\r', "\n")
                         };
                         match opt(textdecl())((s.as_str(), state2.clone())) {
-                            Err(_) => Ok(((input2, state2), s)),
+                            Err(_) => Ok(((input2, state2), s.clone())),
                             Ok(((i3, _), _)) => Ok(((input2, state2), i3.to_string())),
                         }
                     }

@@ -7,29 +7,27 @@ use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::{tuple10, tuple2, tuple5};
 use crate::parser::combinators::wellformed::wellformed;
 use crate::parser::combinators::whitespace::whitespace0;
+use crate::parser::common::is_ncnamechar;
 use crate::parser::xml::attribute::attributes;
 use crate::parser::xml::chardata::chardata;
 use crate::parser::xml::misc::{comment, processing_instruction};
 use crate::parser::xml::qname::qualname;
 use crate::parser::xml::reference::reference;
 use crate::parser::{ParseError, ParseInput};
-use crate::qname::QualifiedName;
+use crate::qname::{Interner, QualifiedName};
 use crate::xmldecl::{AttType, DefaultDecl};
 use crate::{Error, ErrorKind, Value};
 use std::rc::Rc;
-use crate::parser::common::is_ncnamechar;
 
 // Element ::= EmptyElemTag | STag content ETag
-pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), ParseError>
-{
+pub(crate) fn element<'a, 'i, I: Interner, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, N), ParseError> {
     move |input| match alt2(
         //Empty element
         map(
             tuple5(
                 tag("<"),
-                wellformed(qualname(), |qn| {
-                    qn.prefix_to_string() != Some("xmlns".to_string())
-                }),
+                wellformed(qualname(), |qn| qn.prefix() != Some("xmlns".to_string())),
                 attributes(), //many0(attribute),
                 whitespace0(),
                 tag("/>"),
@@ -40,17 +38,13 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
         wellformed(
             tuple10(
                 tag("<"),
-                wellformed(qualname(), |qn| {
-                    qn.prefix_to_string() != Some("xmlns".to_string())
-                }),
+                wellformed(qualname(), |qn| qn.prefix() != Some("xmlns".to_string())),
                 attributes(), //many0(attribute),
                 whitespace0(),
                 tag(">"),
                 content(),
                 tag("</"),
-                wellformed(qualname(), |qn| {
-                    qn.prefix_to_string() != Some("xmlns".to_string())
-                }),
+                wellformed(qualname(), |qn| qn.prefix() != Some("xmlns".to_string())),
                 whitespace0(),
                 tag(">"),
             ),
@@ -73,11 +67,10 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
             {
                 return Err(ParseError::MissingNameSpace);
             }
-            let elementname =
-                state1.get_qualified_name(n.namespace_uri(), n.prefix(), n.localname());
+            let elementname = n.clone();
             if state1.xmlversion == "1.1"
-                && elementname.namespace_uri_to_string() == Some("".to_string())
-                && elementname.prefix_to_string().is_some()
+                && elementname.namespace_uri() == Some("".to_string())
+                && elementname.prefix().is_some()
             {
                 return Err(ParseError::MissingNameSpace);
             }
@@ -91,10 +84,11 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
             // We generate the attributes in two sweeps:
             // Once for attributes declared on the element and once for the DTD default attribute values.
 
-            let attlist = state1.dtd.attlists.get(&QualifiedName::new_from_values(
+            let attlist = state1.dtd.attlists.get(&QualifiedName::new(
+                n.local_part(),
                 None,
                 n.prefix(),
-                n.localname(),
+                state1.interner,
             ));
 
             match attlist {
@@ -104,17 +98,17 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                         //Ordinarily, you'll just treat attributes as CDATA and not normalize, however we need to check xml:id
                         let av: String;
                         let a: N;
-                        if attname.prefix_to_string() == Some("xml".to_string())
-                            && attname.localname_to_string() == "id"
+                        if attname.prefix() == Some("xml".to_string())
+                            && attname.local_part() == "id"
                         {
                             av = attval.trim().replace("  ", " ");
                             a = d
-                                .new_attribute(Rc::new(attname), Rc::new(Value::ID(av)))
+                                .new_attribute(attname, Rc::new(Value::ID(av)))
                                 .expect("unable to create attribute");
                         } else {
                             av = attval;
                             a = d
-                                .new_attribute(Rc::new(attname), state1.get_value(av))
+                                .new_attribute(attname, Rc::new(Value::from(av)))
                                 .expect("unable to create attribute");
                         };
 
@@ -152,7 +146,7 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                                         _ => s.trim().replace("  ", " "),
                                     };
                                     let a = d
-                                        .new_attribute(Rc::new(at), state1.get_value(attval))
+                                        .new_attribute(at, Rc::new(Value::from(attval)))
                                         .expect("unable to create attribute");
                                     e.add_attribute(a).expect("unable to add attribute")
                                 }
@@ -163,22 +157,23 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
 
                     for (attname, attval) in av.into_iter() {
                         match atts.get(&QualifiedName::new(
+                            attname.local_part(),
                             None,
-                            attname.prefix_to_string(),
-                            attname.localname_to_string(),
+                            attname.prefix(),
+                            state1.interner,
                         )) {
                             //No DTD found, we just create the value
                             None => {
                                 //Ordinarily, you'll just treat attributes as CDATA and not normalize, however we need to check xml:id
-                                let av = if attname.prefix_to_string() == Some("xml".to_string())
-                                    && attname.localname_to_string() == "id"
+                                let av = if attname.prefix() == Some("xml".to_string())
+                                    && attname.local_part() == "id"
                                 {
                                     attval.trim().replace("  ", " ")
                                 } else {
                                     attval
                                 };
                                 let a = d
-                                    .new_attribute(Rc::new(attname), state1.get_value(av))
+                                    .new_attribute(attname, Rc::new(Value::from(av)))
                                     .expect("unable to create attribute");
                                 e.add_attribute(a).expect("unable to add attribute")
                             }
@@ -195,20 +190,20 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                                     (AttType::IDREFS, true) => Rc::new(Value::IDREFS(
                                         av.clone().split(' ').map(|s| s.to_string()).collect(),
                                     )),
-                                    (_, _) => state1.get_value(av.clone()),
+                                    (_, _) => Rc::new(Value::from(av.clone())),
                                 };
-                                if atttype == &AttType::NMTOKENS && av.is_empty(){
-                                    return Err(ParseError::NotWellFormed("NMTOKENs must not be empty".to_string()))
-                                } else if atttype == &AttType::NMTOKENS {
+                                if *atttype == AttType::NMTOKENS && av.is_empty() {
+                                    return Err(ParseError::NotWellFormed(
+                                        "NMTOKENs must not be empty".to_string(),
+                                    ));
+                                } else if *atttype == AttType::NMTOKENS {
                                     let names = av.split(' ');
                                     for name in names {
                                         let ch = name.chars();
                                         for cha in ch {
                                             if !(is_ncnamechar(&cha) || cha == ':') {
                                                 return Err(ParseError::NotWellFormed(
-                                                    String::from(
-                                                        "Invalid NMTOKEN",
-                                                    ),
+                                                    String::from("Invalid NMTOKEN"),
                                                 ));
                                             }
                                         }
@@ -216,7 +211,7 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                                 }
 
                                 let a = d
-                                    .new_attribute(Rc::new(attname), v)
+                                    .new_attribute(attname, v)
                                     .expect("unable to create attribute");
                                 e.add_attribute(a).expect("unable to add attribute")
                             }
@@ -246,7 +241,7 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                         have completely parsed the document.
                         */
                         if attribute.value().to_string().split_whitespace().count() == 0 {
-                            return Err(ParseError::IDError("IDREFs cannot be empty".to_string()))
+                            return Err(ParseError::IDError("IDREFs cannot be empty".to_string()));
                         } else {
                             for idref in attribute.value().to_string().split_whitespace() {
                                 match state1.ids_read.get(idref) {
@@ -274,8 +269,8 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
 }
 
 // content ::= CharData? ((element | Reference | CDSect | PI | Comment) CharData?)*
-pub(crate) fn content<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<N>), ParseError> {
+pub(crate) fn content<'a, 'i, I: Interner, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, Vec<N>), ParseError> {
     move |(input, state)| match tuple2(
         opt(chardata()),
         many0nsreset(tuple2(

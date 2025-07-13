@@ -12,10 +12,13 @@ use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::common::{is_char10, is_char11};
 use crate::parser::xml::qname::name;
 use crate::parser::{ParseError, ParseInput};
+use crate::qname::{Interner, QualifiedName};
+use crate::value::Value;
+use std::rc::Rc;
 
 // PI ::= '<?' PITarget (char* - '?>') '?>'
-pub(crate) fn processing_instruction<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), ParseError> {
+pub(crate) fn processing_instruction<'a, 'i, I: Interner, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, N), ParseError> {
     move |(input, state)| {
         wellformed_ver(
             map(
@@ -32,8 +35,8 @@ pub(crate) fn processing_instruction<N: Node>(
                         .as_ref()
                         .unwrap()
                         .new_processing_instruction(
-                            state.get_qualified_name(None, None, state.get_value(n)),
-                            state.get_value("".to_string()),
+                            QualifiedName::new(n, None, None, state.interner),
+                            Rc::new(Value::from("")),
                         )
                         .expect("unable to create processing instruction"),
                     Some((_, v)) => state
@@ -41,8 +44,8 @@ pub(crate) fn processing_instruction<N: Node>(
                         .as_ref()
                         .unwrap()
                         .new_processing_instruction(
-                            state.get_qualified_name(None, None, state.get_value(n)),
-                            state.get_value(v),
+                            QualifiedName::new(n, None, None, state.interner),
+                            Rc::new(Value::from(v)),
                         )
                         .expect("unable to create processing instruction"),
                 },
@@ -52,11 +55,11 @@ pub(crate) fn processing_instruction<N: Node>(
                 NodeType::ProcessingInstruction => {
                     if v.to_string().contains(|c: char| !is_char10(&c)) {
                         false
-                    } else if v.name().to_string().contains(':') {
+                    } else if v.name::<I>().unwrap().prefix().is_some() {
                         //"No entity names, processing instruction targets, or notation names contain any colons."
                         false
                     } else {
-                        v.name().to_string().to_lowercase() != *"xml"
+                        v.name::<I>().unwrap().to_string().to_lowercase() != *"xml"
                     }
                 }
                 _ => false,
@@ -66,11 +69,11 @@ pub(crate) fn processing_instruction<N: Node>(
                 NodeType::ProcessingInstruction => {
                     if v.to_string().contains(|c: char| !is_char11(&c)) {
                         false
-                    } else if v.name().to_string().contains(':') {
+                    } else if v.name::<I>().unwrap().prefix().is_some() {
                         // "No entity names, processing instruction targets, or notation names contain any colons."
                         false
                     } else {
-                        v.name().to_string().to_lowercase() != *"xml"
+                        v.name::<I>().unwrap().to_string().to_lowercase() != *"xml"
                     }
                 }
                 _ => false,
@@ -80,8 +83,8 @@ pub(crate) fn processing_instruction<N: Node>(
 }
 
 // Comment ::= '<!--' (char* - '--') '-->'
-pub(crate) fn comment<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), ParseError>
-{
+pub(crate) fn comment<'a, 'i, I: Interner, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, N), ParseError> {
     |(input, state)| {
         wellformed_ver(
             map(
@@ -91,7 +94,7 @@ pub(crate) fn comment<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                         .doc
                         .as_ref()
                         .unwrap()
-                        .new_comment(state.get_value(v))
+                        .new_comment(Rc::new(Value::from(v)))
                         .expect("unable to create comment")
                 },
             ),
@@ -110,8 +113,8 @@ pub(crate) fn comment<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
 }
 
 // Misc ::= Comment | PI | S
-pub(crate) fn misc<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<N>), ParseError> {
+pub(crate) fn misc<'a, 'i, I: Interner + 'i, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, Vec<N>), ParseError> {
     map(
         tuple2(
             many0(map(

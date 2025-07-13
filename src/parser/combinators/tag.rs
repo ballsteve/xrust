@@ -1,9 +1,10 @@
 use crate::item::Node;
 use crate::parser::{ParseError, ParseInput};
+use crate::qname::Interner;
 
-pub fn tag<N: Node>(
+pub fn tag<'a, 'i, I: Interner, N: Node>(
     expected: &str,
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> + '_ {
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, ()), ParseError> + '_ {
     move |(input, state)| match input.get(0..expected.len()) {
         None => Err(ParseError::Combinator),
         Some(chars) => {
@@ -18,9 +19,10 @@ pub fn tag<N: Node>(
 
 /// Return the longest possible of one of the given tags.
 /// If there are multiple tags of the same length, the first one that matches will be returned.
-pub(crate) fn anytag<N: Node>(
+pub(crate) fn anytag<'a, 'i, I: Interner, N: Node>(
     s: Vec<&str>,
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> + '_ {
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, String), ParseError> + '_
+{
     move |(input, state)| {
         // NB. this algorithm could probably be optimised
         let u = s.iter().fold("", |result, t| {
@@ -48,9 +50,9 @@ pub(crate) fn anytag<N: Node>(
     }
 }
 
-pub(crate) fn anychar<N: Node>(
+pub(crate) fn anychar<'a, 'i, I: Interner, N: Node>(
     expected: char,
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, ()), ParseError> {
     move |(input, state)| {
         if input.starts_with(expected) {
             Ok(((&input[1..], state), ()))
@@ -64,37 +66,47 @@ pub(crate) fn anychar<N: Node>(
 mod tests {
     use crate::parser::combinators::tag::{anychar, anytag, tag};
     use crate::parser::{ParseError, ParserState};
+    use crate::qname::LocalInternment;
     use crate::trees::nullo::Nullo;
 
     #[test]
     fn parser_tag_test1() {
+        let internment = LocalInternment::new();
         let testdoc = "<doc>";
-        let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
+        let teststate: ParserState<LocalInternment, Nullo> =
+            ParserState::new(None, None, None, &internment);
         let parse_doc = tag("<");
         assert_eq!(
-            Ok((("doc>", ParserState::new(None, None, None)), ())),
+            Ok((
+                ("doc>", ParserState::new(None, None, None, &internment)),
+                ()
+            )),
             parse_doc((testdoc, teststate))
         );
     }
 
     #[test]
     fn parser_tag_test2() {
+        let internment = LocalInternment::new();
         let testdoc = "<doc>";
-        let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
+        let teststate: ParserState<LocalInternment, Nullo> =
+            ParserState::new(None, None, None, &internment);
         let parse_doc = tag(">");
         assert_eq!(Err(ParseError::Combinator), parse_doc((testdoc, teststate)));
     }
 
     #[test]
     fn parser_tag_test3() {
+        let internment = LocalInternment::new();
         let testdoc = "<?ProcessingInstruction?>";
-        let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
+        let teststate: ParserState<LocalInternment, Nullo> =
+            ParserState::new(None, None, None, &internment);
         let parse_doc = tag("<?");
         assert_eq!(
             Ok((
                 (
                     "ProcessingInstruction?>",
-                    ParserState::new(None, None, None)
+                    ParserState::new(None, None, None, &internment)
                 ),
                 ()
             )),
@@ -104,29 +116,38 @@ mod tests {
 
     #[test]
     fn parser_char_test1() {
+        let internment = LocalInternment::new();
         let testdoc = "<doc>";
-        let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
+        let teststate: ParserState<LocalInternment, Nullo> =
+            ParserState::new(None, None, None, &internment);
         let parse_doc = anychar('<');
         assert_eq!(
-            Ok((("doc>", ParserState::new(None, None, None)), ())),
+            Ok((
+                ("doc>", ParserState::new(None, None, None, &internment)),
+                ()
+            )),
             parse_doc((testdoc, teststate))
         )
     }
     #[test]
     fn parser_char_test2() {
+        let internment = LocalInternment::new();
         let testdoc = "<doc>";
-        let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
+        let teststate: ParserState<LocalInternment, Nullo> =
+            ParserState::new(None, None, None, &internment);
         let parse_doc = anychar('>');
         assert_eq!(Err(ParseError::Combinator), parse_doc((testdoc, teststate)))
     }
     #[test]
     fn parser_anytag_test1() {
+        let internment = LocalInternment::new();
         let testdoc = "<doc>";
-        let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
+        let teststate: ParserState<LocalInternment, Nullo> =
+            ParserState::new(None, None, None, &internment);
         let parse_doc = anytag(vec![">", ">=", "<=", "<"]);
         assert_eq!(
             Ok((
-                ("doc>", ParserState::new(None, None, None)),
+                ("doc>", ParserState::new(None, None, None, &internment)),
                 "<".to_string()
             )),
             parse_doc((testdoc, teststate))
@@ -134,11 +155,16 @@ mod tests {
     }
     #[test]
     fn parser_anytag_test2() {
+        let internment = LocalInternment::new();
         let testdoc = "<=>";
-        let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
+        let teststate: ParserState<LocalInternment, Nullo> =
+            ParserState::new(None, None, None, &internment);
         let parse_doc = anytag(vec![">", ">=", "<=", "<"]);
         assert_eq!(
-            Ok(((">", ParserState::new(None, None, None)), "<=".to_string())),
+            Ok((
+                (">", ParserState::new(None, None, None, &internment)),
+                "<=".to_string()
+            )),
             parse_doc((testdoc, teststate))
         )
     }

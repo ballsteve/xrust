@@ -1,14 +1,15 @@
 use crate::item::Node;
 use crate::parser::{ParseError, ParseInput};
+use crate::qname::Interner;
 
 /// Emits a message to stderr from within the parser combinator. This can be useful for debugging.
 #[allow(dead_code)]
-pub fn inspect<'a, P1, A, N: Node>(
+pub fn inspect<'a, 'i, P1, A, I: Interner + 'i, N: Node>(
     msg: &'a str,
     parser: P1,
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, A), ParseError> + 'a
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, A), ParseError> + 'a
 where
-    P1: Fn(ParseInput<N>) -> Result<(ParseInput<N>, A), ParseError> + 'a,
+    P1: Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, A), ParseError> + 'a,
 {
     move |(input, state)| {
         eprintln!(

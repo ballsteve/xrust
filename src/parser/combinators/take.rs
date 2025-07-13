@@ -1,8 +1,9 @@
 use crate::item::Node;
 use crate::parser::{ParseError, ParseInput};
+use crate::qname::Interner;
 
-pub(crate) fn take_one<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, char), ParseError> {
+pub(crate) fn take_one<'a, 'i, I: Interner, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, char), ParseError> {
     move |(input, state)| {
         let c = input.chars().next();
         match c {
@@ -12,19 +13,19 @@ pub(crate) fn take_one<N: Node>(
     }
 }
 
-pub(crate) fn take_until<N: Node>(
+pub(crate) fn take_until<'a, 'i, I: Interner, N: Node>(
     s: &'static str,
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, String), ParseError> {
     move |(input, state)| match input.find(s) {
         None => Err(ParseError::Combinator),
         Some(ind) => Ok(((&input[ind..], state), input[0..ind].to_string())),
     }
 }
 
-pub(crate) fn take_until_either_or<N: Node>(
+pub(crate) fn take_until_either_or<'a, 'i, I: Interner, N: Node>(
     s1: &'static str,
     s2: &'static str,
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, String), ParseError> {
     move |(input, state)| {
         let r1 = input.find(s1);
         let r2 = input.find(s2);
@@ -40,10 +41,10 @@ pub(crate) fn take_until_either_or<N: Node>(
     }
 }
 
-pub(crate) fn take_until_either_or_min1<N: Node>(
+pub(crate) fn take_until_either_or_min1<'a, 'i, I: Interner, N: Node>(
     s1: &'static str,
     s2: &'static str,
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, String), ParseError> {
     move |(input, state)| {
         let r1 = input.find(s1);
         let r2 = input.find(s2);
@@ -77,8 +78,8 @@ pub(crate) fn take_until_either_or_min1<N: Node>(
     }
 }
 
-pub(crate) fn take_until_end<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn take_until_end<'a, 'i, I: Interner, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, String), ParseError> {
     move |(input, state)| Ok((("", state), input.to_string()))
 }
 
@@ -86,9 +87,9 @@ pub(crate) fn take_until_end<N: Node>(
 /// If there is no character that fails the condition,
 /// then if the input is empty returns ParseError::Combinator (i.e. no match),
 /// otherwise returns the input.
-pub(crate) fn take_while<F, N: Node>(
+pub(crate) fn take_while<'a, 'i, F, I: Interner, N: Node>(
     condition: F,
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError>
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, String), ParseError>
 //TODO REPLACE WITH ORDINARY TAKE_WHILE
 where
     F: Fn(char) -> bool,
@@ -111,11 +112,11 @@ where
 /// then if the input is empty returns ParseError::Combinator (i.e. no match),
 /// otherwise returns the input.
 #[allow(dead_code)]
-pub(crate) fn take_while_m_n<F, N: Node>(
+pub(crate) fn take_while_m_n<'a, 'i, F, I: Interner, N: Node>(
     min: usize,
     max: usize,
     condition: F,
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError>
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, String), ParseError>
 where
     F: Fn(char) -> bool,
 {

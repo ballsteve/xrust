@@ -2,6 +2,7 @@
 
 use crate::item::Node;
 use crate::parser::{ParseError, ParseInput};
+use crate::qname::Interner;
 use crate::transform::{NameTest, NodeTest, Transform, WildcardOrName};
 
 pub(crate) fn get_nt_localname(nt: &NodeTest) -> String {
@@ -15,7 +16,11 @@ pub(crate) fn get_nt_localname(nt: &NodeTest) -> String {
     }
 }
 
-pub(crate) fn noop<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> {
+pub(crate) fn noop<'a, 'i, I: Interner, N: Node>() -> impl Fn(
+    ParseInput<'a, 'i, I, N>,
+) -> Result<
+    (ParseInput<'a, 'i, I, N>, Transform<'i, I, N>),
+    ParseError,
+> {
     move |_| Err(ParseError::Combinator)
 }

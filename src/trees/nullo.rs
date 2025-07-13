@@ -1,6 +1,6 @@
 use crate::item::{Node, NodeType};
 use crate::output::OutputDefinition;
-use crate::qname::QualifiedName;
+use crate::qname::{Interner, LocalInternment, QualifiedName};
 use crate::validators::{Schema, ValidationError};
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
@@ -27,8 +27,8 @@ impl Node for Nullo {
     fn node_type(&self) -> NodeType {
         NodeType::Unknown
     }
-    fn name(&self) -> Rc<QualifiedName> {
-        Rc::new(QualifiedName::new(None, None, String::new()))
+    fn name<'i, I: Interner>(&self) -> Option<QualifiedName<'i, I>> {
+        None
     }
     fn value(&self) -> Rc<Value> {
         Rc::new(Value::from(""))
@@ -81,10 +81,10 @@ impl Node for Nullo {
     fn attribute_iter(&self) -> Self::NodeIterator {
         Box::new(NulloIter::new())
     }
-    fn get_attribute(&self, _: &QualifiedName) -> Rc<Value> {
+    fn get_attribute<'i, I: Interner>(&self, _: &QualifiedName<'i, I>) -> Rc<Value> {
         Rc::new(Value::from(""))
     }
-    fn get_attribute_node(&self, _: &QualifiedName) -> Option<Self> {
+    fn get_attribute_node<'i, I: Interner>(&self, _: &QualifiedName<'i, I>) -> Option<Self> {
         None
     }
     fn owner_document(&self) -> Self {
@@ -96,7 +96,7 @@ impl Node for Nullo {
             String::from("not implemented"),
         ))
     }
-    fn new_element(&self, _: Rc<QualifiedName>) -> Result<Self, Error> {
+    fn new_element<'i, I: Interner>(&self, _: QualifiedName<'i, I>) -> Result<Self, Error> {
         Err(Error::new(
             ErrorKind::NotImplemented,
             String::from("not implemented"),
@@ -108,7 +108,11 @@ impl Node for Nullo {
             String::from("not implemented"),
         ))
     }
-    fn new_attribute(&self, _: Rc<QualifiedName>, _: Rc<Value>) -> Result<Self, Error> {
+    fn new_attribute<'i, I: Interner>(
+        &self,
+        _: QualifiedName<'i, I>,
+        _: Rc<Value>,
+    ) -> Result<Self, Error> {
         Err(Error::new(
             ErrorKind::NotImplemented,
             String::from("not implemented"),
@@ -120,9 +124,9 @@ impl Node for Nullo {
             String::from("not implemented"),
         ))
     }
-    fn new_processing_instruction(
+    fn new_processing_instruction<'i, I: Interner>(
         &self,
-        _: Rc<QualifiedName>,
+        _: QualifiedName<'i, I>,
         _: Rc<Value>,
     ) -> Result<Self, Error> {
         Err(Error::new(
@@ -130,7 +134,7 @@ impl Node for Nullo {
             String::from("not implemented"),
         ))
     }
-    fn new_namespace(&self, _ns: Rc<Value>, _prefix: Option<Rc<Value>>) -> Result<Self, Error> {
+    fn new_namespace(&self, _ns: String, _prefix: Option<String>) -> Result<Self, Error> {
         Err(Error::new(ErrorKind::NotImplemented, "not implemented"))
     }
     fn push(&mut self, _: Self) -> Result<(), Error> {
@@ -193,10 +197,10 @@ impl Node for Nullo {
     fn is_idrefs(&self) -> bool {
         false
     }
-    fn get_dtd(&self) -> Option<DTD> {
+    fn get_dtd<'i, I: Interner>(&self) -> Option<DTD<'i, I>> {
         None
     }
-    fn set_dtd(&self, _dtd: DTD) -> Result<(), Error> {
+    fn set_dtd<'i, I: Interner>(&self, _dtd: DTD<'i, I>) -> Result<(), Error> {
         Err(Error::new(
             ErrorKind::NotImplemented,
             String::from("not implemented"),
@@ -228,6 +232,6 @@ impl fmt::Debug for Nullo {
 
 impl PartialEq for Nullo {
     fn eq(&self, other: &Self) -> bool {
-        Node::eq(self, other)
+        Node::eq::<LocalInternment>(self, other)
     }
 }

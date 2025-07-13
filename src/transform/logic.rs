@@ -4,6 +4,7 @@ use std::rc::Rc;
 use url::Url;
 
 use crate::item::{Item, Node, Sequence, SequenceTrait};
+use crate::qname::Interner;
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::Transform;
 use crate::value::{Operator, Value};
@@ -11,14 +12,16 @@ use crate::xdmerror::{Error, ErrorKind};
 
 /// Return the disjunction of all of the given functions.
 pub(crate) fn tr_or<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    v: &Vec<Transform<N>>,
+    v: &Vec<Transform<'i, I, N>>,
 ) -> Result<Sequence<N>, Error> {
     // Future: Evaluate every operand to check for dynamic errors
     let mut b = false;
@@ -40,14 +43,16 @@ pub(crate) fn tr_or<
 
 /// Return the conjunction of all of the given functions.
 pub(crate) fn tr_and<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    v: &Vec<Transform<N>>,
+    v: &Vec<Transform<'i, I, N>>,
 ) -> Result<Sequence<N>, Error> {
     // Future: Evaluate every operand to check for dynamic errors
     let mut b = true;
@@ -69,16 +74,18 @@ pub(crate) fn tr_and<
 
 /// General comparison of two sequences.
 pub(crate) fn general_comparison<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
     o: &Operator,
-    l: &Transform<N>,
-    r: &Transform<N>,
+    l: &Transform<'i, I, N>,
+    r: &Transform<'i, I, N>,
 ) -> Result<Sequence<N>, Error> {
     let left = ctxt.dispatch(stctxt, l)?;
     let right = ctxt.dispatch(stctxt, r)?;
@@ -101,16 +108,18 @@ pub(crate) fn general_comparison<
 
 /// Value comparison of two singleton sequences.
 pub(crate) fn value_comparison<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
     o: &Operator,
-    l: &Transform<N>,
-    r: &Transform<N>,
+    l: &Transform<'i, I, N>,
+    r: &Transform<'i, I, N>,
 ) -> Result<Sequence<N>, Error> {
     let left = ctxt.dispatch(stctxt, l)?;
     if left.len() != 1 {
@@ -136,14 +145,16 @@ pub(crate) fn value_comparison<
 /// All items must be nodes.
 /// TODO: eliminate duplicates, sort by document order (XPath 3.1 3.4.2).
 pub(crate) fn union<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    branches: &Vec<Transform<N>>,
+    branches: &Vec<Transform<'i, I, N>>,
 ) -> Result<Sequence<N>, Error> {
     let mut result = vec![];
     for b in branches {

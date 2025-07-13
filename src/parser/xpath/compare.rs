@@ -9,15 +9,20 @@ use crate::parser::combinators::tuple::tuple3;
 use crate::parser::combinators::whitespace::xpwhitespace;
 use crate::parser::xpath::strings::stringconcat_expr;
 use crate::parser::{ParseError, ParseInput};
+use crate::qname::Interner;
 use crate::transform::Transform;
 use crate::value::Operator;
 
 // ComparisonExpr ::= StringConcatExpr ( (ValueComp | GeneralComp | NodeComp) StringConcatExpr)?
-pub(crate) fn comparison_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+pub(crate) fn comparison_expr<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(
+            ParseInput<'a, 'i, I, N>,
+        ) -> Result<(ParseInput<'a, 'i, I, N>, Transform<'i, I, N>), ParseError>
+        + 'a,
+> {
     Box::new(map(
         pair(
-            stringconcat_expr::<N>(),
+            stringconcat_expr::<I, N>(),
             opt(pair(
                 tuple3(
                     xpwhitespace(),
@@ -27,7 +32,7 @@ pub(crate) fn comparison_expr<'a, N: Node + 'a>(
                     ]),
                     xpwhitespace(),
                 ),
-                stringconcat_expr::<N>(),
+                stringconcat_expr::<I, N>(),
             )),
         ),
         |(v, o)| match o {

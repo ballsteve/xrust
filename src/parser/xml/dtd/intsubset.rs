@@ -12,9 +12,10 @@ use crate::parser::xml::dtd::pereference::pereference;
 use crate::parser::xml::misc::comment;
 use crate::parser::xml::misc::processing_instruction;
 use crate::parser::{ParseError, ParseInput};
+use crate::qname::Interner;
 
-pub(crate) fn intsubset<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<()>), ParseError> {
+pub(crate) fn intsubset<'a, 'i, I: Interner + 'i, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, Vec<()>), ParseError> {
     many0(alt9(
         elementdecl(),
         attlistdecl(),

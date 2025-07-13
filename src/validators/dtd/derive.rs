@@ -1,10 +1,10 @@
 use crate::item::NodeType;
-use crate::qname::QualifiedName;
+use crate::qname::{Interner, QualifiedName};
 use crate::Node;
 
 use crate::xmldecl::{DTDPattern, DTD};
 
-pub(crate) fn is_nullable(pat: DTDPattern) -> bool {
+pub(crate) fn is_nullable<'i, I: Interner>(pat: DTDPattern<'i, I>) -> bool {
     match pat {
         DTDPattern::Empty => true,
         DTDPattern::Text => true,
@@ -17,25 +17,28 @@ pub(crate) fn is_nullable(pat: DTDPattern) -> bool {
     }
 }
 
-fn contains(nc: QualifiedName, qn: QualifiedName) -> bool {
-    nc.prefix() == qn.prefix() && nc.localname() == qn.localname()
+fn contains<'i, I: Interner>(nc: QualifiedName<'i, I>, qn: QualifiedName<'i, I>) -> bool {
+    nc.prefix() == qn.prefix() && nc.local_part() == qn.local_part()
 }
 
-fn after(pat1: DTDPattern, pat2: DTDPattern) -> DTDPattern {
+fn after<'i, I: Interner>(pat1: DTDPattern<'i, I>, pat2: DTDPattern<'i, I>) -> DTDPattern<'i, I> {
     if pat1 == DTDPattern::NotAllowed || pat2 == DTDPattern::NotAllowed {
         DTDPattern::NotAllowed
     } else {
         DTDPattern::After(Box::new(pat1), Box::new(pat2))
     }
 }
-fn choice(pat1: DTDPattern, pat2: DTDPattern) -> DTDPattern {
+fn choice<'i, I: Interner>(pat1: DTDPattern<'i, I>, pat2: DTDPattern<'i, I>) -> DTDPattern<'i, I> {
     match (pat1, pat2) {
         (p, DTDPattern::NotAllowed) => p,
         (DTDPattern::NotAllowed, p) => p,
         (p1, p2) => DTDPattern::Choice(Box::new(p1), Box::new(p2)),
     }
 }
-fn interleave(pat1: DTDPattern, pat2: DTDPattern) -> DTDPattern {
+fn interleave<'i, I: Interner>(
+    pat1: DTDPattern<'i, I>,
+    pat2: DTDPattern<'i, I>,
+) -> DTDPattern<'i, I> {
     match (pat1, pat2) {
         (DTDPattern::NotAllowed, _) => DTDPattern::NotAllowed,
         (_, DTDPattern::NotAllowed) => DTDPattern::NotAllowed,
@@ -46,7 +49,7 @@ fn interleave(pat1: DTDPattern, pat2: DTDPattern) -> DTDPattern {
         (p1, p2) => DTDPattern::Interleave(Box::new(p1), Box::new(p2)),
     }
 }
-fn group(pat1: DTDPattern, pat2: DTDPattern) -> DTDPattern {
+fn group<'i, I: Interner>(pat1: DTDPattern<'i, I>, pat2: DTDPattern<'i, I>) -> DTDPattern<'i, I> {
     match (pat1, pat2) {
         (DTDPattern::NotAllowed, _) => DTDPattern::NotAllowed,
         (_, DTDPattern::NotAllowed) => DTDPattern::NotAllowed,
@@ -56,9 +59,9 @@ fn group(pat1: DTDPattern, pat2: DTDPattern) -> DTDPattern {
     }
 }
 
-pub fn apply_after<F1>(pat: DTDPattern, f: F1) -> DTDPattern
+pub fn apply_after<'i, I: Interner, F1>(pat: DTDPattern<'i, I>, f: F1) -> DTDPattern<'i, I>
 where
-    F1: Fn(DTDPattern) -> DTDPattern + Clone,
+    F1: Fn(DTDPattern<'i, I>) -> DTDPattern<'i, I> + Clone,
 {
     match pat {
         DTDPattern::After(pat1, pat2) => after(*pat1, f(*pat2)),
@@ -69,11 +72,11 @@ where
     }
 }
 
-fn value_match(pat: DTDPattern, s: String) -> bool {
+fn value_match<'i, I: Interner>(pat: DTDPattern<'i, I>, s: String) -> bool {
     (is_nullable(pat.clone()) && whitespace(s.clone())) || is_nullable(text_deriv(pat, s))
 }
 
-fn text_deriv(pat: DTDPattern, s: String) -> DTDPattern {
+fn text_deriv<'i, I: Interner>(pat: DTDPattern<'i, I>, s: String) -> DTDPattern<'i, I> {
     match pat {
         DTDPattern::Choice(pat1, pat2) => {
             choice(text_deriv(*pat1, s.clone()), text_deriv(*pat2, s))
@@ -123,7 +126,7 @@ fn text_deriv(pat: DTDPattern, s: String) -> DTDPattern {
     }
 }
 
-fn list_deriv(p: DTDPattern, vs: Vec<String>) -> DTDPattern {
+fn list_deriv<'i, I: Interner>(p: DTDPattern<'i, I>, vs: Vec<String>) -> DTDPattern<'i, I> {
     let mut vsi = vs.into_iter();
     match vsi.next() {
         None => p,
@@ -131,7 +134,11 @@ fn list_deriv(p: DTDPattern, vs: Vec<String>) -> DTDPattern {
     }
 }
 
-pub(crate) fn child_deriv(pat: DTDPattern, n: impl Node, dtd: DTD) -> DTDPattern {
+pub(crate) fn child_deriv<'i, I: Interner>(
+    pat: DTDPattern<'i, I>,
+    n: impl Node,
+    dtd: DTD<'i, I>,
+) -> DTDPattern<'i, I> {
     //println!("child_deriv");
     //println!("    {:?}", &pat);
     //println!("    {:?}", &n);
@@ -145,7 +152,8 @@ pub(crate) fn child_deriv(pat: DTDPattern, n: impl Node, dtd: DTD) -> DTDPattern
         NodeType::Unknown => DTDPattern::NotAllowed,
         NodeType::Text => text_deriv(pat, n.to_string()),
         NodeType::Element => {
-            let mut pat1 = start_tag_open_deriv(pat, n.name().as_ref().clone(), dtd.clone());
+            let mut pat1 =
+                start_tag_open_deriv(pat, n.name().unwrap().as_ref().clone(), dtd.clone());
             //at this stage, we check if the DTD is for DTDPattern::Any. If it is present, we build a pattern
             //based on the child nodes, so that they are all validated individually.
             match pat1.clone() {
@@ -168,7 +176,9 @@ pub(crate) fn child_deriv(pat: DTDPattern, n: impl Node, dtd: DTD) -> DTDPattern
                                 match c.node_type() {
                                     NodeType::Element => {
                                         newpat = DTDPattern::Group(
-                                            Box::new(DTDPattern::Ref(c.name().as_ref().clone())),
+                                            Box::new(DTDPattern::Ref(
+                                                c.name().unwrap().as_ref().clone(),
+                                            )),
                                             Box::new(newpat),
                                         )
                                     }
@@ -203,7 +213,7 @@ pub(crate) fn child_deriv(pat: DTDPattern, n: impl Node, dtd: DTD) -> DTDPattern
                                         NodeType::Element => {
                                             newpat = DTDPattern::Group(
                                                 Box::new(DTDPattern::Ref(
-                                                    c.name().as_ref().clone(),
+                                                    c.name().unwrap().as_ref().clone(),
                                                 )),
                                                 Box::new(newpat),
                                             )
@@ -241,7 +251,11 @@ pub(crate) fn child_deriv(pat: DTDPattern, n: impl Node, dtd: DTD) -> DTDPattern
     }
 }
 
-fn start_tag_open_deriv(pat: DTDPattern, qn: QualifiedName, dtd: DTD) -> DTDPattern {
+fn start_tag_open_deriv<'i, I: Interner>(
+    pat: DTDPattern<'i, I>,
+    qn: QualifiedName<'i, I>,
+    dtd: DTD<'i, I>,
+) -> DTDPattern<'i, I> {
     //println!("start_tag_open_deriv");
     //println!("    {:?}", &pat);
     //println!("    {:?}", &qn);
@@ -267,11 +281,11 @@ fn start_tag_open_deriv(pat: DTDPattern, qn: QualifiedName, dtd: DTD) -> DTDPatt
         DTDPattern::Interleave(pat1, pat2) => choice(
             apply_after(
                 start_tag_open_deriv(*pat1.clone(), qn.clone(), dtd.clone()),
-                |p: DTDPattern| DTDPattern::Interleave(Box::new(p), pat2.clone()),
+                |p: DTDPattern<'i, I>| DTDPattern::Interleave(Box::new(p), pat2.clone()),
             ),
             apply_after(
                 start_tag_open_deriv(*pat2.clone(), qn.clone(), dtd),
-                |p: DTDPattern| DTDPattern::Interleave(Box::new(p), pat1.clone()),
+                |p: DTDPattern<'i, I>| DTDPattern::Interleave(Box::new(p), pat1.clone()),
             ),
         ),
         DTDPattern::Group(pat1, pat2) => {
@@ -305,7 +319,7 @@ fn start_tag_open_deriv(pat: DTDPattern, qn: QualifiedName, dtd: DTD) -> DTDPatt
     }
 }
 
-fn att_deriv(pat: DTDPattern, att: impl Node) -> DTDPattern {
+fn att_deriv<'i, I: Interner>(pat: DTDPattern<'i, I>, att: impl Node) -> DTDPattern<'i, I> {
     //println!("att_deriv");
     //println!("    {:?}", &pat);
     //println!("    {:?}", &att);
@@ -327,7 +341,7 @@ fn att_deriv(pat: DTDPattern, att: impl Node) -> DTDPattern {
         ),
         DTDPattern::After(pat1, pat2) => after(att_deriv(*pat1, att), *pat2),
         DTDPattern::Attribute(nc, pat1) => {
-            if contains(nc, att.name().as_ref().clone())
+            if contains(nc, att.unwrap().name().as_ref().clone())
                 && value_match(*pat1, att.value().to_string())
             {
                 DTDPattern::Empty
@@ -346,7 +360,7 @@ fn att_deriv(pat: DTDPattern, att: impl Node) -> DTDPattern {
     }
 }
 
-fn start_tag_close_deriv(pat: DTDPattern) -> DTDPattern {
+fn start_tag_close_deriv<'i, I: Interner>(pat: DTDPattern<'i, I>) -> DTDPattern<'i, I> {
     //println!("start_tag_close_deriv");
     //println!("    {:?}", &pat);
     match pat {
@@ -376,7 +390,11 @@ fn start_tag_close_deriv(pat: DTDPattern) -> DTDPattern {
     }
 }
 
-fn children_deriv(pat: DTDPattern, cn: impl Node, dtd: DTD) -> DTDPattern {
+fn children_deriv<'i, I: Interner>(
+    pat: DTDPattern<'i, I>,
+    cn: impl Node,
+    dtd: DTD<'i, I>,
+) -> DTDPattern<'i, I> {
     //println!("children_deriv");
     //println!("    {:?}", &pat);
     //println!("    {:?}", cn.child_iter().collect::<Vec<_>>());
@@ -419,7 +437,7 @@ fn children_deriv(pat: DTDPattern, cn: impl Node, dtd: DTD) -> DTDPattern {
     pat1
 }
 
-fn end_tag_deriv(pat: DTDPattern) -> DTDPattern {
+fn end_tag_deriv<'i, I: Interner>(pat: DTDPattern<'i, I>) -> DTDPattern<'i, I> {
     //println!("end_tag_deriv");
     //println!("    {:?}", &pat);
     match pat {
@@ -436,7 +454,11 @@ fn end_tag_deriv(pat: DTDPattern) -> DTDPattern {
     }
 }
 
-fn strip_children_deriv<T>(pat: DTDPattern, cnodes: Vec<T>, dtd: DTD) -> DTDPattern
+fn strip_children_deriv<'i, I: Interner, T>(
+    pat: DTDPattern<'i, I>,
+    cnodes: Vec<T>,
+    dtd: DTD<'i, I>,
+) -> DTDPattern<'i, I>
 where
     T: Node,
 {

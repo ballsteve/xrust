@@ -8,11 +8,12 @@ use crate::parser::combinators::take::{take_until, take_while};
 use crate::parser::combinators::wellformed::{wellformed, wellformed_ver};
 use crate::parser::common::{is_char10, is_char11, is_unrestricted_char11};
 use crate::parser::{ParseError, ParseInput};
+use crate::qname::Interner;
 use std::str::FromStr;
 
 // CharData ::= [^<&]* - (']]>')
-pub(crate) fn chardata<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn chardata<'a, 'i, I: Interner + 'i, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, String), ParseError> {
     move |(input, state)| {
         map(
             many1(alt3(
@@ -22,8 +23,8 @@ pub(crate) fn chardata<N: Node>(
                         |s| !s.contains(|c: char| !is_char10(&c)), //XML 1.0
                         |s| !s.contains(|c: char| !is_unrestricted_char11(&c)), //XML 1.1
                     ),
-                    |s: String| s.replace("\r\n", "\n").replace("\r", "\n"),
-                    |s: String| {
+                    |s| s.replace("\r\n", "\n").replace("\r", "\n"),
+                    |s| {
                         s.replace("\r\n", "\n")
                             .replace("\r\u{85}", "\n")
                             .replace("\u{85}", "\n")
@@ -47,8 +48,8 @@ pub(crate) fn chardata<N: Node>(
                             !s.contains("]]>") && !s.contains(|c: char| !is_unrestricted_char11(&c))
                         }, //XML 1.1
                     ),
-                    |s: String| s.replace("\r\n", "\n").replace("\r", "\n"),
-                    |s: String| {
+                    |s| s.replace("\r\n", "\n").replace("\r", "\n"),
+                    |s| {
                         s.replace("\r\n", "\n")
                             .replace("\r\u{85}", "\n")
                             .replace("\u{85}", "\n")
@@ -63,21 +64,21 @@ pub(crate) fn chardata<N: Node>(
     }
 }
 
-fn chardata_cdata<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError>
-{
+fn chardata_cdata<'a, 'i, I: Interner + 'i, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, String), ParseError> {
     delimited(tag("<![CDATA["), take_until("]]>"), tag("]]>"))
 }
 
-pub(crate) fn chardata_escapes<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn chardata_escapes<'a, 'i, I: Interner + 'i, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, String), ParseError> {
     move |input| match chardata_unicode_codepoint()(input.clone()) {
         Ok((inp, s)) => Ok((inp, s.to_string())),
         Err(e) => Err(e),
     }
 }
 
-pub(crate) fn chardata_unicode_codepoint<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, char), ParseError> {
+pub(crate) fn chardata_unicode_codepoint<'a, 'i, I: Interner + 'i, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, char), ParseError> {
     map(
         wellformed(
             alt2(
@@ -96,7 +97,8 @@ pub(crate) fn chardata_unicode_codepoint<N: Node>(
     )
 }
 
-fn parse_hex<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, u32), ParseError> {
+fn parse_hex<'a, 'i, I: Interner, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, u32), ParseError> {
     move |input| match take_while(|c: char| c.is_ascii_hexdigit())(input) {
         Ok((input1, hex)) => match u32::from_str_radix(&hex, 16) {
             Ok(r) => Ok((input1, r)),
@@ -105,7 +107,8 @@ fn parse_hex<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, u32)
         Err(e) => Err(e),
     }
 }
-fn parse_decimal<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, u32), ParseError> {
+fn parse_decimal<'a, 'i, I: Interner, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, u32), ParseError> {
     move |input| match take_while(|c: char| c.is_ascii_digit())(input) {
         Ok((input1, dec)) => match u32::from_str(&dec) {
             Ok(r) => Ok((input1, r)),
@@ -115,7 +118,7 @@ fn parse_decimal<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, 
     }
 }
 
-fn chardata_literal<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+fn chardata_literal<'a, 'i, I: Interner, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, String), ParseError> {
     take_while(|c| c != '<' && c != '&')
 }

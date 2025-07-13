@@ -9,7 +9,7 @@ An [Item] is a [Node], Function or atomic [Value].
 
 use crate::item;
 use crate::output::OutputDefinition;
-use crate::qname::QualifiedName;
+use crate::qname::{Interner, QualifiedName};
 use crate::validators::{Schema, ValidationError};
 use crate::value::{Operator, Value};
 use crate::xdmerror::{Error, ErrorKind};
@@ -269,11 +269,11 @@ impl<N: Node> Item<N> {
         }
     }
 
-    /// Gives the name of the item. Certain types of Nodes have names, such as element-type nodes. If the item does not have a name returns an empty string.
-    pub fn name(&self) -> Rc<QualifiedName> {
+    /// Gives the name of the item. Certain types of Nodes have names, such as element-type nodes. If the item does not have a name returns None.
+    pub fn name<'i, I: Interner>(&self) -> Option<QualifiedName<'i, I>> {
         match self {
             Item::Node(n) => n.name(),
-            _ => Rc::new(QualifiedName::new(None, None, "")),
+            _ => None,
         }
     }
 
@@ -400,9 +400,10 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     /// Get the type of the node
     fn node_type(&self) -> NodeType;
     /// Get the name of the node.
-    /// If the node doesn't have a name, then returns a [QualifiedName] with an empty string for it's localname.
-    /// If the node is a namespace-type node, then the local part of the name is the namespace prefix. An unprefixed namespace has the empty string as its name.
-    fn name(&self) -> Rc<QualifiedName>;
+    /// If the node doesn't have a name, then returns None.
+    /// If the node is a namespace-type node, then the local part of the name is the namespace prefix.
+    /// An unprefixed namespace has the empty string as its name.
+    fn name<'i, I: Interner>(&self) -> Option<QualifiedName<'i, I>>;
     /// Get the value of the node.
     /// If the node doesn't have a value, then returns a [Value] that is an empty string.
     /// If the node is a namespace-type node, then the value is the namespace URI.
@@ -471,26 +472,30 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     /// An iterator over the attributes of an element
     fn attribute_iter(&self) -> Self::NodeIterator;
     /// Get an attribute of the node. Returns a copy of the attribute's value. If the node does not have an attribute of the given name, a value containing an empty string is returned.
-    fn get_attribute(&self, a: &QualifiedName) -> Rc<Value>;
+    fn get_attribute<'i, I: Interner>(&self, a: &QualifiedName<'i, I>) -> Rc<Value>;
     /// Get an attribute of the node. If the node is not an element returns None. Otherwise returns the attribute node. If the node does not have an attribute of the given name, returns None.
-    fn get_attribute_node(&self, a: &QualifiedName) -> Option<Self>;
+    fn get_attribute_node<'i, I: Interner>(&self, a: &QualifiedName<'i, I>) -> Option<Self>;
 
     /// Create a new element-type node in the same document tree. The new node is not attached to the tree.
-    fn new_element(&self, qn: Rc<QualifiedName>) -> Result<Self, Error>;
+    fn new_element<'i, I: Interner>(&self, qn: QualifiedName<'i, I>) -> Result<Self, Error>;
     /// Create a new text-type node in the same document tree. The new node is not attached to the tree.
     fn new_text(&self, v: Rc<Value>) -> Result<Self, Error>;
     /// Create a new attribute-type node in the same document tree. The new node is not attached to the tree.
-    fn new_attribute(&self, qn: Rc<QualifiedName>, v: Rc<Value>) -> Result<Self, Error>;
+    fn new_attribute<'i, I: Interner>(
+        &self,
+        qn: QualifiedName<'i, I>,
+        v: Rc<Value>,
+    ) -> Result<Self, Error>;
     /// Create a new comment-type node in the same document tree. The new node is not attached to the tree.
     fn new_comment(&self, v: Rc<Value>) -> Result<Self, Error>;
     /// Create a new processing-instruction-type node in the same document tree. The new node is not attached to the tree.
-    fn new_processing_instruction(
+    fn new_processing_instruction<'i, I: Interner>(
         &self,
-        qn: Rc<QualifiedName>,
+        qn: QualifiedName<'i, I>,
         v: Rc<Value>,
     ) -> Result<Self, Error>;
     /// Create a namespace node for an XML Namespace declaration.
-    fn new_namespace(&self, ns: Rc<Value>, prefix: Option<Rc<Value>>) -> Result<Self, Error>;
+    fn new_namespace(&self, ns: String, prefix: Option<String>) -> Result<Self, Error>;
 
     /// Append a node to the child list
     fn push(&mut self, n: Self) -> Result<(), Error>;
@@ -515,7 +520,7 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     /// NOTE: Does NOT assign a namespace to the element. The element's name defines its namespace.
     fn add_namespace(&self, ns: Self) -> Result<(), Error>;
     /// Compare two trees. If a non-document node is used, then the descendant subtrees are compared.
-    fn eq(&self, other: &Self) -> bool {
+    fn eq<'i, I: Interner + 'i>(&self, other: &Self) -> bool {
         match self.node_type() {
             NodeType::Document => {
                 if other.node_type() == NodeType::Document {
@@ -523,7 +528,7 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
                         .zip(other.child_iter())
                         .fold(true, |mut acc, (c, d)| {
                             if acc {
-                                acc = Node::eq(&c, &d);
+                                acc = Node::eq::<I>(&c, &d);
                                 acc
                             } else {
                                 acc
@@ -539,10 +544,14 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
                 // attributes must match (order doesn't matter),
                 // content must match
                 if other.node_type() == NodeType::Element {
-                    if self.name() == other.name() {
+                    if self.name::<I>() == other.name() {
                         // Attributes
-                        let mut at_names: Vec<Rc<QualifiedName>> =
-                            self.attribute_iter().map(|a| a.name()).collect();
+                        let mut at_names: Vec<QualifiedName<'i, I>> = self
+                            .attribute_iter()
+                            .map(|a| a.name())
+                            .filter(|a| a.is_some())
+                            .map(|a| a.unwrap())
+                            .collect();
                         if at_names.len() == other.attribute_iter().count() {
                             at_names.sort();
                             if at_names.iter().fold(true, |mut acc, qn| {
@@ -558,7 +567,7 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
                                     true,
                                     |mut acc, (c, d)| {
                                         if acc {
-                                            acc = Node::eq(&c, &d);
+                                            acc = Node::eq::<I>(&c, &d);
                                             acc
                                         } else {
                                             acc
@@ -588,7 +597,7 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
             }
             NodeType::ProcessingInstruction => {
                 if other.node_type() == NodeType::ProcessingInstruction {
-                    self.name() == other.name() && self.value() == other.value()
+                    self.name::<I>() == other.name() && self.value() == other.value()
                 } else {
                     false
                 }
@@ -603,10 +612,10 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     fn namespace_iter(&self) -> Self::NodeIterator;
 
     /// Retrieve the internal representation of the DTD, for use in validation functions.
-    fn get_dtd(&self) -> Option<DTD>;
+    fn get_dtd<'i, I: Interner>(&self) -> Option<DTD<'i, I>>;
 
     /// Store an internal representation of the DTD. Does not keep a copy of the original text
-    fn set_dtd(&self, dtd: DTD) -> Result<(), Error>;
+    fn set_dtd<'i, I: Interner>(&self, dtd: DTD<'i, I>) -> Result<(), Error>;
 
     fn validate(&self, schema: Schema) -> Result<(), ValidationError>;
 }

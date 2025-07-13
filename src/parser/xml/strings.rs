@@ -8,13 +8,14 @@ use crate::parser::combinators::take::take_while;
 use crate::parser::xml::chardata::chardata_escapes;
 use crate::parser::xml::chardata::chardata_unicode_codepoint;
 use crate::parser::{ParseError, ParseInput};
+use crate::qname::Interner;
 
-pub(crate) fn delimited_string<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn delimited_string<'a, 'i, I: Interner + 'i, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, String), ParseError> {
     alt2(string_single(), string_double())
 }
-fn string_single<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError>
-{
+fn string_single<'a, 'i, I: Interner + 'i, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, String), ParseError> {
     delimited(
         tag("\'"),
         map(
@@ -28,8 +29,8 @@ fn string_single<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, 
         tag("\'"),
     )
 }
-fn string_double<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError>
-{
+fn string_double<'a, 'i, I: Interner + 'i, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, String), ParseError> {
     delimited(
         tag("\""),
         map(

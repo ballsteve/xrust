@@ -1,6 +1,7 @@
 //! Support for keys.
 
 use crate::item::{Node, Sequence};
+use crate::qname::Interner;
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::Transform;
 use crate::xdmerror::Error;
@@ -15,12 +16,14 @@ use url::Url;
 /// NB. an optimisation is to calculate a key's value the first time that key is accessed
 /// TODO: support composite keys
 pub(crate) fn populate_key_values<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &mut Context<N>,
+    ctxt: &mut Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
     sd: N,
 ) -> Result<(), Error> {
@@ -64,15 +67,17 @@ pub(crate) fn populate_key_values<
 /// Look up the value of a key. The value is evaluated to a Sequence. The interpretation of the sequence depends on the key's composite setting.
 /// TODO: support composite keys
 pub fn key<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    name: &Box<Transform<N>>,
-    v: &Box<Transform<N>>,
+    name: &Box<Transform<'i, I, N>>,
+    v: &Box<Transform<'i, I, N>>,
 ) -> Result<Sequence<N>, Error> {
     let keyname = ctxt.dispatch(stctxt, name)?.to_string();
     Ok(ctxt.dispatch(stctxt, v)?.iter().fold(vec![], |mut acc, s| {

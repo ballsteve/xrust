@@ -17,24 +17,28 @@ use crate::parser::xpath::expressions::parenthesized_expr;
 use crate::parser::xpath::nodetests::qualname_test;
 use crate::parser::xpath::numbers::unary_expr;
 use crate::parser::{ParseError, ParseInput};
-use crate::qname::QualifiedName;
+use crate::qname::{Interner, QualifiedName};
 use crate::transform::callable::ActualParameters;
 use crate::transform::{in_scope_namespaces, NameTest, NodeTest, Transform, WildcardOrName};
 use crate::xdmerror::ErrorKind;
 
 // ArrowExpr ::= UnaryExpr ( '=>' ArrowFunctionSpecifier ArgumentList)*
-pub(crate) fn arrow_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+pub(crate) fn arrow_expr<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(
+            ParseInput<'a, 'i, I, N>,
+        ) -> Result<(ParseInput<'a, 'i, I, N>, Transform<'i, I, N>), ParseError>
+        + 'a,
+> {
     Box::new(map(
         pair(
-            unary_expr::<N>(),
+            unary_expr::<I, N>(),
             opt(tuple6(
                 xpwhitespace(),
                 tag("=>"),
                 xpwhitespace(),
-                arrowfunctionspecifier::<N>(),
+                arrowfunctionspecifier::<I, N>(),
                 xpwhitespace(),
-                opt(argumentlist::<N>()),
+                opt(argumentlist::<I, N>()),
             )),
         ),
         |(v, o)| {
@@ -49,22 +53,30 @@ pub(crate) fn arrow_expr<'a, N: Node + 'a>(
 
 // ArrowFunctionSpecifier ::= EQName | VarRef | ParenthesizedExpr
 // TODO: finish this parser with EQName and VarRef
-fn arrowfunctionspecifier<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn arrowfunctionspecifier<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(
+            ParseInput<'a, 'i, I, N>,
+        ) -> Result<(ParseInput<'a, 'i, I, N>, Transform<'i, I, N>), ParseError>
+        + 'a,
+> {
     Box::new(map(
         alt2(
             map(qualname(), |_| ()),
-            map(parenthesized_expr::<N>(), |_| ()),
+            map(parenthesized_expr::<I, N>(), |_| ()),
         ),
         |_| Transform::NotImplemented("arrowfunctionspecifier".to_string()),
     ))
 }
 
 // FunctionCall ::= EQName ArgumentList
-pub(crate) fn function_call<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+pub(crate) fn function_call<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(
+            ParseInput<'a, 'i, I, N>,
+        ) -> Result<(ParseInput<'a, 'i, I, N>, Transform<'i, I, N>), ParseError>
+        + 'a,
+> {
     Box::new(map_with_state(
-        pair(qualname_test(), argumentlist::<N>()),
+        pair(qualname_test(), argumentlist::<I, N>()),
         |(qn, mut a), state| match qn {
             NodeTest::Name(NameTest {
                 name: Some(WildcardOrName::Name(ref localpart)),
@@ -456,7 +468,7 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                             Box::new(name),
                             Box::new(m),
                             None,
-                            in_scope_namespaces(state.cur.clone()),
+                            in_scope_namespaces::<I, N>(state.cur.clone()),
                         )
                     } else if a.len() == 3 {
                         let u = a.pop().unwrap();
@@ -466,7 +478,7 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                             Box::new(name),
                             Box::new(m),
                             Some(Box::new(u)),
-                            in_scope_namespaces(state.cur.clone()),
+                            in_scope_namespaces::<I, N>(state.cur.clone()),
                         )
                     } else {
                         // Wrong # arguments
@@ -481,7 +493,7 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                         let p = a.pop().unwrap();
                         Transform::SystemProperty(
                             Box::new(p),
-                            in_scope_namespaces(state.cur.clone()),
+                            in_scope_namespaces::<I, N>(state.cur.clone()),
                         )
                     } else {
                         // Wrong # arguments
@@ -528,18 +540,28 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                 ns: Some(WildcardOrName::Name(nsuri)),
                 prefix: p,
             }) => Transform::Invoke(
-                Rc::new(QualifiedName::new_from_values(Some(nsuri), p, localpart)),
+                QualifiedName::new(
+                    localpart.to_string(),
+                    Some(nsuri.to_string()),
+                    p.map(|q| q.to_string()),
+                    state.interner,
+                ),
                 ActualParameters::Positional(a),
-                in_scope_namespaces(state.cur.clone()),
+                in_scope_namespaces::<I, N>(state.cur.clone()),
             ),
             NodeTest::Name(NameTest {
                 name: Some(WildcardOrName::Name(localpart)),
                 ns: None,
                 prefix: p,
             }) => Transform::Invoke(
-                Rc::new(QualifiedName::new_from_values(None, p, localpart)),
+                QualifiedName::new(
+                    localpart.to_string(),
+                    None,
+                    p.map(|q| q.to_string()),
+                    state.interner,
+                ),
                 ActualParameters::Positional(a),
-                in_scope_namespaces(state.cur.clone()),
+                in_scope_namespaces::<I, N>(state.cur.clone()),
             ),
             _ => Transform::Error(ErrorKind::Unknown, format!("unknown function \"{}\"", qn)),
         },
@@ -548,14 +570,18 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
 
 // ArgumentList ::= '(' (Argument (',' Argument)*)? ')'
 // TODO: finish this parser with actual arguments
-fn argumentlist<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<Transform<N>>), ParseError> + 'a> {
+fn argumentlist<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(
+            ParseInput<'a, 'i, I, N>,
+        ) -> Result<(ParseInput<'a, 'i, I, N>, Vec<Transform<'i, I, N>>), ParseError>
+        + 'a,
+> {
     Box::new(map(
         tuple3(
             tag("("),
             separated_list0(
                 map(tuple3(xpwhitespace(), tag(","), xpwhitespace()), |_| ()),
-                argument::<N>(),
+                argument::<I, N>(),
             ),
             tag(")"),
         ),
@@ -565,7 +591,11 @@ fn argumentlist<'a, N: Node + 'a>(
 
 // Argument ::= ExprSingle | ArgumentPlaceHolder
 // TODO: ArgumentPlaceHolder
-fn argument<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
-    Box::new(expr_single_wrapper::<N>(true))
+fn argument<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(
+            ParseInput<'a, 'i, I, N>,
+        ) -> Result<(ParseInput<'a, 'i, I, N>, Transform<'i, I, N>), ParseError>
+        + 'a,
+> {
+    Box::new(expr_single_wrapper::<I, N>(true))
 }

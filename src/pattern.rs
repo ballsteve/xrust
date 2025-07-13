@@ -11,7 +11,7 @@ A string can be compiled as [Pattern] by using the ```try_from``` associated fun
 use xrust::pattern::Pattern;
 
 # fn compile<N: Node>() {
-let p: Pattern<N> = Pattern::try_from("child::foobar")
+let p: Pattern<'i, I, N> = Pattern::try_from("child::foobar")
         .expect("unable to compile pattern");
 # ()
 # }
@@ -78,6 +78,7 @@ use crate::parser::xpath::literals::literal;
 use crate::parser::xpath::nodetests::{nodetest, qualname_test};
 use crate::parser::xpath::predicates::predicate_list;
 use crate::parser::xpath::variables::variable_reference;
+use crate::qname::Interner;
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::{Axis, KindTest, NameTest, NodeTest, Transform, WildcardOrName};
 use crate::value::Value;
@@ -101,13 +102,13 @@ use crate::parser::{ParseError, ParseInput, ParserState};
 ///
 /// A selection pattern is subset of XPath path expressions.
 #[derive(Clone)]
-pub enum Pattern<N: Node> {
-    Predicate(Transform<N>),
+pub enum Pattern<'i, I: Interner, N: Node> {
+    Predicate(Transform<'i, I, N>),
     Selection(Path),
     Error(Error),
 }
 
-impl<N: Node> Pattern<N> {
+impl<'i, I: Interner, N: Node> Pattern<'i, I, N> {
     /// Returns whether the Pattern is of type error.
     pub fn is_err(&self) -> bool {
         if let Pattern::Selection(s) = self {
@@ -133,7 +134,7 @@ impl<N: Node> Pattern<N> {
         H: FnMut(&Url) -> Result<String, Error>,
     >(
         &self,
-        ctxt: &Context<N>,
+        ctxt: &Context<'i, I, N>,
         stctxt: &mut StaticContext<N, F, G, H>,
         i: &Item<N>,
     ) -> bool {
@@ -144,7 +145,7 @@ impl<N: Node> Pattern<N> {
                 .dispatch(stctxt, t)
                 .unwrap_or(vec![Item::Value(Rc::new(Value::from(false)))])
                 .to_bool(),
-            Pattern::Selection(p) => path_match(p, i),
+            Pattern::Selection(p) => path_match::<I, N>(p, i),
             _ => false, // not yet implemented
         }
     }
@@ -177,18 +178,18 @@ fn branch_terminal_node_test(b: &Branch) -> (Axis, Axis, NodeTest) {
 
 // Entry point for matching a Pattern.
 // The given Item is the initial context.
-fn path_match<N: Node>(p: &Path, i: &Item<N>) -> bool {
-    !branch_match(p, vec![i.clone()]).is_empty()
+fn path_match<I: Interner, N: Node>(p: &Path, i: &Item<N>) -> bool {
+    !branch_match::<I, N>(p, vec![i.clone()]).is_empty()
 }
 // Match a branch in the Pattern. Each Item in the Sequence is tested.
 // This results in a new context.
-fn branch_match<N: Node>(p: &Path, s: Sequence<N>) -> Sequence<N> {
+fn branch_match<I: Interner, N: Node>(p: &Path, s: Sequence<N>) -> Sequence<N> {
     // First step is the terminal case,
     // next steps are non-terminal
     match p {
         Branch::SingleStep(t) => s
             .iter()
-            .filter(|i| is_match(&t.terminal, &t.nt, i))
+            .filter(|i| is_match::<I, N>(&t.terminal, &t.nt, i))
             .flat_map(|i| find_seq(&t.non_terminal, i))
             .collect(),
         Branch::RelPath(r) => {
@@ -198,7 +199,7 @@ fn branch_match<N: Node>(p: &Path, s: Sequence<N>) -> Sequence<N> {
                 let new_ctxt = ctxt
                     .iter()
                     .cloned()
-                    .flat_map(|i| branch_match(b, vec![i]))
+                    .flat_map(|i| branch_match::<I, N>(b, vec![i]))
                     .collect();
                 new_ctxt
             })
@@ -209,7 +210,7 @@ fn branch_match<N: Node>(p: &Path, s: Sequence<N>) -> Sequence<N> {
                 .flat_map(|b| {
                     s.iter()
                         .cloned()
-                        .flat_map(|i| branch_match(b, vec![i]))
+                        .flat_map(|i| branch_match::<I, N>(b, vec![i]))
                         .collect::<Sequence<N>>()
                 })
                 .collect()
@@ -239,14 +240,14 @@ fn find_seq<N: Node>(a: &Axis, i: &Item<N>) -> Sequence<N> {
     }
 }
 
-fn is_match<N: Node>(a: &Axis, nt: &NodeTest, i: &Item<N>) -> bool {
+fn is_match<I: Interner, N: Node>(a: &Axis, nt: &NodeTest, i: &Item<N>) -> bool {
     match a {
         Axis::SelfDocument => {
             // Select item only if it is a document-type node
             match i {
                 Item::Node(n) => {
                     if n.node_type() == NodeType::Document {
-                        nt.matches(i)
+                        nt.matches::<I, N>(i)
                     } else {
                         false
                     }
@@ -256,12 +257,14 @@ fn is_match<N: Node>(a: &Axis, nt: &NodeTest, i: &Item<N>) -> bool {
         }
         Axis::SelfAxis => {
             // Select item if it is an element-type node
-            nt.matches(i)
+            nt.matches::<I, N>(i)
         }
         Axis::Parent => {
             // Select the parent node
             match i {
-                Item::Node(n) => n.parent().map_or(false, |p| nt.matches(&Item::Node(p))),
+                Item::Node(n) => n
+                    .parent()
+                    .map_or(false, |p| nt.matches::<I, N>(&Item::Node(p))),
                 _ => false,
             }
         }
@@ -269,7 +272,7 @@ fn is_match<N: Node>(a: &Axis, nt: &NodeTest, i: &Item<N>) -> bool {
     }
 }
 
-impl<N: Node> Debug for Pattern<N> {
+impl<'i, I: Interner, N: Node> Debug for Pattern<'i, I, N> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Pattern::Predicate(t) => write!(f, "Pattern::Predicate t==\"{:?}\"", t),
@@ -377,17 +380,19 @@ impl Step {
 }
 
 /// Compile an XPath pattern.
-impl<N: Node> TryFrom<&str> for Pattern<N> {
+impl<'a, 'i, I: Interner, N: Node> TryFrom<(&'a str, &'i I)> for Pattern<'i, I, N> {
     type Error = Error;
-    fn try_from(e: &str) -> Result<Self, <crate::pattern::Pattern<N> as TryFrom<&str>>::Error> {
-        if e.is_empty() {
+    fn try_from(
+        e: (&'a str, &'i I),
+    ) -> Result<Self, <crate::pattern::Pattern<'i, I, N> as TryFrom<(&'a str, &'i I)>>::Error> {
+        if e.0.is_empty() {
             Err(Error::new(
                 ErrorKind::TypeError,
                 String::from("empty string is not allowed as an XPath pattern"),
             ))
         } else {
-            let state = ParserState::new(None, None, None);
-            match pattern::<N>((e, state)) {
+            let state = ParserState::new(None, None, None, e.1);
+            match pattern::<I, N>((e.0, state)) {
                 Ok(((rem, _), f)) => {
                     if rem.is_empty() {
                         Ok(f)
@@ -405,19 +410,19 @@ impl<N: Node> TryFrom<&str> for Pattern<N> {
 }
 
 /// Compile an XPath pattern. Uses the supplied [Node] to resolve in-scope XML Namespaces.
-impl<N: Node> TryFrom<(&str, N)> for Pattern<N> {
+impl<'a, 'i, I: Interner, N: Node> TryFrom<(&'a str, N, &'i I)> for Pattern<'i, I, N> {
     type Error = Error;
     fn try_from(
-        e: (&str, N),
-    ) -> Result<Self, <crate::pattern::Pattern<N> as TryFrom<&str>>::Error> {
+        e: (&'a str, N, &'i I),
+    ) -> Result<Self, <crate::pattern::Pattern<'i, I, N> as TryFrom<(&'a str, &'i I)>>::Error> {
         if e.0.is_empty() {
             Err(Error::new(
                 ErrorKind::TypeError,
                 String::from("empty string is not allowed as an XPath pattern"),
             ))
         } else {
-            let state = ParserState::new(None, Some(e.1), None);
-            match pattern::<N>((e.0, state)) {
+            let state = ParserState::new(None, Some(e.1), None, e.2);
+            match pattern::<I, N>((e.0, state)) {
                 Ok(((rem, _), f)) => {
                     if rem.is_empty() {
                         Ok(f)
@@ -434,48 +439,63 @@ impl<N: Node> TryFrom<(&str, N)> for Pattern<N> {
     }
 }
 
-impl<'a, N: Node> TryFrom<String> for Pattern<N> {
+/// Compile an XPath Pattern. XML Namespaces will not be resolved.
+impl<'a, 'i, I: Interner, N: Node> TryFrom<(String, &'i I)> for Pattern<'i, I, N> {
     type Error = Error;
-    fn try_from(e: String) -> Result<Self, <Pattern<N> as TryFrom<&'a str>>::Error> {
-        Pattern::try_from(e.as_str())
+    fn try_from(
+        e: (String, &'i I),
+    ) -> Result<Self, <Pattern<'i, I, N> as TryFrom<(&'a str, &'i I)>>::Error> {
+        Pattern::try_from((e.0.as_str(), e.1))
     }
 }
-impl<'a, N: Node> TryFrom<(String, N)> for Pattern<N> {
+impl<'a, 'i, I: Interner, N: Node> TryFrom<(String, N, &'i I)> for Pattern<'i, I, N> {
     type Error = Error;
-    fn try_from(e: (String, N)) -> Result<Self, <Pattern<N> as TryFrom<(&'a str, N)>>::Error> {
-        Pattern::try_from((e.0.as_str(), e.1))
+    fn try_from(
+        e: (String, N, &'i I),
+    ) -> Result<Self, <Pattern<'i, I, N> as TryFrom<(&'a str, N, &'i I)>>::Error> {
+        Pattern::try_from((e.0.as_str(), e.1, e.2))
     }
 }
 
 // Pattern30 ::= PredicatePattern | UnionExprP ;
-fn pattern<N: Node>(input: ParseInput<N>) -> Result<(ParseInput<N>, Pattern<N>), ParseError> {
-    alt2(predicate_pattern::<N>(), union_expr_pattern())(input)
+fn pattern<'a, 'i: 'a, I: Interner + 'i, N: Node + 'a>(
+    input: ParseInput<'a, 'i, I, N>,
+) -> Result<(ParseInput<'a, 'i, I, N>, Pattern<'i, I, N>), ParseError> {
+    alt2(predicate_pattern::<I, N>(), union_expr_pattern())(input)
 }
 
 // PredicatePattern ::= "." PredicateList
 // Context must match all predicates
-fn predicate_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Pattern<N>), ParseError> + 'a> {
+fn predicate_pattern<'a, 'i: 'a, I: Interner + 'i, N: Node + 'a>() -> Box<
+    dyn Fn(
+            ParseInput<'a, 'i, I, N>,
+        ) -> Result<(ParseInput<'a, 'i, I, N>, Pattern<'i, I, N>), ParseError>
+        + 'a,
+> {
     Box::new(map(
         pair(
             map(tuple3(xpwhitespace(), tag("."), xpwhitespace()), |_| ()),
-            predicate_list::<N>(),
+            predicate_list::<I, N>(),
         ),
         |(_, p)| Pattern::Predicate(p),
     ))
 }
 
 // UnionExprP ::= IntersectExceptExprP (("union" | "|") IntersectExceptExprP)*
-// A union expression matches if any of its components is a match. This creates a branching structure in the compilation of the Pattern<N>.
-fn union_expr_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Pattern<N>), ParseError> + 'a> {
+// A union expression matches if any of its components is a match. This creates a branching structure in the compilation of the Pattern<'i, I, N>.
+fn union_expr_pattern<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(
+            ParseInput<'a, 'i, I, N>,
+        ) -> Result<(ParseInput<'a, 'i, I, N>, Pattern<'i, I, N>), ParseError>
+        + 'a,
+> {
     Box::new(map(
         separated_list1(
             map(
                 tuple3(xpwhitespace(), alt2(tag("union"), tag("|")), xpwhitespace()),
                 |_| (),
             ),
-            intersect_except_expr_pattern::<N>(),
+            intersect_except_expr_pattern::<I, N>(),
         ),
         |v| {
             Pattern::Selection(Branch::Union(v))
@@ -489,27 +509,35 @@ fn union_expr_pattern<'a, N: Node + 'a>(
 }
 
 // NB. Rust *really* doesn't like recursive types, so we must force it to lazily evaluate arguments to avoid stack overflow.
-fn union_expr_wrapper<N: Node>(
+fn union_expr_wrapper<'a, 'i: 'a, I: Interner, N: Node + 'a>(
     b: bool,
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Pattern<N>), ParseError>> {
+) -> Box<
+    dyn Fn(
+        ParseInput<'a, 'i, I, N>,
+    ) -> Result<(ParseInput<'a, 'i, I, N>, Pattern<'i, I, N>), ParseError>,
+> {
     Box::new(move |input| {
         if b {
-            union_expr_pattern::<N>()(input)
+            union_expr_pattern::<I, N>()(input)
         } else {
             noop()(input)
         }
     })
 }
 
-fn noop<N: Node>() -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Pattern<N>), ParseError>>
-{
+fn noop<'a, 'i, I: Interner, N: Node>() -> Box<
+    dyn Fn(
+        ParseInput<'a, 'i, I, N>,
+    ) -> Result<(ParseInput<'a, 'i, I, N>, Pattern<'i, I, N>), ParseError>,
+> {
     Box::new(move |_| Err(ParseError::Combinator))
 }
 
 // IntersectExceptExprP ::= PathExprP (("intersect" | "except") PathExprP)*
 // intersect and except not yet supported
-fn intersect_except_expr_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
+fn intersect_except_expr_pattern<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, Path), ParseError> + 'a,
+> {
     Box::new(map(
         separated_list1(
             map(
@@ -520,7 +548,7 @@ fn intersect_except_expr_pattern<'a, N: Node + 'a>(
                 ),
                 |_| (),
             ),
-            path_expr_pattern::<N>(),
+            path_expr_pattern::<I, N>(),
         ),
         |mut v| {
             if v.len() == 1 {
@@ -537,25 +565,30 @@ fn intersect_except_expr_pattern<'a, N: Node + 'a>(
 }
 
 // PathExprP ::= RootedPath | ("/" RelativePathExprP) | ("//" RelativePathExprP) | RelativePathExprP
-fn path_expr_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
+fn path_expr_pattern<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, Path), ParseError> + 'a,
+> {
     Box::new(alt4(
-        rooted_path_pattern::<N>(),
+        rooted_path_pattern::<I, N>(),
         absolutedescendant_expr_pattern(),
         absolutepath_expr_pattern(),
-        relativepath_expr_pattern::<N>(),
+        relativepath_expr_pattern::<I, N>(),
     ))
 }
 
 // RootedPath ::= (VarRef | FunctionCallP) PredicateList (("/" | "//") RelativePathExprP)?
-fn rooted_path_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
+fn rooted_path_pattern<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, Path), ParseError> + 'a,
+> {
     Box::new(map(
         tuple3(
-            alt2(variable_reference_pattern::<N>(), function_call_pattern()),
-            predicate_list::<N>(),
             alt2(
-                absolutedescendant_expr_pattern::<N>(),
+                variable_reference_pattern::<I, N>(),
+                function_call_pattern(),
+            ),
+            predicate_list::<I, N>(),
+            alt2(
+                absolutedescendant_expr_pattern::<I, N>(),
                 absolutepath_expr_pattern(),
             ),
         ),
@@ -569,9 +602,10 @@ fn rooted_path_pattern<'a, N: Node + 'a>(
 }
 
 // Variable Reference
-fn variable_reference_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
-    Box::new(map(variable_reference::<N>(), |_| {
+fn variable_reference_pattern<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, Path), ParseError> + 'a,
+> {
+    Box::new(map(variable_reference::<I, N>(), |_| {
         Branch::Error(Error::new(
             ErrorKind::NotImplemented,
             "variable reference not yet supported",
@@ -580,10 +614,11 @@ fn variable_reference_pattern<'a, N: Node + 'a>(
 }
 
 // ('//' RelativePathExpr?)
-fn absolutedescendant_expr_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
+fn absolutedescendant_expr_pattern<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, Path), ParseError> + 'a,
+> {
     Box::new(map(
-        pair(tag("//"), relativepath_expr_pattern::<N>()),
+        pair(tag("//"), relativepath_expr_pattern::<I, N>()),
         |(_, _r)| {
             Branch::Error(Error::new(
                 ErrorKind::NotImplemented,
@@ -594,12 +629,13 @@ fn absolutedescendant_expr_pattern<'a, N: Node + 'a>(
 }
 
 // ('/' RelativePathExpr?)
-fn absolutepath_expr_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
+fn absolutepath_expr_pattern<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, Path), ParseError> + 'a,
+> {
     Box::new(map(
         pair(
             map(tag("/"), |_| "/"),
-            opt(relativepath_expr_pattern::<N>()),
+            opt(relativepath_expr_pattern::<I, N>()),
         ),
         |(d, r)| match (d, r.clone()) {
             ("/", None) => {
@@ -651,17 +687,18 @@ fn absolutepath_expr_pattern<'a, N: Node + 'a>(
 }
 
 // RelativePathExpr ::= StepExpr (('/' | '//') StepExpr)*
-fn relativepath_expr_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
+fn relativepath_expr_pattern<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, Path), ParseError> + 'a,
+> {
     Box::new(map(
         pair(
-            step_expr_pattern::<N>(),
+            step_expr_pattern::<I, N>(),
             many0(tuple2(
                 alt2(
                     map(tuple3(xpwhitespace(), tag("//"), xpwhitespace()), |_| "//"),
                     map(tuple3(xpwhitespace(), tag("/"), xpwhitespace()), |_| "/"),
                 ),
-                step_expr_pattern::<N>(),
+                step_expr_pattern::<I, N>(),
             )),
         ),
         |(a, b)| {
@@ -681,24 +718,30 @@ fn relativepath_expr_pattern<'a, N: Node + 'a>(
 }
 
 // StepExprP ::= PostfixExprExpr | AxisStepP
-fn step_expr_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
-    Box::new(alt2(postfix_expr_pattern::<N>(), axis_step_pattern::<N>()))
+fn step_expr_pattern<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, Path), ParseError> + 'a,
+> {
+    Box::new(alt2(
+        postfix_expr_pattern::<I, N>(),
+        axis_step_pattern::<I, N>(),
+    ))
 }
 
 // PostfixExprP ::= ParenthesizedExprP PredicateList
 // TODO: predicates
-fn postfix_expr_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
+fn postfix_expr_pattern<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, Path), ParseError> + 'a,
+> {
     Box::new(map(
-        tuple2(paren_expr_pattern(), predicate_list::<N>()),
+        tuple2(paren_expr_pattern(), predicate_list::<I, N>()),
         |(p, _)| p,
     ))
 }
 
 // ParenthesizedExprP ::= "(" UnionExprP ")"
-fn paren_expr_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
+fn paren_expr_pattern<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, Path), ParseError> + 'a,
+> {
     Box::new(map(
         tuple3(
             tuple3(xpwhitespace(), tag("("), xpwhitespace()),
@@ -720,18 +763,20 @@ fn paren_expr_pattern<'a, N: Node + 'a>(
 
 // AxisStepP ::= ForwardStepP PredicateList
 // TODO: predicate
-fn axis_step_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
+fn axis_step_pattern<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, Path), ParseError> + 'a,
+> {
     Box::new(map(
-        tuple2(forward_step_pattern(), predicate_list::<N>()),
+        tuple2(forward_step_pattern(), predicate_list::<I, N>()),
         |(f, _p)| f, // TODO: pass predicate back to caller
     ))
 }
 
 // ForwardStepP ::= (ForwardAxisP NodeTest) | AbbrevForwardStep
 // Returns the node test, the terminal axis and the non-terminal axis
-fn forward_step_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
+fn forward_step_pattern<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, Path), ParseError> + 'a,
+> {
     Box::new(map(
         alt2(
             tuple2(forward_axis_pattern(), nodetest()),
@@ -742,9 +787,12 @@ fn forward_step_pattern<'a, N: Node + 'a>(
 }
 
 // AbbrevForwardStep ::= "@"? NodeTest
-fn abbrev_forward_step<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, ((Axis, Axis), NodeTest)), ParseError> + 'a>
-{
+fn abbrev_forward_step<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(
+            ParseInput<'a, 'i, I, N>,
+        ) -> Result<(ParseInput<'a, 'i, I, N>, ((Axis, Axis), NodeTest)), ParseError>
+        + 'a,
+> {
     Box::new(map(tuple2(opt(tag("@")), nodetest()), |(a, nt)| {
         a.map_or_else(
             || {
@@ -761,8 +809,10 @@ fn abbrev_forward_step<'a, N: Node + 'a>(
 
 // ForwardAxisP ::= ("child" | "descendant" | "attribute" | "self" | "descendant-or-self" | "namespace" ) "::"
 // Returns a pair: the axis to match this step, and the axis for the previous step
-fn forward_axis_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, (Axis, Axis)), ParseError> + 'a> {
+fn forward_axis_pattern<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, (Axis, Axis)), ParseError>
+        + 'a,
+> {
     Box::new(map(
         tuple2(
             alt6(
@@ -782,10 +832,11 @@ fn forward_axis_pattern<'a, N: Node + 'a>(
 }
 
 // FunctionCallP ::= OuterFunctionName ArgumentListP
-fn function_call_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
+fn function_call_pattern<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, Path), ParseError> + 'a,
+> {
     Box::new(map(
-        tuple2(outer_function_name(), argument_list_pattern::<N>()),
+        tuple2(outer_function_name(), argument_list_pattern::<I, N>()),
         |(_n, _a)| {
             // TODO
             Branch::Error(Error::new(
@@ -797,14 +848,15 @@ fn function_call_pattern<'a, N: Node + 'a>(
 }
 
 // ArgumentListP ::= "(" (ArgumentP ("," ArgumentP)*)? ")"
-fn argument_list_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
+fn argument_list_pattern<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, Path), ParseError> + 'a,
+> {
     Box::new(map(
         tuple3(
             map(tuple3(xpwhitespace(), tag("("), xpwhitespace()), |_| ()),
             separated_list0(
                 map(tuple3(xpwhitespace(), tag(","), xpwhitespace()), |_| ()),
-                argument_pattern::<N>(),
+                argument_pattern::<I, N>(),
             ),
             map(tuple3(xpwhitespace(), tag(")"), xpwhitespace()), |_| ()),
         ),
@@ -819,25 +871,29 @@ fn argument_list_pattern<'a, N: Node + 'a>(
 }
 
 // ArgumentP ::= VarRef | Literal
-fn argument_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
+fn argument_pattern<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, Path), ParseError> + 'a,
+> {
     Box::new(alt2(
-        variable_reference_pattern::<N>(),
-        literal_pattern::<N>(),
+        variable_reference_pattern::<I, N>(),
+        literal_pattern::<I, N>(),
     ))
 }
 
 // literal
-fn literal_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
-    Box::new(map(literal::<N>(), |_| {
+fn literal_pattern<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, Path), ParseError> + 'a,
+> {
+    Box::new(map(literal::<I, N>(), |_| {
         Branch::Error(Error::new(ErrorKind::NotImplemented, "not yet implemented"))
     }))
 }
 
 // OuterFunctionName ::= "doc" | "id" | "element-with-id" | "key" | "root" | URIQualifiedName
-fn outer_function_name<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, NodeTest), ParseError> + 'a> {
+fn outer_function_name<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, NodeTest), ParseError>
+        + 'a,
+> {
     Box::new(alt6(
         map(tag("doc"), |_| {
             NodeTest::Name(NameTest {

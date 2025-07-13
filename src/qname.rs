@@ -1,195 +1,467 @@
 //! Support for Qualified Names.
-//! TODO: Intern names for speedy equality checks (compare pointers, rather than characters).
+//! Names are interned for speedy equality checks (compare keys, rather than characters).
+//! This also applies to local names, prefixes, and XML Namespace URIs.
+//! Qualified Names are equal if their local-part and namespace URI both match.
+//! However, to serialise a QN it is necessary to know it's prefix (if it has one).
+//! NB. A requirement for interning Qualified Names is to not leak memory.
+//! To achieve this, entries in the internment must be reference counted.
+//! NB. Another requirement is that QNs must be Send+Sync. This means avoiding Rc.
+//! NB. Another requirement is that the internment is reentrant, which means using interior mutability.
+//! The internment must be Send+Sync, so define a trait to allow the application to provide an appropriate object.
 
 use crate::item::Node;
 use crate::namespace::NamespaceMap;
 use crate::parser::xml::qname::eqname;
 use crate::parser::ParserState;
 use crate::trees::nullo::Nullo;
-use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
-use core::hash::{Hash, Hasher};
+use std::cell::RefCell;
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Debug;
 use std::fmt::Formatter;
+use std::hash::{Hash, Hasher};
 use std::rc::Rc;
 
+/// A Qualified Name is a triple of (QNKey, PrefixKey, &Internment)
 #[derive(Clone)]
-pub struct QualifiedName {
-    nsuri: Option<Rc<Value>>,
-    prefix: Option<Rc<Value>>,
-    localname: Rc<Value>,
-}
+pub struct QualifiedName<'i, I: Interner>(QNKey, PrefixKey, &'i I);
 
-// TODO: we may need methods that return a string slice, rather than a copy of the string
-impl QualifiedName {
-    /// Builds a QualifiedName from String parts
+impl<'i, I: Interner> QualifiedName<'i, I> {
+    /// Create a [QualifiedName] and intern it in the supplied [Interner]
     pub fn new(
-        nsuri: Option<String>,
+        local_part: impl Into<String>,
+        namespace_uri: Option<String>,
         prefix: Option<String>,
-        localname: impl Into<String>,
-    ) -> QualifiedName {
-        QualifiedName {
-            nsuri: nsuri.map(|s| Rc::new(Value::from(s))),
-            prefix: prefix.map(|s| Rc::new(Value::from(s))),
-            localname: Rc::new(Value::from(localname.into())),
-        }
+        interner: &'i I,
+    ) -> Self {
+        let (pre_key, qn_key) = interner.get_or_intern(local_part.into(), prefix, namespace_uri);
+        QualifiedName(qn_key, pre_key, interner)
     }
-    /// Builds a QualifiedName from shared components
-    pub fn new_from_values(
-        nsuri: Option<Rc<Value>>,
-        prefix: Option<Rc<Value>>,
-        localname: Rc<Value>,
-    ) -> QualifiedName {
-        QualifiedName {
-            nsuri,
-            prefix,
-            localname,
-        }
+    pub fn local_part(&self) -> String {
+        self.2.local_part(&self.0)
     }
-    pub fn as_ref(&self) -> &Self {
-        self
+    pub fn namespace_uri(&self) -> Option<String> {
+        self.2.namespace_uri(&self.0)
     }
-    pub fn namespace_uri(&self) -> Option<Rc<Value>> {
-        self.nsuri.clone()
+    pub fn prefix(&self) -> Option<String> {
+        self.2.prefix(&self.1)
     }
-    pub fn namespace_uri_to_string(&self) -> Option<String> {
-        self.nsuri.as_ref().map(|x| x.to_string())
+    pub fn interner(&self) -> &'i I {
+        self.2
     }
-    pub fn prefix(&self) -> Option<Rc<Value>> {
-        self.prefix.clone()
+    /// Create a [QualifiedName] by parsing a string.
+    /// To resolve XML Namespaces a [NamespaceMap] may be given.
+    /// It is an error if the name is prefixed and the prefix cannot be resolved to a namespace declaration.
+    pub fn parse(
+        source: impl Into<String>,
+        ns_map: Option<&NamespaceMap>,
+        intern: &'i I,
+    ) -> Result<QualifiedName<'i, I>, Error> {
+        let state: ParserState<I, Nullo> = ParserState::new(None, None, None, intern);
+        let src = source.into();
+        let x = match eqname()((src.as_str(), state)) {
+            Ok((_, qn)) => {
+                if ns_map.is_some() && qn.prefix().is_some() && qn.namespace_uri().is_none() {
+                    match ns_map.unwrap().get(&qn.prefix()) {
+                        Some(ns) => Ok(QualifiedName::new(
+                            qn.local_part(),
+                            Some(ns),
+                            qn.prefix(),
+                            intern,
+                        )),
+                        _ => Err(Error::new(
+                            ErrorKind::Unknown,
+                            format!("unable to match prefix \"{}\"", qn.prefix().unwrap()),
+                        )),
+                    }
+                } else {
+                    Ok(qn)
+                }
+            }
+            Err(_) => Err(Error::new(
+                ErrorKind::ParseError,
+                String::from("unable to parse qualified name"),
+            )),
+        };
+        x
+        // Now resolve the prefix
     }
-    pub fn prefix_to_string(&self) -> Option<String> {
-        self.prefix.as_ref().map(|x| x.to_string())
+    /// Display the QN as a URI Qualified string
+    pub fn to_uri_qualified(&self) -> UriQualifiedName {
+        UriQualifiedName::new(self.2.local_part(&self.0), self.2.namespace_uri(&self.0))
     }
-    pub fn localname(&self) -> Rc<Value> {
-        self.localname.clone()
-    }
-    pub fn localname_to_string(&self) -> String {
-        self.localname.to_string()
+    /// Serialise the [QualifiedName], as (prefix ':')? local-part
+    pub fn to_string(&self) -> String {
+        self.2.to_string(self.0, self.1)
     }
     /// Fully resolve a qualified name. If the qualified name has a prefix but no namespace URI,
     /// then find the prefix in the supplied namespaces and use the corresponding URI.
-    /// If the qualified name already has a namespace URI, then this method has no effect.
+    /// If the qualified name already has a non-null namespace URI, then this method has no effect.
     /// If the qualified name has no prefix, then this method has no effect.
     pub fn resolve<F>(&mut self, mapper: F) -> Result<(), Error>
     where
-        F: Fn(Option<Rc<Value>>) -> Result<Rc<Value>, Error>,
+        F: Fn(Option<String>) -> Result<String, Error>,
     {
-        match (&self.prefix, &self.nsuri) {
-            (Some(p), None) => {
-                self.nsuri = Some(mapper(Some(p.clone()))?.clone());
-                Ok(())
-            }
-            _ => Ok(()),
-        }
+        self.2.prefix(&self.1).map_or(Ok(()), |p| {
+            self.2.namespace_uri(&self.0).map_or_else(
+                || {
+                    let new_nsuri = mapper(Some(p.clone()))?;
+                    // Old configuration of QN is now invalid
+                    // So grab a copy of the local-part
+                    let local_part = self.2.local_part(&self.0);
+                    self.2.decr_ref_count(self.0, self.1);
+                    let (a, b) = self.2.get_or_intern(local_part, Some(p), Some(new_nsuri));
+                    self.1 = a;
+                    self.0 = b;
+                    Ok(())
+                },
+                |_| Ok(()),
+            )
+        })
     }
 }
 
-impl fmt::Display for QualifiedName {
+impl<'i, I: Interner> Drop for QualifiedName<'i, I> {
+    fn drop(&mut self) {
+        self.2.decr_ref_count(self.0, self.1);
+    }
+}
+
+impl<'i, I: Interner> fmt::Display for QualifiedName<'i, I> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let mut result = String::new();
-        let _ = self.prefix.as_ref().map_or((), |p| {
+
+        let _ = self.2.prefix(&self.1).as_ref().map_or((), |p| {
             result.push_str(p.to_string().as_str());
             result.push(':');
         });
-        result.push_str(self.localname.to_string().as_str());
+        result.push_str(self.2.local_part(&self.0).to_string().as_str());
         f.write_str(result.as_str())
     }
 }
 
-impl Debug for QualifiedName {
+impl<'i, I: Interner> Debug for QualifiedName<'i, I> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let _ = f.write_str("namespace ");
         let _ = f.write_str(
-            self.nsuri
+            self.2
+                .namespace_uri(&self.0)
                 .as_ref()
                 .map_or("--none--".to_string(), |ns| ns.to_string())
                 .as_str(),
         );
         let _ = f.write_str(" prefix ");
         let _ = f.write_str(
-            self.prefix
+            self.2
+                .prefix(&self.1)
                 .as_ref()
                 .map_or("--none--".to_string(), |p| p.to_string())
                 .as_str(),
         );
         let _ = f.write_str(" local part \"");
-        let _ = f.write_str(self.localname.to_string().as_str());
+        let _ = f.write_str(self.2.local_part(&self.0).as_str());
         f.write_str("\"")
     }
 }
 
-pub type QHash<T> = HashMap<QualifiedName, T>;
-
-impl PartialEq for QualifiedName {
+impl<'i, I: Interner> PartialEq for QualifiedName<'i, I> {
     // Only the namespace URI and local name have to match
-    fn eq(&self, other: &QualifiedName) -> bool {
-        self.nsuri.as_ref().map_or_else(
-            || {
-                other
-                    .nsuri
-                    .as_ref()
-                    .map_or_else(|| self.localname.eq(&other.localname), |_| false)
-            },
-            |ns| {
-                other.nsuri.as_ref().map_or_else(
-                    || false,
-                    |ons| ns.eq(ons) && self.localname.eq(&other.localname),
-                )
-            },
-        )
+    fn eq(&self, other: &QualifiedName<'i, I>) -> bool {
+        self.0 == other.0
+    }
+}
+impl<'i, I: Interner> Eq for QualifiedName<'i, I> {}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct UriQualifiedName(String);
+impl UriQualifiedName {
+    pub fn new(local_part: impl Into<String>, ns_uri: Option<impl Into<String>>) -> Self {
+        let mut braced = String::new();
+        if ns_uri.is_some() {
+            braced.push_str("Q{");
+            braced.push_str(ns_uri.unwrap().into().as_ref());
+            braced.push('}');
+        }
+        braced.push_str(local_part.into().as_ref());
+        UriQualifiedName(braced)
+    }
+}
+impl fmt::Display for UriQualifiedName {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.write_str(self.0.as_str())
+    }
+}
+impl<'i, I: Interner> From<QualifiedName<'i, I>> for UriQualifiedName {
+    fn from(qn: QualifiedName<'i, I>) -> Self {
+        UriQualifiedName::new(qn.local_part(), qn.namespace_uri())
     }
 }
 
-/// A partial ordering for QualifiedNames. Unprefixed names are considered to come before prefixed names.
-impl PartialOrd for QualifiedName {
+/// An identifier for a Qualified Name.
+pub type QNKey = usize;
+
+/// An identifier for a prefixed QN.
+pub type PrefixKey = usize;
+
+/// An Interner provides internment of Qualified Names.
+pub trait Interner: Clone {
+    /// Retrieve the key for a Qualified Name. If the QN was previously unknown, then it is added to the internment. Increments the ref count.
+    fn get_or_intern(
+        &self,
+        local_part: String,
+        prefix: Option<String>,
+        namespace_uri: Option<String>,
+    ) -> (PrefixKey, QNKey);
+    /// Decrement the reference count for a QN and prefix.
+    /// If the new reference count is zero, then remove the QN from the internment.
+    fn decr_ref_count(&self, qn: QNKey, p: PrefixKey);
+    /// Serialise the QN: (prefix ':')? local-part
+    fn to_string(&self, qn: QNKey, p: PrefixKey) -> String;
+    // TODO: URI Qualified serialisation - ('{' namespace-uri '}')? local-part
+    /// Get the prefix
+    fn prefix(&self, p: &PrefixKey) -> Option<String>;
+    /// Get the namespace-URI
+    fn namespace_uri(&self, qn: &QNKey) -> Option<String>;
+    /// Get the local-part
+    fn local_part(&self, qn: &QNKey) -> String;
+}
+
+pub struct Internment;
+
+/// A Qualified Name, without prefix.
+#[derive(Clone, Debug)]
+struct QnDetails {
+    local_part: String,
+    namespace_uri: Option<String>,
+    count: usize,
+}
+impl QnDetails {
+    pub fn new(local_part: String, namespace_uri: Option<String>) -> Self {
+        QnDetails {
+            local_part,
+            namespace_uri,
+            count: 1,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+struct PrefixedQn {
+    prefix: Option<String>,
+    qn: QNKey,
+    count: usize,
+}
+impl PrefixedQn {
+    fn new(prefix: Option<String>, qn: QNKey) -> Self {
+        PrefixedQn {
+            prefix,
+            qn,
+            count: 1,
+        }
+    }
+}
+
+/// A simple [Interner] for local use.
+#[derive(Clone)]
+pub struct LocalInternment {
+    qn_keys: RefCell<Vec<QNKey>>,
+    prefix_keys: RefCell<Vec<PrefixKey>>,
+
+    // (local-part,namespace-uri,prefix) -> LIKey
+    pqn_to_key: RefCell<HashMap<(String, Option<String>, Option<String>), PrefixKey>>,
+    // (local-part,namespace-uri) -> QNKey
+    qn_to_key: RefCell<HashMap<(String, Option<String>), QNKey>>,
+
+    prefixes: RefCell<HashMap<PrefixKey, PrefixedQn>>,
+    details: RefCell<HashMap<QNKey, QnDetails>>,
+}
+
+impl LocalInternment {
+    pub fn new() -> Self {
+        LocalInternment {
+            qn_keys: RefCell::new(vec![]),
+            prefix_keys: RefCell::new(vec![]),
+            pqn_to_key: RefCell::new(HashMap::new()),
+            qn_to_key: RefCell::new(HashMap::new()),
+            prefixes: RefCell::new(HashMap::new()),
+            details: RefCell::new(HashMap::new()),
+        }
+        // TODO: add pre-defined namespaces, such as xml:
+    }
+    fn prefix_key(
+        &self,
+        local_part: String,
+        nsuri: Option<String>,
+        prefix: Option<String>,
+    ) -> Option<PrefixKey> {
+        let pqn2keyb = self.pqn_to_key.borrow();
+        let pre_key_o = pqn2keyb.get(&(local_part, nsuri, prefix));
+        pre_key_o.map(|p| p.clone())
+    }
+    fn qname_key(&self, local_part: String, nsuri: Option<String>) -> Option<QNKey> {
+        let qn2keyb = self.qn_to_key.borrow();
+        let qn_key_o = qn2keyb.get(&(local_part, nsuri));
+        qn_key_o.map(|qn| qn.clone())
+    }
+    fn qn_key_from_pre_key(&self, pre_key: &PrefixKey) -> QNKey {
+        let prefixb = self.prefixes.borrow();
+        let pdata = prefixb.get(pre_key).unwrap();
+        pdata.qn
+    }
+}
+
+impl Interner for LocalInternment {
+    fn get_or_intern(
+        &self,
+        local_part: String,
+        namespace_uri: Option<String>,
+        prefix: Option<String>,
+    ) -> (PrefixKey, QNKey) {
+        // Does this QN already exist?
+        // If so then return QN tuple-struct
+        // If not insert into hashmaps and return QN tuple-struct
+        let pre_key_o = self.prefix_key(local_part.clone(), namespace_uri.clone(), prefix.clone());
+        pre_key_o.map_or_else(
+            || {
+                // This combo of (local-part, ns-uri, prefix) hasn't been seen before,
+                // So intern it.
+                // NB. we may already have a key for (local-part, ns-uri)
+                let new_pre_key = self.prefix_keys.borrow().len();
+
+                let qn_key_o = self.qname_key(local_part.clone(), namespace_uri.clone());
+                qn_key_o.map_or_else(
+                    || {
+                        // No (local-part, ns-uri) found either, so have to intern everything
+                        let new_qn_key = self.qn_keys.borrow().len();
+                        self.qn_keys.borrow_mut().push(new_qn_key);
+                        self.prefix_keys.borrow_mut().push(new_pre_key);
+                        self.details.borrow_mut().insert(
+                            new_qn_key,
+                            QnDetails::new(local_part.clone(), namespace_uri.clone()),
+                        );
+                        self.prefixes
+                            .borrow_mut()
+                            .insert(new_pre_key, PrefixedQn::new(prefix.clone(), new_qn_key));
+                        self.qn_to_key
+                            .borrow_mut()
+                            .insert((local_part.clone(), namespace_uri.clone()), new_qn_key);
+                        self.pqn_to_key.borrow_mut().insert(
+                            (local_part.clone(), namespace_uri.clone(), prefix.clone()),
+                            new_pre_key,
+                        );
+                        (new_pre_key, new_qn_key)
+                    },
+                    |qn_key| {
+                        // This is a new prefix for an existing QN
+                        // Increment ref count for QN
+                        self.prefix_keys.borrow_mut().push(new_pre_key);
+                        self.prefixes
+                            .borrow_mut()
+                            .insert(new_pre_key, PrefixedQn::new(prefix.clone(), qn_key));
+                        self.pqn_to_key.borrow_mut().insert(
+                            (local_part.clone(), namespace_uri.clone(), prefix.clone()),
+                            new_pre_key,
+                        );
+                        self.details.borrow_mut().get_mut(&qn_key).unwrap().count += 1;
+                        (new_pre_key, qn_key)
+                    },
+                )
+            },
+            |pre_key| {
+                // We have seen this combo before.
+                // Increment ref count
+                // Construct QN triple
+                let qn_key = self.qn_key_from_pre_key(&pre_key);
+                self.prefixes.borrow_mut().get_mut(&pre_key).unwrap().count += 1;
+                self.details.borrow_mut().get_mut(&qn_key).unwrap().count += 1;
+                (pre_key, qn_key)
+            },
+        )
+    }
+    fn decr_ref_count(&self, qn: QNKey, p: PrefixKey) {
+        // TODO: do this more efficiently
+        self.prefixes.borrow_mut().get_mut(&p).unwrap().count -= 1;
+        self.details.borrow_mut().get_mut(&qn).unwrap().count -= 1;
+        let count = self.details.borrow().get(&qn).unwrap().count;
+        if count == 0 {
+            self.prefixes.borrow_mut().remove(&p);
+            self.details.borrow_mut().remove(&qn);
+        }
+    }
+    fn to_string(&self, qn: QNKey, p: PrefixKey) -> String {
+        let mut result = String::new();
+        let _ = self
+            .prefixes
+            .borrow()
+            .get(&p)
+            .unwrap()
+            .prefix
+            .as_ref()
+            .map_or((), |p| {
+                result.push_str(p.as_str());
+                result.push(':');
+            });
+        result.push_str(self.details.borrow().get(&qn).unwrap().local_part.as_str());
+        result
+    }
+    fn prefix(&self, p: &PrefixKey) -> Option<String> {
+        self.prefixes.borrow().get(p).unwrap().prefix.clone()
+    }
+    fn namespace_uri(&self, qn: &QNKey) -> Option<String> {
+        self.details.borrow().get(qn).unwrap().namespace_uri.clone()
+    }
+    fn local_part(&self, qn: &QNKey) -> String {
+        self.details.borrow().get(qn).unwrap().local_part.clone()
+    }
+}
+
+//fn uri_qualifiedname(uri: &str, name: &str) -> String {
+//    format!("Q{}{}{}{}", "{", uri, "}", name)
+//}
+
+/// A partial ordering for QualifiedNames.
+/// Unprefixed names are considered to come before prefixed names.
+impl<'i, I: Interner> PartialOrd for QualifiedName<'i, I> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        match (&self.nsuri, &other.nsuri) {
-            (None, None) => self.localname.partial_cmp(&other.localname),
-            (Some(_), None) => Some(Ordering::Greater),
-            (None, Some(_)) => Some(Ordering::Less),
-            (Some(n), Some(m)) => {
-                if n == m {
-                    self.localname.partial_cmp(&other.localname)
-                } else {
-                    n.partial_cmp(m)
+        if self.0 == other.0 {
+            Some(Ordering::Equal)
+        } else {
+            let lhs_local_part = self.2.local_part(&self.0);
+            let rhs_local_part = self.2.local_part(&other.0);
+            let lpcmp = lhs_local_part.partial_cmp(&rhs_local_part);
+            if Some(Ordering::Equal) == lpcmp {
+                match (self.2.prefix(&self.1), other.2.prefix(&other.1)) {
+                    (None, None) => Some(Ordering::Equal),
+                    (None, Some(_)) => Some(Ordering::Greater),
+                    (Some(_), None) => Some(Ordering::Less),
+                    (Some(_), Some(_)) => Some(
+                        self.2
+                            .namespace_uri(&self.0)
+                            .unwrap()
+                            .partial_cmp(&other.2.namespace_uri(&other.1).unwrap())?,
+                    ),
                 }
+            } else {
+                lpcmp
             }
         }
     }
 }
-impl Ord for QualifiedName {
+
+impl<'i, I: Interner> Ord for QualifiedName<'i, I> {
     fn cmp(&self, other: &Self) -> Ordering {
         self.partial_cmp(other).unwrap()
     }
 }
-impl Eq for QualifiedName {}
 
-impl Hash for QualifiedName {
+impl<'i, I: Interner> Hash for QualifiedName<'i, I> {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        if let Some(ns) = self.nsuri.as_ref() {
+        if let Some(ns) = self.2.namespace_uri(&self.0).as_ref() {
             ns.hash(state)
         }
-        self.localname.hash(state);
-    }
-}
-
-/// Parse a string to create a [QualifiedName].
-/// QualifiedName ::= (prefix ":")? local-name
-impl TryFrom<&str> for QualifiedName {
-    type Error = Error;
-    fn try_from(s: &str) -> Result<Self, Self::Error> {
-        let state: ParserState<Nullo> = ParserState::new(None, None, None);
-        match eqname()((s, state)) {
-            Ok((_, qn)) => Ok(qn),
-            Err(_) => Err(Error::new(
-                ErrorKind::ParseError,
-                String::from("unable to parse qualified name"),
-            )),
-        }
+        self.2.local_part(&self.0).hash(state);
     }
 }
 
@@ -197,25 +469,23 @@ impl TryFrom<&str> for QualifiedName {
 /// Resolve prefix against a set of XML Namespace declarations.
 /// This method can be used when there is no XSL stylesheet to derive the namespaces.
 /// QualifiedName ::= (prefix ":")? local-name
-impl TryFrom<(&str, Rc<NamespaceMap>)> for QualifiedName {
+impl<'i, I: Interner> TryFrom<(&str, Rc<NamespaceMap>, &'i I)> for QualifiedName<'i, I> {
     type Error = Error;
-    fn try_from(s: (&str, Rc<NamespaceMap>)) -> Result<Self, Self::Error> {
-        let state: ParserState<Nullo> = ParserState::new(None, None, None);
+    fn try_from(s: (&str, Rc<NamespaceMap>, &'i I)) -> Result<Self, Self::Error> {
+        let state: ParserState<I, Nullo> = ParserState::new(None, None, None, s.2);
         match eqname()((s.0, state)) {
             Ok((_, qn)) => {
                 if qn.prefix().is_some() && qn.namespace_uri().is_none() {
                     match s.1.get(&qn.prefix()) {
-                        Some(ns) => Ok(QualifiedName::new_from_values(
+                        Some(ns) => Ok(QualifiedName::new(
+                            qn.local_part(),
                             Some(ns),
                             qn.prefix(),
-                            qn.localname().clone(),
+                            s.2,
                         )),
                         _ => Err(Error::new(
                             ErrorKind::Unknown,
-                            format!(
-                                "unable to match prefix \"{}\"",
-                                qn.prefix_to_string().unwrap()
-                            ),
+                            format!("unable to match prefix \"{}\"", qn.prefix().unwrap()),
                         )),
                     }
                 } else {
@@ -234,28 +504,29 @@ impl TryFrom<(&str, Rc<NamespaceMap>)> for QualifiedName {
 /// Resolve prefix against a set of XML Namespace declarations.
 /// This method can be used when there is an XSL stylesheet to derive the namespaces.
 /// QualifiedName ::= (prefix ":")? local-name
-impl<N: Node> TryFrom<(&str, N)> for QualifiedName {
+impl<'i, I: Interner, N: Node> TryFrom<(&str, N, &'i I)> for QualifiedName<'i, I> {
     type Error = Error;
-    fn try_from(s: (&str, N)) -> Result<Self, Self::Error> {
-        let state: ParserState<Nullo> = ParserState::new(None, None, None);
+    fn try_from(s: (&str, N, &'i I)) -> Result<Self, Self::Error> {
+        let state: ParserState<I, Nullo> = ParserState::new(None, None, None, s.2);
         match eqname()((s.0, state)) {
             Ok((_, qn)) => {
                 if qn.prefix().is_some() && qn.namespace_uri().is_none() {
                     s.1.namespace_iter()
-                        .find(|ns| ns.name().localname() == qn.prefix().unwrap())
+                        .find(|ns| ns.name::<I>().unwrap().local_part() == qn.prefix().unwrap())
                         .map_or(
                             Err(Error::new(
                                 ErrorKind::DynamicAbsent,
                                 format!(
                                     "no namespace matching prefix \"{}\"",
-                                    qn.prefix_to_string().unwrap()
+                                    qn.prefix().unwrap()
                                 ),
                             )),
                             |ns| {
-                                Ok(QualifiedName::new_from_values(
-                                    Some(ns.value()),
+                                Ok(QualifiedName::new(
+                                    qn.local_part(),
+                                    Some(ns.value().to_string()),
                                     qn.prefix(),
-                                    qn.localname(),
+                                    s.2,
                                 ))
                             },
                         )
@@ -276,91 +547,86 @@ mod tests {
     use super::*;
 
     #[test]
-    fn unqualified_raw() {
-        assert_eq!(QualifiedName::new(None, None, "foo").to_string(), "foo")
+    fn unqualified() {
+        let intern = LocalInternment::new();
+        let foo = QualifiedName::new("foo", None, None, &intern);
+        assert_eq!(foo.to_string(), "foo")
     }
     #[test]
-    fn unqualified_rc() {
-        assert_eq!(
-            QualifiedName::new_from_values(None, None, Rc::new(Value::from("foo"))).to_string(),
-            "foo"
-        )
+    fn unqualified_eq() {
+        let intern = LocalInternment::new();
+        let foo = QualifiedName::new("foo", None, None, &intern);
+        let bar = QualifiedName::new("foo", None, None, &intern);
+        assert_eq!(foo, bar)
     }
     #[test]
-    fn qualified_raw() {
-        assert_eq!(
-            QualifiedName::new(
-                Some("http://example.org/whatsinaname/".to_string()),
-                Some("x".to_string()),
-                "foo".to_string()
-            )
-            .to_string(),
-            "x:foo"
-        )
+    fn unqualified_ne() {
+        let intern = LocalInternment::new();
+        let foo = QualifiedName::new("foo", None, None, &intern);
+        let bar = QualifiedName::new("bar", None, None, &intern);
+        assert_ne!(foo, bar)
     }
     #[test]
-    fn qualified_rc() {
-        assert_eq!(
-            QualifiedName::new_from_values(
-                Some(Rc::new(Value::from("http://example.org/whatsinaname/"))),
-                Some(Rc::new(Value::from("x"))),
-                Rc::new(Value::from("foo"))
-            )
-            .to_string(),
-            "x:foo"
-        )
+    fn qualified() {
+        let intern = LocalInternment::new();
+        let foo = QualifiedName::new(
+            "foo",
+            Some("foo".to_string()),
+            Some("http://example.org/whatsinaname/".to_string()),
+            &intern,
+        );
+        assert_eq!(foo.to_string(), "foo:foo")
     }
     #[test]
-    fn eqname() {
-        let e = QualifiedName::try_from("Q{http://example.org/bar}foo")
-            .expect("unable to parse EQName");
-        assert_eq!(e.localname_to_string(), "foo");
-        assert_eq!(
-            e.namespace_uri_to_string(),
-            Some(String::from("http://example.org/bar"))
+    fn qualified_eq() {
+        let intern = LocalInternment::new();
+        let foo = QualifiedName::new(
+            "foo",
+            Some("foo".to_string()),
+            Some("http://example.org/whatsinaname/".to_string()),
+            &intern,
         );
-        assert_eq!(e.prefix_to_string(), None)
+        let bar = QualifiedName::new(
+            "foo",
+            Some("bar".to_string()),
+            Some("http://example.org/whatsinaname/".to_string()),
+            &intern,
+        );
+        assert_eq!(foo, bar)
     }
     #[test]
-    fn hashmap() {
-        let mut h = QHash::<String>::new();
-        h.insert(
-            QualifiedName::new(None, None, "foo"),
-            String::from("this is unprefixed foo"),
+    fn qualified_ne() {
+        let intern = LocalInternment::new();
+        let foo = QualifiedName::new(
+            "foo",
+            Some("foo".to_string()),
+            Some("http://example.org/foo/".to_string()),
+            &intern,
         );
-        h.insert(
-            QualifiedName::new(
-                Some("http://example.org/whatsinaname/".to_string()),
-                Some("x".to_string()),
-                "foo",
-            ),
-            "this is x:foo".to_string(),
+        let bar = QualifiedName::new(
+            "foo",
+            Some("bar".to_string()),
+            Some("http://example.org/bar/".to_string()),
+            &intern,
         );
-        h.insert(
-            QualifiedName::new(
-                Some("http://example.org/whatsinaname/".to_string()),
-                Some("y".to_string()),
-                "bar",
-            ),
-            "this is y:bar".to_string(),
+        assert_ne!(foo, bar)
+    }
+    // TODO: test dropping QNs
+    #[test]
+    fn parse_unqualified() {
+        let intern = LocalInternment::new();
+        let foo = QualifiedName::new(
+            "foo",
+            Some("foo".to_string()),
+            Some("http://example.org/foo/".to_string()),
+            &intern,
         );
-
-        assert_eq!(h.len(), 3);
-        assert_eq!(
-            h.get(&QualifiedName {
-                nsuri: Some(Rc::new(Value::from("http://example.org/whatsinaname/"))),
-                prefix: Some(Rc::new(Value::from("x"))),
-                localname: Rc::new(Value::from("foo")),
-            }),
-            Some(&"this is x:foo".to_string())
+        let bar = QualifiedName::new(
+            "foo",
+            Some("bar".to_string()),
+            Some("http://example.org/bar/".to_string()),
+            &intern,
         );
-        assert_eq!(
-            h.get(&QualifiedName {
-                nsuri: None,
-                prefix: None,
-                localname: Rc::new(Value::from("foo")),
-            }),
-            Some(&"this is unprefixed foo".to_string())
-        );
+        assert_ne!(foo, bar)
     }
 }

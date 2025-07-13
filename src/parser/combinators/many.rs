@@ -1,11 +1,12 @@
 use crate::item::Node;
 use crate::parser::{ParseError, ParseInput};
+use crate::qname::Interner;
 
-pub fn many0<P, R, N: Node>(
+pub fn many0<'a, 'i, P, R, I: Interner + 'i, N: Node>(
     parser: P,
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<R>), ParseError>
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, Vec<R>), ParseError>
 where
-    P: Fn(ParseInput<N>) -> Result<(ParseInput<N>, R), ParseError>,
+    P: Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, R), ParseError>,
 {
     //TODO ERROR IF ANY ERROR OTHER THAN COMBINATOR RETURNED.
     move |mut input| {
@@ -22,11 +23,11 @@ where
 
 ///This is a special combinator, it will reset namespaces on the parser state between iterations
 ///It is only intended for use when parsing the children of an element node.
-pub fn many0nsreset<P, R, N: Node>(
+pub fn many0nsreset<'a, 'i, P, R, I: Interner + 'i, N: Node>(
     parser: P,
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<R>), ParseError>
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, Vec<R>), ParseError>
 where
-    P: Fn(ParseInput<N>) -> Result<(ParseInput<N>, R), ParseError>,
+    P: Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, R), ParseError>,
 {
     //TODO ERROR IF ANY ERROR OTHER THAN COMBINATOR RETURNED.
 
@@ -45,11 +46,11 @@ where
     }
 }
 
-pub fn many1<P, R, N: Node>(
+pub fn many1<'a, 'i, P, R, I: Interner + 'i, N: Node>(
     parser: P,
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<R>), ParseError>
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, Vec<R>), ParseError>
 where
-    P: Fn(ParseInput<N>) -> Result<(ParseInput<N>, R), ParseError>,
+    P: Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, R), ParseError>,
 {
     //TODO ERROR IF ANY ERROR OTHER THAN COMBINATOR RETURNED.
     move |mut input| {

@@ -14,7 +14,7 @@ use crate::item::{Node, Sequence};
 use crate::output::OutputDefinition;
 #[allow(unused_imports)]
 use crate::pattern::Pattern;
-use crate::qname::QualifiedName;
+use crate::qname::{Interner, QualifiedName};
 use crate::transform::booleans::*;
 use crate::transform::callable::{invoke, Callable};
 use crate::transform::construct::*;
@@ -45,7 +45,8 @@ use url::Url;
 /// Contexts are immutable, but frequently are cloned to provide a new context.
 /// Although it is optional, it would be very unusual not to set a result document in a context since nodes cannot be created in the result without one.
 #[derive(Clone, Debug)]
-pub struct Context<N: Node> {
+pub struct Context<'i, I: Interner, N: Node> {
+    pub(crate) intern: &'i I,
     pub(crate) cur: Sequence<N>,                  // The current context
     pub(crate) i: usize, // The index to the item that is the current context item
     pub(crate) previous_context: Option<Item<N>>, // The "current" XPath item, which is really the context item for the invoking context. See XSLT 20.4.1.
@@ -53,22 +54,22 @@ pub struct Context<N: Node> {
     pub(crate) rd: Option<N>,                     // Result document
     // There is no distinction between built-in and user-defined templates
     // Built-in templates have no priority and no document order
-    pub(crate) templates: Vec<Rc<Template<N>>>,
-    pub(crate) current_templates: Vec<Rc<Template<N>>>,
+    pub(crate) templates: Vec<Rc<Template<'i, I, N>>>,
+    pub(crate) current_templates: Vec<Rc<Template<'i, I, N>>>,
     // Named templates and functions
-    pub(crate) callables: HashMap<QualifiedName, Callable<N>>,
+    pub(crate) callables: HashMap<QualifiedName<'i, I>, Callable<'i, I, N>>,
     // Variables, with scoping
     pub(crate) vars: HashMap<String, Vec<Sequence<N>>>,
     // Stylesheet variables, to be evaluated before template processing.
     // (name, value) pairs
-    pub(crate) pre_vars: Vec<(String, Transform<N>)>,
+    pub(crate) pre_vars: Vec<(String, Transform<'i, I, N>)>,
     // Grouping
     pub(crate) current_grouping_key: Option<Rc<Value>>,
     pub(crate) current_group: Sequence<N>,
     // Keys
     // The declaration of a key. Keys are named, and each key can have multiple definitions.
     // Each definition is the pattern that matches nodes and the expression that computes the key value.
-    pub(crate) keys: HashMap<String, Vec<(Pattern<N>, Transform<N>)>>,
+    pub(crate) keys: HashMap<String, Vec<(Pattern<'i, I, N>, Transform<'i, I, N>)>>,
     // The calculated values of keys.
     pub(crate) key_values: HashMap<String, HashMap<String, Vec<N>>>,
     // Output control
@@ -79,9 +80,10 @@ pub struct Context<N: Node> {
     //pub(crate) namespaces: Vec<HashMap<Option<String>, String>>,
 }
 
-impl<N: Node> Context<N> {
-    pub fn new() -> Self {
+impl<'i, I: Interner, N: Node> Context<'i, I, N> {
+    pub fn new(intern: &'i I) -> Self {
         Context {
+            intern,
             cur: Sequence::new(),
             i: 0,
             previous_context: None,
@@ -114,7 +116,7 @@ impl<N: Node> Context<N> {
         self.rd = Some(rd);
     }
     /// Declare a key
-    pub fn declare_key(&mut self, name: String, m: Pattern<N>, u: Transform<N>) {
+    pub fn declare_key(&mut self, name: String, m: Pattern<'i, I, N>, u: Transform<'i, I, N>) {
         if let Some(v) = self.keys.get_mut(&name) {
             v.push((m, u))
         } else {
@@ -147,7 +149,7 @@ impl<N: Node> Context<N> {
         })
     }
     /// Add a named attribute set. This replaces any previously declared attribute set with the same name
-    pub fn attribute_set(&mut self, _name: QualifiedName, _body: Vec<Transform<N>>) {}
+    pub fn attribute_set(&mut self, _name: QualifiedName<'i, I>, _body: Vec<Transform<'i, I, N>>) {}
     /// Set the value of a variable. If the variable already exists, then this creates a new inner scope.
     pub fn var_push(&mut self, name: String, value: Sequence<N>) {
         match self.vars.get_mut(name.as_str()) {
@@ -174,12 +176,12 @@ impl<N: Node> Context<N> {
         })
     }
     /// Add a stylesheet variable
-    pub fn pre_var_push(&mut self, name: String, x: Transform<N>) {
+    pub fn pre_var_push(&mut self, name: String, x: Transform<'i, I, N>) {
         self.pre_vars.push((name, x));
     }
 
     /// Callable components: named templates and user-defined functions
-    pub fn callable_push(&mut self, qn: QualifiedName, c: Callable<N>) {
+    pub fn callable_push(&mut self, qn: QualifiedName<'i, I>, c: Callable<'i, I, N>) {
         self.callables.insert(qn, c);
     }
 
@@ -229,7 +231,7 @@ impl<N: Node> Context<N> {
                             if templates[0].priority == templates[1].priority
                                 && templates[0].import.len() == templates[1].import.len()
                             {
-                                let mut candidates: Vec<Rc<Template<N>>> = templates
+                                let mut candidates: Vec<Rc<Template<'i, I, N>>> = templates
                                     .iter()
                                     .take_while(|t| {
                                         t.priority == templates[0].priority
@@ -337,8 +339,8 @@ impl<N: Node> Context<N> {
         &self,
         stctxt: &mut StaticContext<N, F, G, H>,
         i: &Item<N>,
-        m: &Option<Rc<QualifiedName>>,
-    ) -> Result<Vec<Rc<Template<N>>>, Error> {
+        m: &Option<QualifiedName<'i, I>>,
+    ) -> Result<Vec<Rc<Template<'i, I, N>>>, Error> {
         let mut candidates =
             self.templates
                 .iter()
@@ -403,7 +405,7 @@ impl<N: Node> Context<N> {
     >(
         &self,
         stctxt: &mut StaticContext<N, F, G, H>,
-        t: &Transform<N>,
+        t: &Transform<'i, I, N>,
     ) -> Result<Sequence<N>, Error> {
         match t {
             Transform::Root => root(self),
@@ -488,7 +490,7 @@ impl<N: Node> Context<N> {
             }
             Transform::Key(n, v, _, _) => key(self, stctxt, n, v),
             Transform::SystemProperty(p, ns) => system_property(self, stctxt, p, ns),
-            Transform::AvailableSystemProperties => available_system_properties(),
+            Transform::AvailableSystemProperties => available_system_properties::<I, N>(),
             Transform::Document(uris, base) => document(self, stctxt, uris, base),
             Transform::Invoke(qn, a, ns) => invoke(self, stctxt, qn, a, ns),
             Transform::Message(b, s, e, t) => message(self, stctxt, b, s, e, t),
@@ -502,10 +504,10 @@ impl<N: Node> Context<N> {
     }
 }
 
-impl<N: Node> From<Sequence<N>> for Context<N> {
-    fn from(value: Sequence<N>) -> Self {
+impl<'i, I: Interner, N: Node> From<(Sequence<N>, &'i I)> for Context<'i, I, N> {
+    fn from(a: (Sequence<N>, &'i I)) -> Self {
         Context {
-            cur: value,
+            cur: a.0,
             i: 0,
             previous_context: None,
             depth: 0,
@@ -521,16 +523,17 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
             current_group: Sequence::new(),
             od: OutputDefinition::new(),
             base_url: None,
+            intern: a.1,
         }
     }
 }
 
 /// Builder for a [Context]
-pub struct ContextBuilder<N: Node>(Context<N>);
+pub struct ContextBuilder<'i, I: Interner, N: Node>(Context<'i, I, N>);
 
-impl<N: Node> ContextBuilder<N> {
-    pub fn new() -> Self {
-        ContextBuilder(Context::new())
+impl<'i, I: Interner, N: Node> ContextBuilder<'i, I, N> {
+    pub fn new(intern: &'i I) -> Self {
+        ContextBuilder(Context::new(intern))
     }
     pub fn context(mut self, s: Sequence<N>) -> Self {
         self.0.cur = s;
@@ -560,17 +563,17 @@ impl<N: Node> ContextBuilder<N> {
         self.0.rd = Some(rd);
         self
     }
-    pub fn template(mut self, t: Template<N>) -> Self {
+    pub fn template(mut self, t: Template<'i, I, N>) -> Self {
         self.0.templates.push(Rc::new(t));
         self
     }
-    pub fn template_all(mut self, v: Vec<Template<N>>) -> Self {
+    pub fn template_all(mut self, v: Vec<Template<'i, I, N>>) -> Self {
         for t in v {
             self.0.templates.push(Rc::new(t))
         }
         self
     }
-    pub fn current_templates(mut self, c: Vec<Rc<Template<N>>>) -> Self {
+    pub fn current_templates(mut self, c: Vec<Rc<Template<'i, I, N>>>) -> Self {
         self.0.current_templates = c;
         self
     }
@@ -590,18 +593,18 @@ impl<N: Node> ContextBuilder<N> {
         self.0.base_url = Some(b);
         self
     }
-    pub fn callable(mut self, qn: QualifiedName, c: Callable<N>) -> Self {
+    pub fn callable(mut self, qn: QualifiedName<'i, I>, c: Callable<'i, I, N>) -> Self {
         self.0.callables.insert(qn, c);
         self
     }
-    pub fn build(self) -> Context<N> {
+    pub fn build(self) -> Context<'i, I, N> {
         self.0
     }
 }
 
 /// Derive a new [Context] from an old [Context]. The context item in the old context becomes the "current" item in the new context.
-impl<N: Node> From<&Context<N>> for ContextBuilder<N> {
-    fn from(c: &Context<N>) -> Self {
+impl<'i, I: Interner, N: Node> From<&Context<'i, I, N>> for ContextBuilder<'i, I, N> {
+    fn from(c: &Context<'i, I, N>) -> Self {
         if c.cur.len() > c.i {
             ContextBuilder(c.clone()).previous_context(Some(c.cur[c.i].clone()))
         } else {

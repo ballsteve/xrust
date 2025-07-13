@@ -15,9 +15,10 @@ use crate::parser::xml::dtd::intsubset::intsubset;
 use crate::parser::xml::dtd::pereference::petextreference;
 use crate::parser::xml::qname::qualname;
 use crate::parser::{ParseError, ParseInput};
+use crate::qname::Interner;
 
-pub(crate) fn pedecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError>
-{
+pub(crate) fn pedecl<'a, 'i, I: Interner, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, ()), ParseError> {
     move |input| match wellformed_ver(
         tuple9(
             tag("<!ENTITY"),
@@ -73,7 +74,7 @@ pub(crate) fn pedecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<
                     if !state2.currentlyexternal {
                         match intsubset()((res.as_str(), state2.clone())) {
                             Ok(((_i, _s), _)) => {}
-                            Err(_) => return Err(ParseError::NotWellFormed(res)),
+                            Err(_) => return Err(ParseError::NotWellFormed(res.clone())),
                         }
                     };
 

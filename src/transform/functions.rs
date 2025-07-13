@@ -5,7 +5,7 @@ use std::rc::Rc;
 use url::Url;
 
 use crate::item::{Item, Node, Sequence};
-use crate::qname::QualifiedName;
+use crate::qname::{Interner, QualifiedName, UriQualifiedName};
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::{NamespaceMap, Transform};
 use crate::value::Value;
@@ -13,12 +13,12 @@ use crate::xdmerror::{Error, ErrorKind};
 use crate::SequenceTrait;
 
 /// XPath position function.
-pub fn position<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
+pub fn position<'i, I: Interner, N: Node>(ctxt: &Context<'i, I, N>) -> Result<Sequence<N>, Error> {
     Ok(vec![Item::Value(Rc::new(Value::from(ctxt.i as i64 + 1)))])
 }
 
 /// XPath last function.
-pub fn last<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
+pub fn last<'i, I: Interner, N: Node>(ctxt: &Context<'i, I, N>) -> Result<Sequence<N>, Error> {
     Ok(vec![Item::Value(Rc::new(Value::from(
         ctxt.cur.len() as i64
     )))])
@@ -26,14 +26,16 @@ pub fn last<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
 
 /// XPath count function.
 pub fn tr_count<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    s: &Transform<N>,
+    s: &Transform<'i, I, N>,
 ) -> Result<Sequence<N>, Error> {
     Ok(vec![Item::Value(Rc::new(Value::from(
         ctxt.dispatch(stctxt, s)?.len() as i64,
@@ -42,14 +44,16 @@ pub fn tr_count<
 
 /// XPath generate-id function.
 pub fn generate_id<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    s: &Option<Box<Transform<N>>>,
+    s: &Option<Box<Transform<'i, I, N>>>,
 ) -> Result<Sequence<N>, Error> {
     let i = match s {
         None => ctxt.cur[ctxt.i].clone(),
@@ -78,23 +82,22 @@ const XSLTNS: &str = "http://www.w3.org/1999/XSL/Transform";
 
 /// XSLT system-property function.
 pub fn system_property<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    s: &Box<Transform<N>>,
+    s: &Box<Transform<'i, I, N>>,
     ns: &Rc<NamespaceMap>,
 ) -> Result<Sequence<N>, Error> {
     let prop = ctxt.dispatch(stctxt, s)?;
     if prop.len() == 1 {
-        let qn = QualifiedName::try_from((prop.to_string().as_str(), ns.clone()))?;
-        match (
-            qn.namespace_uri_to_string().as_deref(),
-            qn.localname_to_string().as_str(),
-        ) {
+        let qn = QualifiedName::try_from((prop.to_string().as_str(), ns.clone(), ctxt.intern))?;
+        match (qn.namespace_uri().as_deref(), qn.local_part().as_str()) {
             (Some(XSLTNS), "version") => Ok(vec![Item::Value(Rc::new(Value::from("0.9")))]),
             (Some(XSLTNS), "vendor") => Ok(vec![Item::Value(Rc::new(Value::from(
                 "Steve Ball, Daniel Murphy",
@@ -148,72 +151,59 @@ pub fn system_property<
 }
 
 /// XSLT available-system-property function.
-pub fn available_system_properties<N: Node>() -> Result<Sequence<N>, Error> {
+pub fn available_system_properties<'i, I: Interner, N: Node>() -> Result<Sequence<N>, Error> {
     Ok(vec![
-        Item::Value(Rc::new(Value::from(QualifiedName::new(
-            Some(XSLTNS.to_string()),
-            None,
+        Item::Value(Rc::new(Value::from(UriQualifiedName::new(
             String::from("version"),
-        )))),
-        Item::Value(Rc::new(Value::from(QualifiedName::new(
             Some(XSLTNS.to_string()),
-            None,
+        )))),
+        Item::Value(Rc::new(Value::from(UriQualifiedName::new(
             String::from("vendor"),
-        )))),
-        Item::Value(Rc::new(Value::from(QualifiedName::new(
             Some(XSLTNS.to_string()),
-            None,
+        )))),
+        Item::Value(Rc::new(Value::from(UriQualifiedName::new(
             String::from("vendor-url"),
-        )))),
-        Item::Value(Rc::new(Value::from(QualifiedName::new(
             Some(XSLTNS.to_string()),
-            None,
+        )))),
+        Item::Value(Rc::new(Value::from(UriQualifiedName::new(
             String::from("product-name"),
-        )))),
-        Item::Value(Rc::new(Value::from(QualifiedName::new(
             Some(XSLTNS.to_string()),
-            None,
+        )))),
+        Item::Value(Rc::new(Value::from(UriQualifiedName::new(
             String::from("product-version"),
-        )))),
-        Item::Value(Rc::new(Value::from(QualifiedName::new(
             Some(XSLTNS.to_string()),
-            None,
+        )))),
+        Item::Value(Rc::new(Value::from(UriQualifiedName::new(
             String::from("is-schema-aware"),
-        )))),
-        Item::Value(Rc::new(Value::from(QualifiedName::new(
             Some(XSLTNS.to_string()),
-            None,
+        )))),
+        Item::Value(Rc::new(Value::from(UriQualifiedName::new(
             String::from("supports-serialization"),
-        )))),
-        Item::Value(Rc::new(Value::from(QualifiedName::new(
             Some(XSLTNS.to_string()),
-            None,
+        )))),
+        Item::Value(Rc::new(Value::from(UriQualifiedName::new(
             String::from("supports-backward-compatibility"),
-        )))),
-        Item::Value(Rc::new(Value::from(QualifiedName::new(
             Some(XSLTNS.to_string()),
-            None,
+        )))),
+        Item::Value(Rc::new(Value::from(UriQualifiedName::new(
             String::from("supports-namspace-axis"),
-        )))),
-        Item::Value(Rc::new(Value::from(QualifiedName::new(
             Some(XSLTNS.to_string()),
-            None,
+        )))),
+        Item::Value(Rc::new(Value::from(UriQualifiedName::new(
             String::from("supports-streaming"),
-        )))),
-        Item::Value(Rc::new(Value::from(QualifiedName::new(
             Some(XSLTNS.to_string()),
-            None,
+        )))),
+        Item::Value(Rc::new(Value::from(UriQualifiedName::new(
             String::from("supports-dynamic-evaluation"),
-        )))),
-        Item::Value(Rc::new(Value::from(QualifiedName::new(
             Some(XSLTNS.to_string()),
-            None,
+        )))),
+        Item::Value(Rc::new(Value::from(UriQualifiedName::new(
             String::from("xpath-version"),
-        )))),
-        Item::Value(Rc::new(Value::from(QualifiedName::new(
             Some(XSLTNS.to_string()),
-            None,
+        )))),
+        Item::Value(Rc::new(Value::from(UriQualifiedName::new(
             String::from("xsd-version"),
+            Some(XSLTNS.to_string()),
         )))),
     ])
 }
@@ -222,15 +212,17 @@ pub fn available_system_properties<N: Node>() -> Result<Sequence<N>, Error> {
 /// The first argument is a sequence of URI references. Each reference is cast to xs:anyURI.
 /// Relative URIs are resolved against the base URI of the second argument. The default is to use the baseURI of the context (i.e. the XSL stylesheet).
 pub fn document<
+    'i,
+    I: Interner,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    ctxt: &Context<N>,
+    ctxt: &Context<'i, I, N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    uris: &Box<Transform<N>>,
-    _base: &Option<Box<Transform<N>>>,
+    uris: &Box<Transform<'i, I, N>>,
+    _base: &Option<Box<Transform<'i, I, N>>>,
 ) -> Result<Sequence<N>, Error> {
     let u_list = ctxt.dispatch(stctxt, uris)?;
     if let Some(h) = &mut stctxt.fetcher {
@@ -259,16 +251,16 @@ pub fn document<
     }
 }
 
-pub(crate) fn tr_error<N: Node>(
-    _ctxt: &Context<N>,
+pub(crate) fn tr_error<'i, I: Interner, N: Node>(
+    _ctxt: &Context<'i, I, N>,
     kind: &ErrorKind,
     msg: &String,
 ) -> Result<Sequence<N>, Error> {
     Err(Error::new(*kind, msg.clone()))
 }
 
-pub(crate) fn not_implemented<N: Node>(
-    _ctxt: &Context<N>,
+pub(crate) fn not_implemented<'i, I: Interner, N: Node>(
+    _ctxt: &Context<'i, I, N>,
     msg: &String,
 ) -> Result<Sequence<N>, Error> {
     Err(Error::new(ErrorKind::NotImplemented, msg.clone()))

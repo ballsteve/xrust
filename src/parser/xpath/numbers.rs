@@ -11,17 +11,22 @@ use crate::parser::combinators::tuple::{tuple2, tuple3};
 use crate::parser::combinators::whitespace::xpwhitespace;
 use crate::parser::xpath::nodes::{path_expr, union_expr};
 use crate::parser::{ParseError, ParseInput};
+use crate::qname::Interner;
 use crate::transform::{ArithmeticOperand, ArithmeticOperator, Transform};
 
 // RangeExpr ::= AdditiveExpr ( 'to' AdditiveExpr)?
-pub(crate) fn range_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+pub(crate) fn range_expr<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(
+            ParseInput<'a, 'i, I, N>,
+        ) -> Result<(ParseInput<'a, 'i, I, N>, Transform<'i, I, N>), ParseError>
+        + 'a,
+> {
     Box::new(map(
         pair(
-            additive_expr::<N>(),
+            additive_expr::<I, N>(),
             opt(tuple2(
                 tuple3(xpwhitespace(), tag("to"), xpwhitespace()),
-                additive_expr::<N>(),
+                additive_expr::<I, N>(),
             )),
         ),
         |(v, o)| match o {
@@ -32,11 +37,15 @@ pub(crate) fn range_expr<'a, N: Node + 'a>(
 }
 
 // AdditiveExpr ::= MultiplicativeExpr ( ('+' | '-') MultiplicativeExpr)*
-fn additive_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn additive_expr<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(
+            ParseInput<'a, 'i, I, N>,
+        ) -> Result<(ParseInput<'a, 'i, I, N>, Transform<'i, I, N>), ParseError>
+        + 'a,
+> {
     Box::new(map(
         pair(
-            multiplicative_expr::<N>(),
+            multiplicative_expr::<I, N>(),
             many0(tuple2(
                 alt2(
                     map(
@@ -56,19 +65,19 @@ fn additive_expr<'a, N: Node + 'a>(
                         |(_, x, _)| x,
                     ),
                 ),
-                multiplicative_expr::<N>(),
+                multiplicative_expr::<I, N>(),
             )),
         ),
         |(mut a, b)| {
             if b.is_empty() {
                 if a.len() == 1 {
-                    let c: ArithmeticOperand<N> = a.pop().unwrap();
+                    let c: ArithmeticOperand<I, N> = a.pop().unwrap();
                     c.operand
                 } else {
                     Transform::Arithmetic(a)
                 }
             } else {
-                let mut e: Vec<ArithmeticOperand<N>> = b
+                let mut e: Vec<ArithmeticOperand<I, N>> = b
                     .iter()
                     .map(|(c, d)| ArithmeticOperand::new(*c, Transform::Arithmetic(d.clone())))
                     .collect();
@@ -81,12 +90,16 @@ fn additive_expr<'a, N: Node + 'a>(
 }
 
 // MultiplicativeExpr ::= UnionExpr ( ('*' | 'div' | 'idiv' | 'mod') UnionExpr)*
-fn multiplicative_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<ArithmeticOperand<N>>), ParseError> + 'a>
-{
+fn multiplicative_expr<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(
+            ParseInput<'a, 'i, I, N>,
+        )
+            -> Result<(ParseInput<'a, 'i, I, N>, Vec<ArithmeticOperand<'i, I, N>>), ParseError>
+        + 'a,
+> {
     Box::new(map(
         pair(
-            union_expr::<N>(),
+            union_expr::<I, N>(),
             many0(tuple2(
                 alt4(
                     tuple3(xpwhitespace(), map(tag("*"), |_| "*"), xpwhitespace()),
@@ -94,7 +107,7 @@ fn multiplicative_expr<'a, N: Node + 'a>(
                     tuple3(xpwhitespace(), map(tag("idiv"), |_| "idiv"), xpwhitespace()),
                     tuple3(xpwhitespace(), map(tag("mod"), |_| "mod"), xpwhitespace()),
                 ),
-                union_expr::<N>(),
+                union_expr::<I, N>(),
             )),
         ),
         |(a, b)| {
@@ -104,7 +117,7 @@ fn multiplicative_expr<'a, N: Node + 'a>(
                 // The arguments to the constructor are the items to be summed
                 // These are pair-wise items: first is the operator,
                 // second is the combinator for the value
-                let mut r: Vec<ArithmeticOperand<N>> = Vec::new();
+                let mut r: Vec<ArithmeticOperand<I, N>> = Vec::new();
 
                 r.push(ArithmeticOperand::new(ArithmeticOperator::Noop, a));
 
@@ -118,10 +131,14 @@ fn multiplicative_expr<'a, N: Node + 'a>(
 }
 
 // UnaryExpr ::= ('-' | '+')* ValueExpr
-pub(crate) fn unary_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+pub(crate) fn unary_expr<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(
+            ParseInput<'a, 'i, I, N>,
+        ) -> Result<(ParseInput<'a, 'i, I, N>, Transform<'i, I, N>), ParseError>
+        + 'a,
+> {
     Box::new(map(
-        pair(many0(alt2(tag("-"), tag("+"))), value_expr::<N>()),
+        pair(many0(alt2(tag("-"), tag("+"))), value_expr::<I, N>()),
         |(u, v)| {
             if u.is_empty() {
                 v
@@ -133,10 +150,17 @@ pub(crate) fn unary_expr<'a, N: Node + 'a>(
 }
 
 // ValueExpr (SBox<dyneMapExpr) ::= PathExpr ('!' PathExpr)*
-fn value_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn value_expr<'a, 'i: 'a, I: Interner, N: Node + 'a>() -> Box<
+    dyn Fn(
+            ParseInput<'a, 'i, I, N>,
+        ) -> Result<(ParseInput<'a, 'i, I, N>, Transform<'i, I, N>), ParseError>
+        + 'a,
+> {
     Box::new(map(
-        pair(path_expr::<N>(), many0(tuple2(tag("!"), path_expr::<N>()))),
+        pair(
+            path_expr::<I, N>(),
+            many0(tuple2(tag("!"), path_expr::<I, N>())),
+        ),
         |(u, v)| {
             if v.is_empty() {
                 u

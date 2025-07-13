@@ -8,17 +8,18 @@ use crate::parser::combinators::whitespace::whitespace0;
 use crate::parser::xml::dtd::misc::nmtoken;
 use crate::parser::xml::dtd::notation::notationtype;
 use crate::parser::{ParseError, ParseInput};
+use crate::qname::Interner;
 use crate::xmldecl::AttType;
 
 //EnumeratedType ::= NotationType | Enumeration
-pub(crate) fn enumeratedtype<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, AttType), ParseError> {
+pub(crate) fn enumeratedtype<'a, 'i, I: Interner + 'i, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, AttType), ParseError> {
     alt2(notationtype(), enumeration())
 }
 
 //Enumeration ::= '(' S? Nmtoken (S? '|' S? Nmtoken)* S? ')'
-fn enumeration<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, AttType), ParseError>
-{
+fn enumeration<'a, 'i, I: Interner + 'i, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, I, N>) -> Result<(ParseInput<'a, 'i, I, N>, AttType), ParseError> {
     map(
         tuple6(
             tag("("),
