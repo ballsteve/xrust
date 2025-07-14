@@ -71,7 +71,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::item::{Item, Node, NodeType, Sequence};
-use crate::output::*;
+use crate::output::{OutputDefinition, OutputSpec};
 use crate::parser::avt::parse as parse_avt;
 use crate::parser::xpath::parse;
 use crate::pattern::{Branch, Pattern};
@@ -81,10 +81,10 @@ use crate::transform::context::{Context, ContextBuilder};
 use crate::transform::numbers::{Level, Numbering};
 use crate::transform::template::Template;
 use crate::transform::{
-    in_scope_namespaces, Axis, Grouping, KindTest, NameTest, NodeMatch, NodeTest, Order, Transform,
-    WildcardOrName,
+    Axis, Grouping, KindTest, NameTest, NodeMatch, NodeTest, Order, Transform, WildcardOrName,
+    in_scope_namespaces,
 };
-use crate::value::*;
+use crate::value::{Value, ValueBuilder, ValueData};
 use crate::xdmerror::*;
 use std::convert::TryFrom;
 use url::Url;
@@ -152,7 +152,7 @@ where
             return Result::Err(Error::new(
                 ErrorKind::TypeError,
                 String::from("document does not have document element"),
-            ))
+            ));
         }
     };
     if rnit.next().is_some() {
@@ -713,7 +713,7 @@ fn to_transform<N: Node>(
     let ns = in_scope_namespaces(Some(n.clone()));
 
     match n.node_type() {
-        NodeType::Text => Ok(Transform::Literal(Item::Value(Rc::new(Value::String(
+        NodeType::Text => Ok(Transform::Literal(Item::Value(Rc::new(Value::from(
             n.to_string(),
         ))))),
         NodeType::Element => {
@@ -729,18 +729,23 @@ fn to_transform<N: Node>(
                     ));
                     if !doe.to_string().is_empty() {
                         match &doe.to_string()[..] {
-                            "yes" => Ok(Transform::Literal(Item::Value(Rc::new(Value::String(
-                                n.to_string(),
-                            ))))),
+                            "yes" => Ok(Transform::Literal(Item::Value(Rc::new(
+                                ValueBuilder::new()
+                                    .value(ValueData::String(n.to_string()))
+                                    .output(OutputSpec::NoEscape)
+                                    .build(),
+                            )))),
                             "no" => {
-                                let text = n
-                                    .to_string()
-                                    .replace('&', "&amp;")
-                                    .replace('>', "&gt;")
-                                    .replace('<', "&lt;")
-                                    .replace('\'', "&apos;")
-                                    .replace('\"', "&quot;");
-                                Ok(Transform::Literal(Item::Value(Rc::new(Value::from(text)))))
+                                /*let text = n
+                                .to_string()
+                                .replace('&', "&amp;")
+                                .replace('>', "&gt;")
+                                .replace('<', "&lt;")
+                                .replace('\'', "&apos;")
+                                .replace('\"', "&quot;");*/
+                                Ok(Transform::Literal(Item::Value(Rc::new(Value::from(
+                                    n.to_string(),
+                                )))))
                             }
                             _ => Err(Error::new(
                                 ErrorKind::TypeError,
@@ -771,11 +776,11 @@ fn to_transform<N: Node>(
                         match &doe.to_string()[..] {
                             "yes" => Ok(Transform::LiteralText(
                                 Box::new(parse::<N>(&sel.to_string(), Some(n.clone()))?),
-                                true,
+                                OutputSpec::NoEscape,
                             )),
                             "no" => Ok(Transform::LiteralText(
                                 Box::new(parse::<N>(&sel.to_string(), Some(n.clone()))?),
-                                false,
+                                OutputSpec::Normal,
                             )),
                             _ => Err(Error::new(
                                 ErrorKind::TypeError,
@@ -786,7 +791,7 @@ fn to_transform<N: Node>(
                     } else {
                         Ok(Transform::LiteralText(
                             Box::new(parse::<N>(&sel.to_string(), Some(n.clone()))?),
-                            false,
+                            OutputSpec::Normal,
                         ))
                     }
                 }
@@ -1328,13 +1333,7 @@ fn to_transform<N: Node>(
         NodeType::Attribute => {
             let x = parse_avt(n.to_string().as_str(), Some(n.clone()))?;
             // Get value as a Value
-            Ok(Transform::LiteralAttribute(
-                n.name(),
-                Box::new(x),
-                //Box::new(Transform::Literal(Item::Value(Rc::new(Value::String(
-                //n.to_string(),
-                //))))),
-            ))
+            Ok(Transform::LiteralAttribute(n.name(), Box::new(x)))
         }
         _ => {
             // TODO: literal elements, etc, pretty much everything in the XSLT spec

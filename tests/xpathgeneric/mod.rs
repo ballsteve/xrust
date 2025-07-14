@@ -9,7 +9,7 @@ use xrust::qname::QualifiedName;
 use xrust::transform::callable::ActualParameters;
 use xrust::transform::context::{Context, ContextBuilder, StaticContextBuilder};
 use xrust::transform::{Axis, KindTest, NodeMatch, NodeTest, Transform};
-use xrust::value::Value;
+use xrust::value::{Value, ValueData};
 use xrust::xdmerror::{Error, ErrorKind};
 
 fn no_src_no_result<N: Node>(e: impl AsRef<str>) -> Result<Sequence<N>, Error> {
@@ -1024,8 +1024,8 @@ where
     let s: Sequence<N> = no_src_no_result("boolean('abcdeabcde')")?;
     assert_eq!(s.len(), 1);
     match &s[0] {
-        Item::Value(v) => match **v {
-            Value::Boolean(b) => assert_eq!(b, true),
+        Item::Value(v) => match v.value {
+            ValueData::Boolean(b) => assert_eq!(b, true),
             _ => panic!("not a singleton boolean true value"),
         },
         _ => panic!("not a value"),
@@ -1040,8 +1040,8 @@ where
     let s: Sequence<N> = no_src_no_result("boolean('')")?;
     assert_eq!(s.len(), 1);
     match &s[0] {
-        Item::Value(v) => match **v {
-            Value::Boolean(b) => assert_eq!(b, false),
+        Item::Value(v) => match v.value {
+            ValueData::Boolean(b) => assert_eq!(b, false),
             _ => panic!("not a singleton boolean true value"),
         },
         _ => panic!("not a value"),
@@ -1057,8 +1057,8 @@ where
     let s: Sequence<N> = no_src_no_result("not('')")?;
     assert_eq!(s.len(), 1);
     match &s[0] {
-        Item::Value(v) => match **v {
-            Value::Boolean(b) => assert_eq!(b, true),
+        Item::Value(v) => match v.value {
+            ValueData::Boolean(b) => assert_eq!(b, true),
             _ => panic!("not a singleton boolean true value"),
         },
         _ => panic!("not a value"),
@@ -1073,8 +1073,8 @@ where
     let s: Sequence<N> = no_src_no_result("not('abc')")?;
     assert_eq!(s.len(), 1);
     match &s[0] {
-        Item::Value(v) => match **v {
-            Value::Boolean(b) => assert_eq!(b, false),
+        Item::Value(v) => match v.value {
+            ValueData::Boolean(b) => assert_eq!(b, false),
             _ => panic!("not a singleton boolean true value"),
         },
         _ => panic!("not a value"),
@@ -1090,8 +1090,8 @@ where
     let s: Sequence<N> = no_src_no_result("true()")?;
     assert_eq!(s.len(), 1);
     match &s[0] {
-        Item::Value(v) => match **v {
-            Value::Boolean(b) => assert_eq!(b, true),
+        Item::Value(v) => match v.value {
+            ValueData::Boolean(b) => assert_eq!(b, true),
             _ => panic!("not a singleton boolean true value"),
         },
         _ => panic!("not a value"),
@@ -1106,8 +1106,8 @@ where
     let s: Sequence<N> = no_src_no_result("false()")?;
     assert_eq!(s.len(), 1);
     match &s[0] {
-        Item::Value(v) => match **v {
-            Value::Boolean(b) => assert_eq!(b, false),
+        Item::Value(v) => match v.value {
+            ValueData::Boolean(b) => assert_eq!(b, false),
             _ => panic!("not a singleton boolean true value"),
         },
         _ => panic!("not a value"),
@@ -1123,8 +1123,8 @@ where
     let s: Sequence<N> = no_src_no_result("number('123')")?;
     assert_eq!(s.len(), 1);
     match &s[0] {
-        Item::Value(v) => match **v {
-            Value::Integer(i) => assert_eq!(i, 123),
+        Item::Value(v) => match v.value {
+            ValueData::Integer(i) => assert_eq!(i, 123),
             _ => panic!("not a singleton integer value, got \"{}\"", s.to_string()),
         },
         _ => panic!("not a value"),
@@ -1139,8 +1139,8 @@ where
     let s: Sequence<N> = no_src_no_result("number('123.456')")?;
     assert_eq!(s.len(), 1);
     match &s[0] {
-        Item::Value(v) => match **v {
-            Value::Double(d) => assert_eq!(d, 123.456),
+        Item::Value(v) => match v.value {
+            ValueData::Double(d) => assert_eq!(d, 123.456),
             _ => panic!("not a singleton double value, got \"{}\"", s.to_string()),
         },
         _ => panic!("not a value"),
@@ -1156,8 +1156,8 @@ where
     let s: Sequence<N> = no_src_no_result("sum(('123.456', 10, 20, '0'))")?;
     assert_eq!(s.len(), 1);
     match &s[0] {
-        Item::Value(v) => match **v {
-            Value::Double(d) => assert_eq!(d, 123.456 + 10.0 + 20.0),
+        Item::Value(v) => match v.value {
+            ValueData::Double(d) => assert_eq!(d, 123.456 + 10.0 + 20.0),
             _ => panic!("not a singleton double value"),
         },
         _ => panic!("not a value"),
@@ -1173,8 +1173,8 @@ where
     let s: Sequence<N> = no_src_no_result("avg(('123.456', 10, 20, '0'))")?;
     assert_eq!(s.len(), 1);
     match &s[0] {
-        Item::Value(v) => match **v {
-            Value::Double(d) => assert!(d - 38.364 < 0.01),
+        Item::Value(v) => match v.value {
+            ValueData::Double(d) => assert!(d - 38.364 < 0.01),
             _ => panic!("not a singleton double value"),
         },
         _ => panic!("not a value"),
@@ -1190,8 +1190,8 @@ where
     let s: Sequence<N> = no_src_no_result("min(('123.456', 10, 20, '0'))")?;
     assert_eq!(s.len(), 1);
     match &s[0] {
-        Item::Value(v) => match **v {
-            Value::Double(d) => assert_eq!(d, 0.0),
+        Item::Value(v) => match v.value {
+            ValueData::Double(d) => assert_eq!(d, 0.0),
             _ => panic!("not a singleton double value"),
         },
         _ => panic!("not a value"),
@@ -1207,8 +1207,8 @@ where
     let s: Sequence<N> = no_src_no_result("max(('123.456', 10, 20, '0'))")?;
     assert_eq!(s.len(), 1);
     match &s[0] {
-        Item::Value(v) => match **v {
-            Value::Double(d) => assert_eq!(d, 123.456),
+        Item::Value(v) => match v.value {
+            ValueData::Double(d) => assert_eq!(d, 123.456),
             _ => panic!("not a singleton double value"),
         },
         _ => panic!("not a value"),
@@ -1224,8 +1224,8 @@ where
     let s: Sequence<N> = no_src_no_result("floor(123.456)")?;
     assert_eq!(s.len(), 1);
     match &s[0] {
-        Item::Value(v) => match **v {
-            Value::Double(d) => assert_eq!(d, 123.0),
+        Item::Value(v) => match v.value {
+            ValueData::Double(d) => assert_eq!(d, 123.0),
             _ => panic!("not a singleton double value"),
         },
         _ => panic!("not a value"),
@@ -1241,8 +1241,8 @@ where
     let s: Sequence<N> = no_src_no_result("ceiling(123.456)")?;
     assert_eq!(s.len(), 1);
     match &s[0] {
-        Item::Value(v) => match **v {
-            Value::Double(d) => assert_eq!(d, 124.0),
+        Item::Value(v) => match v.value {
+            ValueData::Double(d) => assert_eq!(d, 124.0),
             _ => panic!("not a singleton double value"),
         },
         _ => panic!("not a value"),
@@ -1258,8 +1258,8 @@ where
     let s: Sequence<N> = no_src_no_result("round(123.456)")?;
     assert_eq!(s.len(), 1);
     match &s[0] {
-        Item::Value(v) => match **v {
-            Value::Double(d) => assert_eq!(d, 123.0),
+        Item::Value(v) => match v.value {
+            ValueData::Double(d) => assert_eq!(d, 123.0),
             _ => panic!("not a singleton double value"),
         },
         _ => panic!("not a value"),
@@ -1274,8 +1274,8 @@ where
     let s: Sequence<N> = no_src_no_result("round(123.654)")?;
     assert_eq!(s.len(), 1);
     match &s[0] {
-        Item::Value(v) => match **v {
-            Value::Double(d) => assert_eq!(d, 124.0),
+        Item::Value(v) => match v.value {
+            ValueData::Double(d) => assert_eq!(d, 124.0),
             _ => panic!("not a singleton double value"),
         },
         _ => panic!("not a value"),
@@ -1291,8 +1291,8 @@ where
     let s: Sequence<N> = no_src_no_result("count((1, 2, 3, 4))")?;
     assert_eq!(s.len(), 1);
     match &s[0] {
-        Item::Value(v) => match **v {
-            Value::Integer(d) => assert_eq!(d, 4),
+        Item::Value(v) => match v.value {
+            ValueData::Integer(d) => assert_eq!(d, 4),
             _ => panic!("not a singleton integer value"),
         },
         _ => panic!("not a value"),
@@ -1336,8 +1336,8 @@ where
     let s: Sequence<N> = no_src_no_result("format-number(456.789, '#.##')")?;
     assert_eq!(s.len(), 1);
     match &s[0] {
-        Item::Value(v) => match &**v {
-            Value::String(d) => assert_eq!(d, "456.79"),
+        Item::Value(v) => match &v.value {
+            ValueData::String(d) => assert_eq!(d, "456.79"),
             _ => panic!("not a singleton double value"),
         },
         _ => panic!("not a value"),

@@ -24,7 +24,7 @@ pub(crate) fn reference<N: Node>(
                             .doc
                             .clone()
                             .unwrap()
-                            .new_text(Rc::new(Value::String("&".to_string())))
+                            .new_text(Rc::new(Value::from("&".to_string())))
                             .expect("unable to create text node")],
                     )),
                     "gt" => Ok((
@@ -33,7 +33,7 @@ pub(crate) fn reference<N: Node>(
                             .doc
                             .clone()
                             .unwrap()
-                            .new_text(Rc::new(Value::String(">".to_string())))
+                            .new_text(Rc::new(Value::from(">".to_string())))
                             .expect("unable to create text node")],
                     )),
                     "lt" => Ok((
@@ -42,7 +42,7 @@ pub(crate) fn reference<N: Node>(
                             .doc
                             .clone()
                             .unwrap()
-                            .new_text(Rc::new(Value::String("<".to_string())))
+                            .new_text(Rc::new(Value::from("<".to_string())))
                             .expect("unable to create text node")],
                     )),
                     "quot" => Ok((
@@ -51,7 +51,7 @@ pub(crate) fn reference<N: Node>(
                             .doc
                             .clone()
                             .unwrap()
-                            .new_text(Rc::new(Value::String("\"".to_string())))
+                            .new_text(Rc::new(Value::from("\"".to_string())))
                             .expect("unable to create text node")],
                     )),
                     "apos" => Ok((
@@ -60,7 +60,7 @@ pub(crate) fn reference<N: Node>(
                             .doc
                             .clone()
                             .unwrap()
-                            .new_text(Rc::new(Value::String("'".to_string())))
+                            .new_text(Rc::new(Value::from("'".to_string())))
                             .expect("unable to create text node")],
                     )),
                     _ => {
