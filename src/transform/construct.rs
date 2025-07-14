@@ -6,7 +6,7 @@ use crate::transform::Transform;
 use crate::transform::context::{Context, StaticContext};
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
-use qualname::QName;
+use qualname::{NamespacePrefix, NamespaceUri, QName};
 use std::rc::Rc;
 use url::Url;
 
@@ -50,10 +50,17 @@ pub(crate) fn literal_element<
     // This will result in lots of redundant Namespace nodes.
     // TODO: find the prefix for the given namespace URI
     if let Some(ns) = qn.namespace_uri() {
-        e.add_namespace(r.new_namespace(
-            Rc::new(Value::from(ns.as_str())),
-            Some(Rc::new(Value::from("a_prefix"))),
-        )?)?;
+        e.add_namespace(
+            r.new_namespace(
+                NamespaceUri::try_from(ns.as_str())
+                    .map_err(|_| Error::new(ErrorKind::ParseError, "invalid namespace URI"))?,
+                Some(
+                    NamespacePrefix::try_from("a_prefix").map_err(|_| {
+                        Error::new(ErrorKind::ParseError, "invalid namespace prefix")
+                    })?,
+                ),
+            )?,
+        )?;
     }
 
     // Create the content of the new element

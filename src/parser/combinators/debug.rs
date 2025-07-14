@@ -9,7 +9,8 @@ pub fn inspect<'a, P1, A, N: Node, L>(
     parser: P1,
 ) -> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, A), ParseError> + 'a
 where
-    P1: Fn(ParseInput<N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, A), ParseError> + 'a,
+    P1: Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, A), ParseError>
+        + 'a,
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
     move |(input, state), ss| {

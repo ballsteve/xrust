@@ -72,20 +72,31 @@ where
             // Need to resolve element name to create element node,
             // then we can add namespace declarations.
             // Processing the attribute list updates the in-scope namespaces in the state
-            let nsuri = prefix.as_ref().map(|p| {
-                ss.in_scope_namespaces
-                    .namespace_uri(&NamespacePrefix::try_from(p.as_str()).unwrap()) // Creating the prefix cannot fail, since it has already been parsed
-                    // if this returns None then prefix lookup failed
-                    .ok_or(ParseError::MissingNameSpace)
-            });
-            if let Some(Err(e)) = nsuri {
-                return Err(e);
-            }
-            eprintln!("creating element !{}!{:?}", local_part.as_str(), nsuri);
-            let elementname = QName::new_from_parts(
-                NcName::try_from(local_part.as_str()).unwrap(), // creating NcName cannot fail, since we have already parsed it
-                nsuri.map(|p| p.unwrap()), // we've guarded for the error case, see above
-            );
+            let elementname = if let Some(p) = prefix.clone() {
+                // This is a prefixed name, so the prefix must resolve to a URI
+                // NB. Creating the prefix cannot fail, since it has already been parsed
+                if let Some(u) = ss
+                    .in_scope_namespaces
+                    .namespace_uri(&Some(NamespacePrefix::try_from(p.as_str()).unwrap()))
+                {
+                    QName::new_from_parts(
+                        NcName::try_from(local_part.as_str()).unwrap(), // creating NcName cannot fail, since we have already parsed it
+                        Some(u),
+                    )
+                } else {
+                    return Err(ParseError::MissingNameSpace);
+                }
+            } else {
+                // This is either an unprefixed name or a name in the default namespace, if one has been defined
+                if let Some(u) = ss.in_scope_namespaces.namespace_uri(&None) {
+                    QName::new_from_parts(
+                        NcName::try_from(local_part.as_str()).unwrap(), // creating NcName cannot fail, since we have already parsed it
+                        Some(u),
+                    )
+                } else {
+                    QName::from_local_name(NcName::try_from(local_part.as_str()).unwrap())
+                }
+            };
             /* SRB: is this possible?
             if state1.xmlversion == "1.1"
                 && elementname.namespace_uri().to_string() == Some("".to_string())
@@ -154,10 +165,9 @@ where
                                         |ap| {
                                             QName::new_from_parts(
                                                 NcName::try_from(attlocalname.as_str()).unwrap(),
-                                                ss.in_scope_namespaces.namespace_uri(
-                                                    &NamespacePrefix::try_from(ap.as_str())
-                                                        .unwrap(),
-                                                ), // TODO: return error if no namespace found
+                                                ss.in_scope_namespaces.namespace_uri(&Some(
+                                                    NamespacePrefix::try_from(ap.as_str()).unwrap(),
+                                                )), // TODO: return error if no namespace found
                                             )
                                         },
                                     );

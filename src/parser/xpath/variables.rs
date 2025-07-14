@@ -25,6 +25,7 @@ where
     Box::new(map_with_state(
         pair(tag("$"), qualname_test()),
         |(_, qn), state, _ss| {
+            eprintln!("var_ref: qn=={}", qn.to_string());
             Transform::VariableReference(
                 get_nt_localname(&qn),
                 in_scope_namespaces(state.cur.clone()),

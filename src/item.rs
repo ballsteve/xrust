@@ -7,7 +7,7 @@ An [Item] is a [Node], Function or atomic [Value].
 [Node]s are defined as a trait.
 */
 
-use qualname::QName;
+use qualname::{NamespacePrefix, NamespaceUri, QName};
 
 use crate::item;
 use crate::output::OutputDefinition;
@@ -413,6 +413,17 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     /// resulting in a Qualified Name.
     /// This will fail if the name is not a QName, or has a prefix that is unknown.
     fn to_qname(&self, name: impl AsRef<str>) -> Result<QName, Error>;
+    /// Convert the node's qualified name to a prefixed name using the in-scope namespace declarations in the document.
+    fn to_prefixed_name(&self) -> String;
+    /// Find the prefix for the given namespace URI using the node's in-scope namespaces. If the namespace is the default, then None is returned.
+    /// If the namespace URI is not found in the in-scope namespaces returns an error.
+    fn to_namespace_prefix(&self, nsuri: &NamespaceUri) -> Result<Option<NamespacePrefix>, Error>;
+    /// For a namespace node give the prefix. If the namespace is the default namespace, then None is given.
+    /// If the node is not a namespace-type node then returns an error.
+    fn as_namespace_prefix(&self) -> Result<Option<&NamespacePrefix>, Error>;
+    /// For a namespace node give the namespace URI.
+    /// If the node is not a namespace-type node then returns an error.
+    fn as_namespace_uri(&self) -> Result<&NamespaceUri, Error>;
 
     /// Get a unique identifier for this node.
     fn get_id(&self) -> String;
@@ -492,7 +503,11 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     /// Create a new processing-instruction-type node in the same document tree. The new node is not attached to the tree.
     fn new_processing_instruction(&self, qn: Rc<Value>, v: Rc<Value>) -> Result<Self, Error>;
     /// Create a namespace node for an XML Namespace declaration.
-    fn new_namespace(&self, ns: Rc<Value>, prefix: Option<Rc<Value>>) -> Result<Self, Error>;
+    fn new_namespace(
+        &self,
+        ns: NamespaceUri,
+        prefix: Option<NamespacePrefix>,
+    ) -> Result<Self, Error>;
 
     /// Append a node to the child list
     fn push(&mut self, n: Self) -> Result<(), Error>;

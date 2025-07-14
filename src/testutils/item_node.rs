@@ -502,6 +502,8 @@ macro_rules! item_node_tests (
 	    u.add_attribute(b1)
 		.expect("unable to add attribute");
 
+		eprintln!("sd == {}", sd.to_xml());
+		eprintln!("od == {}", od.to_xml());
 	    assert_eq!(sd == od, true)
 	}
 	#[test]

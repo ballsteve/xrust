@@ -402,7 +402,7 @@ pub fn in_scope_namespaces<N: Node>(n: Option<N>) -> Rc<NamespaceMap> {
         Rc::new(nn.namespace_iter().fold(NamespaceMap::new(), |mut hm, ns| {
             hm.push(
                 NamespaceDeclaration::new(
-                    NamespacePrefix::try_from(ns.name().unwrap().local_name()).unwrap(),
+                    Some(NamespacePrefix::try_from(ns.name().unwrap().local_name()).unwrap()),
                     NamespaceUri::try_from(ns.value().to_string().as_str()).unwrap(),
                 )
                 .unwrap(),

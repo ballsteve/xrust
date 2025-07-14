@@ -37,7 +37,6 @@ where
     move |(mut input, state), ss| {
         let mut result = Vec::new();
         let namespaces = ss.in_scope_namespaces.clone();
-        eprintln!("many0nsreset: starting with nsmap:\n{:?}", namespaces);
 
         while let Ok(((input2, _state2), next_item)) = parser((input, state.clone()), ss) {
             result.push(next_item);

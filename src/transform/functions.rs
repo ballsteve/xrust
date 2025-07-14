@@ -155,7 +155,10 @@ pub fn system_property<
     if prop.len() == 1 {
         let ps: ParserState<N> = ParserState::new();
         let mut static_state = StaticStateBuilder::new()
-            .namespace(|prefix| ns.namespace_uri(prefix).ok_or(ParseError::MissingNameSpace))
+            .namespace(|prefix| {
+                ns.namespace_uri(&Some(prefix.clone()))
+                    .ok_or(ParseError::MissingNameSpace)
+            })
             .build();
         let propstr = prop.to_string();
         let qn = qualname_to_qname()((propstr.as_str(), ps), &mut static_state)

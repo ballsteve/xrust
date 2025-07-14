@@ -59,7 +59,7 @@ where
                         (Some("xmlns"), "xmlns", "http://www.w3.org/2000/xmlns/") => {
                             ss.in_scope_namespaces.push(
                                 NamespaceDeclaration::new(
-                                    NamespacePrefix::try_from("xmlns").unwrap(),
+                                    Some(NamespacePrefix::try_from("xmlns").unwrap()),
                                     NamespaceUri::try_from("http://www.w3.org/2000/xmlns/")
                                         .unwrap(),
                                 )
@@ -70,9 +70,11 @@ where
                                 })?,
                             );
                             nsd_vec.push(
+                                // TODO: setup static values
                                 doc.new_namespace(
-                                    Rc::new(Value::from("xmlns")),
-                                    Some(Rc::new(Value::from("http://www.w3.org/2000/xmlns/"))),
+                                    NamespaceUri::try_from("http://www.w3.org/2000/xmlns/")
+                                        .unwrap(),
+                                    Some(NamespacePrefix::try_from("xmlns").unwrap()),
                                 )
                                 .map_err(|_| ParseError::MissingNameSpace)?,
                             );
@@ -84,7 +86,7 @@ where
                         (Some("xmlns"), "xml", "http://www.w3.org/XML/1998/namespace") => {
                             ss.in_scope_namespaces.push(
                                 NamespaceDeclaration::new(
-                                    NamespacePrefix::try_from("xml").unwrap(),
+                                    Some(NamespacePrefix::try_from("xml").unwrap()),
                                     NamespaceUri::try_from("http://www.w3.org/XML/1998/namespace")
                                         .unwrap(),
                                 )
@@ -96,10 +98,9 @@ where
                             );
                             nsd_vec.push(
                                 doc.new_namespace(
-                                    Rc::new(Value::from("xml")),
-                                    Some(Rc::new(Value::from(
-                                        "http://www.w3.org/XML/1998/namespace",
-                                    ))),
+                                    NamespaceUri::try_from("http://www.w3.org/XML/1998/namespace")
+                                        .unwrap(),
+                                    Some(NamespacePrefix::try_from("xml").unwrap()),
                                 )
                                 .map_err(|_| ParseError::MissingNameSpace)?,
                             );
@@ -133,7 +134,7 @@ where
                             eprintln!("adding ns ({:?},{:?}) to in-scope", p, v);
                             ss.in_scope_namespaces.push(
                                 NamespaceDeclaration::new(
-                                    NamespacePrefix::try_from(p).unwrap(),
+                                    Some(NamespacePrefix::try_from(p).unwrap()),
                                     NamespaceUri::try_from(v).unwrap(),
                                 )
                                 .map_err(|_| {
@@ -144,8 +145,8 @@ where
                             );
                             nsd_vec.push(
                                 doc.new_namespace(
-                                    Rc::new(Value::from(v)),
-                                    Some(Rc::new(Value::from(p))),
+                                    NamespaceUri::try_from(v).unwrap(),
+                                    Some(NamespacePrefix::try_from(p).unwrap()),
                                 )
                                 .map_err(|_| ParseError::MissingNameSpace)?,
                             );
@@ -154,18 +155,15 @@ where
                         (None, "xmlns", v) => {
                             eprintln!("adding unprefixed ns ({:?}) to in-scope", v);
                             ss.in_scope_namespaces.push(
-                                NamespaceDeclaration::new(
-                                    NamespacePrefix::try_from("").unwrap(),
-                                    NamespaceUri::try_from(v).unwrap(),
-                                )
-                                .map_err(|_| {
-                                    ParseError::NotWellFormed(
-                                        "unable to create namespace declaration".to_string(),
-                                    )
-                                })?,
+                                NamespaceDeclaration::new(None, NamespaceUri::try_from(v).unwrap())
+                                    .map_err(|_| {
+                                        ParseError::NotWellFormed(
+                                            "unable to create namespace declaration".to_string(),
+                                        )
+                                    })?,
                             );
                             nsd_vec.push(
-                                doc.new_namespace(Rc::new(Value::from(v)), None)
+                                doc.new_namespace(NamespaceUri::try_from(v).unwrap(), None)
                                     .map_err(|_| ParseError::MissingNameSpace)?,
                             );
                             Ok(())
@@ -192,9 +190,9 @@ where
                                 doc.new_attribute(
                                     QName::new_from_parts(
                                         NcName::try_from("space").unwrap(),
-                                        ss.in_scope_namespaces.namespace_uri(
-                                            &NamespacePrefix::try_from("xml").unwrap(),
-                                        ),
+                                        ss.in_scope_namespaces.namespace_uri(&Some(
+                                            NamespacePrefix::try_from("xml").unwrap(),
+                                        )),
                                     ),
                                     Rc::new(Value::from("Default")),
                                 )
@@ -212,9 +210,9 @@ where
                                 doc.new_attribute(
                                     QName::new_from_parts(
                                         NcName::try_from("space").unwrap(),
-                                        ss.in_scope_namespaces.namespace_uri(
-                                            &NamespacePrefix::try_from("xml").unwrap(),
-                                        ),
+                                        ss.in_scope_namespaces.namespace_uri(&Some(
+                                            NamespacePrefix::try_from("xml").unwrap(),
+                                        )),
                                     ),
                                     Rc::new(Value::from("Preserve")),
                                 )
@@ -241,13 +239,14 @@ where
                                             ))
                                         })?,
                                         Some(
-                                            ss
-                                                .in_scope_namespaces
-                                                .namespace_uri(&NamespacePrefix::try_from(p).map_err(|_| {
-                                                    ParseError::NotWellFormed(String::from(
-                                                        "unable to resolve namespace prefix",
-                                                    ))
-                                                })?)
+                                            ss.in_scope_namespaces
+                                                .namespace_uri(&Some(
+                                                    NamespacePrefix::try_from(p).map_err(|_| {
+                                                        ParseError::NotWellFormed(String::from(
+                                                            "unable to resolve namespace prefix",
+                                                        ))
+                                                    })?,
+                                                ))
                                                 .ok_or(ParseError::NotWellFormed(String::from(
                                                     "no namespace declaration for prefix",
                                                 )))?,

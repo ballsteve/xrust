@@ -10,7 +10,7 @@ use crate::validators::{Schema, ValidationError};
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 use crate::xmldecl::{DTD, XMLDecl, XMLDeclBuilder};
-use qualname::QName;
+use qualname::{NamespacePrefix, NamespaceUri, QName};
 use std::cmp::Ordering;
 use std::fmt;
 use std::rc::Rc;
@@ -35,6 +35,18 @@ impl Node for Nullo {
             ErrorKind::NotImplemented,
             String::from("not implemented"),
         ))
+    }
+    fn to_prefixed_name(&self) -> String {
+        String::new()
+    }
+    fn to_namespace_prefix(&self, _nsuri: &NamespaceUri) -> Result<Option<NamespacePrefix>, Error> {
+        Err(Error::new(ErrorKind::NotImplemented, "not implemented"))
+    }
+    fn as_namespace_prefix(&self) -> Result<Option<&NamespacePrefix>, Error> {
+        Err(Error::new(ErrorKind::NotImplemented, "not implemented"))
+    }
+    fn as_namespace_uri(&self) -> Result<&NamespaceUri, Error> {
+        Err(Error::new(ErrorKind::NotImplemented, "not implemented"))
     }
     fn value(&self) -> Rc<Value> {
         Rc::new(Value::from(""))
@@ -132,7 +144,11 @@ impl Node for Nullo {
             String::from("not implemented"),
         ))
     }
-    fn new_namespace(&self, _ns: Rc<Value>, _prefix: Option<Rc<Value>>) -> Result<Self, Error> {
+    fn new_namespace(
+        &self,
+        _ns: NamespaceUri,
+        _prefix: Option<NamespacePrefix>,
+    ) -> Result<Self, Error> {
         Err(Error::new(ErrorKind::NotImplemented, "not implemented"))
     }
     fn push(&mut self, _: Self) -> Result<(), Error> {

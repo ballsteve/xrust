@@ -61,12 +61,12 @@ mod types;
 pub(crate) mod variables;
 
 use crate::parser::combinators::alt::alt4;
+use crate::parser::combinators::debug::inspect;
 use crate::parser::combinators::list::separated_list1;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::tuple3;
 use crate::parser::combinators::whitespace::xpwhitespace;
-//use crate::parser::combinators::debug::inspect;
 use crate::parser::xpath::flwr::{for_expr, if_expr, let_expr};
 use crate::parser::xpath::logic::or_expr;
 use crate::parser::xpath::support::noop;
@@ -157,18 +157,21 @@ pub fn expr<'a, N: Node + 'a, L>() -> Box<
 where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError> + 'a,
 {
-    Box::new(map(
-        separated_list1(
-            map(tuple3(xpwhitespace(), tag(","), xpwhitespace()), |_| ()),
-            expr_single::<N, L>(),
+    Box::new(inspect(
+        "xpath_expr",
+        map(
+            separated_list1(
+                map(tuple3(xpwhitespace(), tag(","), xpwhitespace()), |_| ()),
+                expr_single::<N, L>(),
+            ),
+            |mut v| {
+                if v.len() == 1 {
+                    v.pop().unwrap()
+                } else {
+                    Transform::SequenceItems(v)
+                }
+            },
         ),
-        |mut v| {
-            if v.len() == 1 {
-                v.pop().unwrap()
-            } else {
-                Transform::SequenceItems(v)
-            }
-        },
     ))
 }
 
