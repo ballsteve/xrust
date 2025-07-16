@@ -132,8 +132,6 @@ fn serializer_4() {
         Some(|_: &_| Err(ParseError::MissingNameSpace)),
     )
     .unwrap();
-    eprintln!("\nparsing done. Document:\n{:?}", doc);
-    eprintln!("\nnow serialise\n");
     let xml_output = doc.to_xml();
 
     /*

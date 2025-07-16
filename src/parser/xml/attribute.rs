@@ -50,7 +50,6 @@ where
             // Create namespace declaration nodes
             // and update in-scope namespace map
             // TODO: use try_collect()
-            eprintln!("processing ns decls: {:?}", ns_decls);
             let mut nsd_vec: Vec<N> = vec![];
             let _ = ns_decls
                 .iter()
@@ -131,7 +130,6 @@ where
                             }
                         }
                         (Some("xmlns"), p, v) => {
-                            eprintln!("adding ns ({:?},{:?}) to in-scope", p, v);
                             ss.in_scope_namespaces.push(
                                 NamespaceDeclaration::new(
                                     Some(NamespacePrefix::try_from(p).unwrap()),
@@ -153,7 +151,6 @@ where
                             Ok(())
                         }
                         (None, "xmlns", v) => {
-                            eprintln!("adding unprefixed ns ({:?}) to in-scope", v);
                             ss.in_scope_namespaces.push(
                                 NamespaceDeclaration::new(None, NamespaceUri::try_from(v).unwrap())
                                     .map_err(|_| {

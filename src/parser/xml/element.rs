@@ -89,8 +89,9 @@ where
             } else {
                 // This is either an unprefixed name or a name in the default namespace, if one has been defined
                 if let Some(u) = ss.in_scope_namespaces.namespace_uri(&None) {
+                    let lp = NcName::try_from(local_part.as_str()).unwrap();
                     QName::new_from_parts(
-                        NcName::try_from(local_part.as_str()).unwrap(), // creating NcName cannot fail, since we have already parsed it
+                        lp, // creating NcName cannot fail, since we have already parsed it
                         Some(u),
                     )
                 } else {
@@ -118,12 +119,6 @@ where
                 .dtd
                 .attlists
                 .get(&(prefix.clone(), local_part.clone()));
-            eprintln!(
-                "for element {:?}:{} found attlist {:?}",
-                prefix,
-                local_part.clone(),
-                attlist
-            );
 
             match attlist {
                 None => {
@@ -192,14 +187,9 @@ where
                                 ss.in_scope_namespaces.prefix(&ns).map(|p| p.to_string())
                             });
                         let thisatlocalpart = attnode.name().unwrap().local_name().to_string();
-                        eprintln!(
-                            "looking in atts for ({:?},{:?})",
-                            thisatprefix, thisatlocalpart
-                        );
                         match atts.get(&(thisatprefix, thisatlocalpart)) {
                             //No DTD found, we just create the value
                             None => {
-                                eprintln!("nothing found");
                                 //Ordinarily, you'll just treat attributes as CDATA and not normalize, however we need to check xml:id
                                 let av = if attnode.name().unwrap() == *XMLID {
                                     attnode.value().to_string().trim().replace("  ", " ")
@@ -215,14 +205,12 @@ where
                                 e.add_attribute(a).expect("unable to add attribute")
                             }
                             Some((atttype, _, _)) => {
-                                eprintln!("found atttype {:?}", atttype);
                                 //https://www.w3.org/TR/xml11/#AVNormalize
                                 let av = match atttype {
                                     AttType::CDATA => attnode.value().to_string(),
                                     _ => attnode.value().to_string().trim().replace("  ", " "),
                                 };
                                 //Assign IDs only if we are tracking.
-                                eprintln!("ID tracking? {}", state1.id_tracking);
                                 let v = match (atttype, state1.id_tracking) {
                                     (AttType::ID, true) => Rc::new(Value::ID(av.clone())),
                                     (AttType::IDREF, true) => Rc::new(Value::IDREF(av.clone())),
@@ -231,7 +219,6 @@ where
                                     )),
                                     (_, _) => Rc::new(Value::from(av.clone())),
                                 };
-                                eprintln!("value is {:?}", v);
                                 if atttype == &AttType::NMTOKENS && av.is_empty() {
                                     return Err(ParseError::NotWellFormed(
                                         "NMTOKENs must not be empty".to_string(),

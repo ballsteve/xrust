@@ -41,7 +41,6 @@ where
         while let Ok(((input2, _state2), next_item)) = parser((input, state.clone()), ss) {
             result.push(next_item);
             input = input2;
-            eprintln!("discarding nsmap: \n{:?}", ss.in_scope_namespaces);
             ss.in_scope_namespaces = namespaces.clone();
         }
 

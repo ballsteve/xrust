@@ -435,7 +435,7 @@ macro_rules! item_node_tests (
 		.expect("unable to create element");
 	    sd.push(t.clone())
 		.expect("unable to append child");
-	    let l = sd.new_element(QName::from_local_name(NcName::try_from("Test").unwrap()))
+	    let l = sd.new_element(QName::from_local_name(NcName::try_from("content").unwrap()))
 		.expect("unable to create element");
 	    t.push(l)
 		.expect("unable to append child");
@@ -502,8 +502,6 @@ macro_rules! item_node_tests (
 	    u.add_attribute(b1)
 		.expect("unable to add attribute");
 
-		eprintln!("sd == {}", sd.to_xml());
-		eprintln!("od == {}", od.to_xml());
 	    assert_eq!(sd == od, true)
 	}
 	#[test]

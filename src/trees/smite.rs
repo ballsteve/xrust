@@ -960,8 +960,8 @@ fn format_attrs(ats: &BTreeMap<QName, RNode>) -> String {
 }
 
 // Debugging aid - produce a detailed view of the given document
-/*pub fn dump_tree(d: &RNode) -> String {
-    if let NodeInner::Document(decl, children, _, dtd) = d.0 {
+pub fn dump_tree(d: &RNode) -> String {
+    if let NodeInner::Document(decl, children, _, dtd) = &d.0 {
         format!(
             "XML Declaration: {:?}\nDTD: {:?}\n{}",
             decl.borrow(),
@@ -979,7 +979,33 @@ fn dump_tree_children(cv: Vec<RNode>, indent: usize) -> String {
         (0..indent).for_each(|_| result.push(' '));
         match &c.0 {
             NodeInner::Document(_, _, _, _) => result.push_str("child node cannot be a Document"),
-            NodeInner::Element(_parent, qn, attrs, children, nsd) => {}
+            NodeInner::Element(_parent, qn, attrs, children, nsd) => {
+                result.push_str(format!("Element node \"{:?}\"\n", qn).as_str());
+                (0..indent + 4).for_each(|_| result.push(' '));
+                result.push_str(format!("Attributes: ").as_str());
+                attrs.borrow().iter().for_each(|(_, a)| {
+                    result.push_str(
+                        format!(" {:?}={}", a.name().unwrap(), a.value().to_string()).as_str(),
+                    )
+                });
+                result.push('\n');
+                (0..indent + 4).for_each(|_| result.push(' '));
+                result.push_str("Namespace declarations: ");
+                nsd.borrow().iter().for_each(|(_, ns)| {
+                    result.push_str(
+                        format!(
+                            " xmlns:{:?}={}",
+                            ns.as_namespace_prefix().unwrap(),
+                            ns.as_namespace_uri().unwrap().as_str()
+                        )
+                        .as_str(),
+                    )
+                });
+                result.push('\n');
+                (0..indent + 4).for_each(|_| result.push(' '));
+                result.push_str("Content:\n");
+                result.push_str(dump_tree_children(children.borrow().clone(), indent + 2).as_str())
+            }
             NodeInner::Text(_parent, val) => {
                 result.push_str(format!("Text node \"{}\"", val.to_string()).as_str())
             }
@@ -994,7 +1020,7 @@ fn dump_tree_children(cv: Vec<RNode>, indent: usize) -> String {
     });
 
     result
-}*/
+}
 
 // Put the given node in the unattached list for the document "d".
 // This is for use when the node is newly created.
@@ -1149,27 +1175,14 @@ fn to_prefixed_name(n: &RNode) -> String {
             let ns = qn.namespace_uri();
             if ns.is_none() {
                 // Unprefixed name
-                eprintln!(
-                    "{} - no need for prefix for {}",
-                    n.node_type(),
-                    qn.local_name()
-                );
                 String::from(qn.local_name())
             } else {
-                eprintln!(
-                    "{} - need prefix for {}, local-part {}",
-                    n.node_type(),
-                    qn.namespace_uri().unwrap().as_str(),
-                    qn.local_name()
-                );
                 let uns = ns.unwrap();
                 n.namespace_iter()
-                    .inspect(|f| eprintln!("inspect: in-scope ns \"{:?}\"", f.ns_uri()))
                     .find(|m| m.ns_uri().unwrap() == uns)
                     .map_or_else(
                         || panic!("unable to find namespace"),
                         |p| {
-                            eprintln!("found prefix {:?}", p.ns_prefix());
                             p.ns_prefix().map_or_else(
                                 || qn.local_name().to_string(),
                                 |q| format!("{}:{}", q.to_string(), qn.local_name()),
@@ -1197,12 +1210,18 @@ fn to_xml_int(node: &RNode, od: &OutputDefinition, indent: usize) -> String {
             result.push_str(to_prefixed_name(node).as_str());
 
             // Namespace declarations
-            ns.borrow().iter().for_each(|(pre, nsuri)| {
-                let pre_str = pre.as_ref().map_or_else(
-                    || format!(" xmlns='{}'", nsuri.value().to_string()),
-                    |p| format!(" xmlns:{}='{}'", p.to_string(), nsuri.value().to_string()),
+            ns.borrow().iter().for_each(|(_, nsd)| {
+                let decl = nsd.as_namespace_prefix().unwrap().map_or_else(
+                    || format!(" xmlns='{}'", nsd.as_namespace_uri().unwrap().as_str()),
+                    |p| {
+                        format!(
+                            " xmlns:{}='{}'",
+                            p.to_string(),
+                            nsd.as_namespace_uri().unwrap().as_str()
+                        )
+                    },
                 );
-                result.push_str(pre_str.as_str());
+                result.push_str(decl.as_str());
             });
 
             // Attributes
@@ -1493,13 +1512,6 @@ fn find_ns(nn: &mut NamespaceNodes) -> Option<RNode> {
             let mut nsiter = nn.ns_it.take().unwrap();
             match nsiter.next() {
                 Some((_, n)) => {
-                    // Is there an inner scope?
-                    /*eprintln!(
-                        "find_ns: n type {:?} prefix {:?} uri {:?}",
-                        n.node_type(),
-                        n.ns_prefix(),
-                        n.ns_uri(),
-                    );*/
                     nn.ns_it = Some(nsiter);
                     Some(n.clone())
                 }
