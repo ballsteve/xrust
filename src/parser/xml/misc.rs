@@ -14,8 +14,8 @@ use crate::parser::xml::qname::name;
 use crate::parser::{ParseError, ParseInput};
 
 // PI ::= '<?' PITarget (char* - '?>') '?>'
-pub(crate) fn processing_instruction<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), ParseError> {
+pub(crate) fn processing_instruction<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), ParseError> {
     move |(input, state)| {
         wellformed_ver(
             map(
@@ -32,8 +32,8 @@ pub(crate) fn processing_instruction<N: Node>(
                         .as_ref()
                         .unwrap()
                         .new_processing_instruction(
-                            state.get_qualified_name(None, None, state.get_value(n)),
-                            state.get_value("".to_string()),
+                            state.get_qualified_name(None, None, state.get_value(&n)),
+                            state.get_value(&"".to_string()),
                         )
                         .expect("unable to create processing instruction"),
                     Some((_, v)) => state
@@ -41,8 +41,8 @@ pub(crate) fn processing_instruction<N: Node>(
                         .as_ref()
                         .unwrap()
                         .new_processing_instruction(
-                            state.get_qualified_name(None, None, state.get_value(n)),
-                            state.get_value(v),
+                            state.get_qualified_name(None, None, state.get_value(&n)),
+                            state.get_value(&v),
                         )
                         .expect("unable to create processing instruction"),
                 },
@@ -91,7 +91,7 @@ pub(crate) fn comment<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                         .doc
                         .as_ref()
                         .unwrap()
-                        .new_comment(state.get_value(v))
+                        .new_comment(state.get_value(&v))
                         .expect("unable to create comment")
                 },
             ),
@@ -110,8 +110,8 @@ pub(crate) fn comment<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
 }
 
 // Misc ::= Comment | PI | S
-pub(crate) fn misc<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<N>), ParseError> {
+pub(crate) fn misc<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<N>), ParseError> {
     map(
         tuple2(
             many0(map(

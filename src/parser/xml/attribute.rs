@@ -21,8 +21,8 @@ use std::rc::Rc;
 
 /// Parse all of the attributes in an element's start tag.
 /// Returns (attribute nodes, namespace declaration nodes).
-pub(crate) fn attributes<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, (Vec<(QualifiedName, String)>, Vec<N>)), ParseError>
+pub(crate) fn attributes<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, (Vec<(QualifiedName, String)>, Vec<N>)), ParseError>
 {
     move |input| match many0(attribute())(input) {
         Ok(((input1, mut state1), nodes)) => {
@@ -102,7 +102,7 @@ pub(crate) fn attributes<N: Node>(
 
                 if qn_prefix_str == "xmlns" {
                     new_namespaces.push(
-                        doc.new_namespace(state1.get_value(val), Some(qn.localname()))
+                        doc.new_namespace(state1.get_value(&val), Some(qn.localname()))
                             .expect("unable to create namespace node"),
                     );
                     match new_namespace_prefixes.insert(Some(qn.localname())) {
@@ -117,7 +117,7 @@ pub(crate) fn attributes<N: Node>(
                     //resnsnodes.insert(Some(qn.get_localname()), val.to_string());
                 } else if qn_localname == "xmlns" && !val_str.is_empty() {
                     new_namespaces.push(
-                        doc.new_namespace(state1.get_value(val), None)
+                        doc.new_namespace(state1.get_value(&val), None)
                             .expect("unable to create default namespace node"),
                     );
                     match new_namespace_prefixes.insert(None) {
@@ -230,8 +230,8 @@ pub(crate) fn attributes<N: Node>(
     }
 }
 // Attribute ::= Name '=' AttValue
-fn attribute<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, (QualifiedName, String)), ParseError> {
+fn attribute<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, (QualifiedName, String)), ParseError> {
     move |(input, state)| match tuple6(
         whitespace1(),
         qualname(),
@@ -246,8 +246,8 @@ fn attribute<N: Node>(
     }
 }
 
-fn attribute_value<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+fn attribute_value<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     move |(input, state)| {
         let parse = alt2(
             delimited(
@@ -281,11 +281,17 @@ fn attribute_value<N: Node>(
                    For a white space character (#x20, #xD, #xA, #x9), append a space character (#x20) to the normalized value.
                    For another character, append the character to the normalized value.
                 */
-                let r = rn
-                    .concat()
-                    .replace(['\n', '\r', '\t', '\n'], " ")
-                    .trim()
-                    .to_string();
+                let r = if state1.xmlversion == "1.1" {
+                    rn.concat()
+                        .replace(['\u{85}', '\u{2028}', '\n', '\r', '\t', '\n'], " ")
+                        .trim()
+                        .to_string()
+                } else {
+                    rn.concat()
+                        .replace(['\n', '\r', '\t', '\n'], " ")
+                        .trim()
+                        .to_string()
+                };
                 //NEL character cannot be in attributes.
                 if state1.xmlversion == "1.1" && r.find(|c| !is_char11(&c)).is_some() {
                     Err(ParseError::NotWellFormed(r))
