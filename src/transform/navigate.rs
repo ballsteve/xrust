@@ -1,10 +1,10 @@
 //! Navigation routines
 
+use crate::Item;
 use crate::item::{Node, NodeType, Sequence, SequenceTrait};
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::{Axis, NodeMatch, Transform};
 use crate::xdmerror::{Error, ErrorKind};
-use crate::Item;
 use url::Url;
 
 /// The root node of the context item.

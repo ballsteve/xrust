@@ -32,13 +32,11 @@ use crate::transform::template::{Template, apply_imports, apply_templates, next_
 use crate::transform::variables::{declare_variable, reference_variable};
 use crate::xdmerror::Error;
 use crate::{ErrorKind, Item, SequenceTrait, Value};
-use qualname::QName;
+use qualname::{NamespaceMap, QName};
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::rc::Rc;
 use url::Url;
-
-//pub type Message = FnMut(&str) -> Result<(), Error>;
 
 /// The transformation context. This is the dynamic context.
 /// The static parts of the context are in a separate structure.
@@ -75,8 +73,9 @@ pub struct Context<N: Node> {
     pub(crate) od: OutputDefinition,
     pub(crate) base_url: Option<Url>,
     // Namespace resolution. If any transforms contain a QName that needs to be resolved to an EQName,
-    // then these prefix -> URI mappings are used. These are usually derived from the stylesheet document.
-    //pub(crate) namespaces: Vec<HashMap<Option<String>, String>>,
+    // then these URI -> prefix mappings may be used. These are usually derived from the stylesheet document.
+    // The search order is: Namespace declarations in the source document; namespace declarations in the result document; this NamespaceMap.
+    pub(crate) namespaces: Option<Rc<NamespaceMap>>,
 }
 
 impl<N: Node> Context<N> {
@@ -98,6 +97,7 @@ impl<N: Node> Context<N> {
             key_values: HashMap::new(),
             od: OutputDefinition::new(),
             base_url: None,
+            namespaces: None,
         }
     }
     /// Sets the context item.
@@ -522,6 +522,7 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
             current_group: Sequence::new(),
             od: OutputDefinition::new(),
             base_url: None,
+            namespaces: None,
         }
     }
 }
@@ -593,6 +594,10 @@ impl<N: Node> ContextBuilder<N> {
     }
     pub fn callable(mut self, qn: QName, c: Callable<N>) -> Self {
         self.0.callables.insert(qn, c);
+        self
+    }
+    pub fn namespaces(mut self, nm: NamespaceMap) -> Self {
+        self.0.namespaces = Some(Rc::new(nm));
         self
     }
     pub fn build(self) -> Context<N> {

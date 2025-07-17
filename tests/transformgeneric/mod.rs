@@ -1,7 +1,7 @@
 //! Tests for transform module defined generically
 
 use chrono::{Datelike, Local, Timelike};
-use qualname::{NamespaceMap, NamespaceUri, NcName, QName};
+use qualname::{NamespaceDeclaration, NamespaceMap, NamespacePrefix, NamespaceUri, NcName, QName};
 use std::rc::Rc;
 use xrust::item::{Item, Node, SequenceTrait};
 use xrust::pattern::Pattern;
@@ -444,7 +444,10 @@ where
         Err(e) => {
             assert_eq!(e.kind, ErrorKind::Terminated);
             assert_eq!(e.message, "bar");
-            assert_eq!(e.code.unwrap().to_string(), "XTMM9000");
+            assert_eq!(
+                e.code.unwrap().to_string(),
+                "{http://www.w3.org/2005/xqt-errors}XTMM9000"
+            );
             Ok(())
         }
     }
@@ -3873,11 +3876,98 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .build();
+    let seq = Context::from(vec![Item::Node(l1)]).dispatch(&mut stctxt, &x);
+    // This is expected to fail since no namespaces have been declared
+    assert!(seq.is_err());
+    Ok(())
+}
+
+// Provide NamespaceMap
+pub fn generic_tr_name_1<N: Node, G, H>(make_empty_doc: G, _: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    // Setup a source document
+    let mut sd = make_empty_doc();
+    let mut t = sd
+        .new_element(QName::from_local_name(NcName::try_from("Test").unwrap()))
+        .expect("unable to create element");
+    sd.push(t.clone()).expect("unable to append child");
+    let l1 = sd
+        .new_element(QName::new_from_parts(
+            NcName::try_from("Level-1").unwrap(),
+            Some(NamespaceUri::try_from("urn:test-example.com").unwrap()),
+        ))
+        .expect("unable to create element");
+    t.push(l1.clone()).expect("unable to append child");
+
+    let x = Transform::Name(Some(Box::new(Transform::ContextItem)));
+
+    // Now evaluate the combinator with <Level-1> as the context item
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+    let mut namemap = NamespaceMap::new();
+    namemap.push(
+        NamespaceDeclaration::new(
+            Some(NamespacePrefix::try_from("eg").unwrap()),
+            NamespaceUri::try_from("urn:test-example.com").unwrap(),
+        )
+        .unwrap(),
+    );
+    let ctxt = ContextBuilder::new()
+        .context(vec![Item::Node(l1)])
+        .namespaces(namemap)
+        .build();
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
+    assert_eq!(seq.len(), 1);
+    assert_eq!(seq[0].to_string(), "eg:Level-1");
+    Ok(())
+}
+
+// Declare namespace in the document
+pub fn generic_tr_name_2<N: Node, G, H>(make_empty_doc: G, _: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    // Setup a source document
+    let mut sd = make_empty_doc();
+    let mut t = sd
+        .new_element(QName::from_local_name(NcName::try_from("Test").unwrap()))
+        .expect("unable to create element");
+    sd.push(t.clone()).expect("unable to append child");
+    let l1 = sd
+        .new_element(QName::new_from_parts(
+            NcName::try_from("Level-1").unwrap(),
+            Some(NamespaceUri::try_from("urn:test-example.com").unwrap()),
+        ))
+        .expect("unable to create element");
+    let nsd = sd
+        .new_namespace(
+            NamespaceUri::try_from("urn:test-example.com").unwrap(),
+            Some(NamespacePrefix::try_from("eg").unwrap()),
+        )
+        .expect("unable to create namespace node");
+    l1.add_namespace(nsd).expect("unable to add namespace");
+    t.push(l1.clone()).expect("unable to append child");
+
+    let x = Transform::Name(Some(Box::new(Transform::ContextItem)));
+
+    // Now evaluate the combinator with <Level-1> as the context item
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::from(vec![Item::Node(l1)])
         .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
-    assert_eq!(seq.to_xml(), "eg:Level-1");
+    assert_eq!(seq.to_string(), "eg:Level-1");
     Ok(())
 }
 

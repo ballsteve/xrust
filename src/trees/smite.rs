@@ -1172,11 +1172,14 @@ fn find_index(parent: &RNode, child: &RNode) -> Result<usize, Error> {
 fn to_prefixed_name(n: &RNode) -> String {
     match &n.0 {
         NodeInner::Element(_, qn, _, _, _) | NodeInner::Attribute(_, qn, _) => {
+            eprintln!("to_prefixed_name {:?}", qn);
             let ns = qn.namespace_uri();
             if ns.is_none() {
                 // Unprefixed name
+                eprintln!("unprefixed");
                 String::from(qn.local_name())
             } else {
+                eprintln!("prefixed");
                 let uns = ns.unwrap();
                 n.namespace_iter()
                     .find(|m| m.ns_uri().unwrap() == uns)
@@ -1198,6 +1201,7 @@ fn to_prefixed_name(n: &RNode) -> String {
 // This handles the XML serialisation of the document.
 // "indent" is the current level of indentation.
 fn to_xml_int(node: &RNode, od: &OutputDefinition, indent: usize) -> String {
+    eprintln!("to_xml_int");
     match &node.0 {
         NodeInner::Document(_, _, _, _) => {
             node.child_iter().fold(String::new(), |mut result, c| {

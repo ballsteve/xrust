@@ -385,7 +385,8 @@ impl<N: Node> fmt::Debug for Item<N> {
 ///
 /// Element nodes have children and attributes.
 ///
-/// Element nodes may have a Namespace node attached. This is the declaration of an XML Namespace.
+/// Element nodes may have Namespace nodes attached. These are the declaration of XML Namespaces.
+/// An XML Namespace declaration consists of an optional prefix and a namespace URI.
 /// The namespace-iter() method iterates over all in-scope namespaces, which will include namespaces that are declared on ancestor elements.
 ///
 /// Nodes must implement the PartialEq trait. This allows two (sub-)trees to be compared. The comparison is against the XML Infoset of each tree;
@@ -400,13 +401,13 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
 
     /// Get the type of the node
     fn node_type(&self) -> NodeType;
-    /// Get the name of the node.
-    /// If the node is a namespace-type node, then the local part of the name is the namespace prefix.
-    /// An unprefixed namespace has no name.
+    /// Get the name of the node, if it has one.
+    /// A namespace-type returns the prefix as a [QName] where the prefix is the local-part.
+    /// An unprefixed namespace node returns None.
     fn name(&self) -> Option<QName>;
     /// Get the value of the node.
     /// If the node doesn't have a value, then returns a [Value] that is an empty string.
-    /// If the node is a namespace-type node, then the value is the namespace URI.
+    /// If the node is a namespace-type node, gives the namespace URI.
     fn value(&self) -> Rc<Value>;
 
     /// Resolve a name using the in-scope namespace declarations in the document,
