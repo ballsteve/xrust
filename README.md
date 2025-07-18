@@ -16,6 +16,12 @@ However, it is not *compliant* with v1.0. This is because it implements the v3.0
 
 In addition to the (rudimentary) implementation of the [XQuery and XPath Data Model 3.1](https://www.w3.org/TR/xpath-datamodel-31/) data model, a few other features of XPath and XSLT v2.0/v3.0 have been implemented, such as FLWR expressions, grouping (i.e. xsl:for-each-group), and user-defined functions.
 
+## Git Repository
+
+The canonical Git repository for xrust is now Gitlab - [https://gitlab.gnome.org/balls/xrust](Gitlab repo). It is planned to mirror this Github repo with the Gitlab repo, but that hasn't happened yet.
+
+Until mirroring is setup, we'll keep an eye on issues in Github and transfer them to Gitlab as required.
+
 ## Design
 
 The library separates parsing from evaluation. The XPath and XSLT are parsed (or "compiled") into an internal representation, a "transformation", which is then evaluated.
