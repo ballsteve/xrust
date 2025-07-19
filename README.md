@@ -18,7 +18,7 @@ In addition to the (rudimentary) implementation of the [XQuery and XPath Data Mo
 
 ## Git Repository
 
-The canonical Git repository for xrust is now Gitlab - [Gitlab repo](https://gitlab.gnome.org/balls/xrust]). It is planned to mirror this Github repo with the Gitlab repo, but that hasn't happened yet.
+The canonical Git repository for xrust is now Gitlab - [Gitlab repo](https://gitlab.gnome.org/balls/xrust). It is planned to mirror this Github repo with the Gitlab repo, but that hasn't happened yet.
 
 Until mirroring is setup, we'll keep an eye on issues in Github and transfer them to Gitlab as required.
 
