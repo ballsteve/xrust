@@ -737,7 +737,7 @@ where
         Err(e) => {
             if e.kind == ErrorKind::Terminated
                 && e.message == "here is a level 1 element"
-                && e.code.unwrap().to_string() == "XTMM9000"
+                && e.code.is_some_and(|f| f.local_name() == "XTMM9000")
             {
                 Ok(())
             } else {

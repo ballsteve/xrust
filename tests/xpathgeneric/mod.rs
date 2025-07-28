@@ -1,7 +1,7 @@
 //! Tests for XPath defined generically
 
 use pkg_version::{pkg_version_major, pkg_version_minor, pkg_version_patch};
-use qualname::{NamespaceUri, NcName, QName};
+use qualname::{NamespaceDeclaration, NamespaceMap, NamespacePrefix, NamespaceUri, NcName, QName};
 use std::ops::Deref;
 use std::rc::Rc;
 use xrust::item::{Item, Node, NodeType, Sequence, SequenceTrait};
@@ -19,7 +19,7 @@ fn no_src_no_result<N: Node>(e: impl AsRef<str>) -> Result<Sequence<N>, Error> {
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .build();
-    Context::new().dispatch(&mut stctxt, &parse(e.as_ref(), None)?)
+    Context::new().dispatch(&mut stctxt, &parse(e.as_ref(), None, None)?)
 }
 
 fn dispatch_rig<N: Node, G, H>(
@@ -41,7 +41,7 @@ where
         .context(vec![make_doc()])
         .result_document(rd)
         .build()
-        .dispatch(&mut stctxt, &parse(e.as_ref(), None)?)
+        .dispatch(&mut stctxt, &parse(e.as_ref(), None, None)?)
 }
 
 pub fn generic_empty<N: Node>() -> Result<(), Error> {
@@ -457,7 +457,7 @@ where
                 .context(vec![Item::Node(l)])
                 .result_document(rd)
                 .build()
-                .dispatch(&mut stctxt, &parse("parent::a", None)?)?;
+                .dispatch(&mut stctxt, &parse("parent::a", None, None)?)?;
             assert_eq!(s.len(), 1);
             assert_eq!(s[0].name().map_or("".to_string(), |m| m.to_string()), "a")
         }
@@ -484,7 +484,7 @@ where
                 .context(vec![Item::Node(l)])
                 .result_document(rd)
                 .build()
-                .dispatch(&mut stctxt, &parse("..", None)?)?;
+                .dispatch(&mut stctxt, &parse("..", None, None)?)?;
             assert_eq!(s.len(), 1);
             assert_eq!(s[0].name().map_or("".to_string(), |m| m.to_string()), "a")
         }
@@ -512,7 +512,7 @@ where
                 .context(vec![Item::Node(l)])
                 .result_document(rd)
                 .build()
-                .dispatch(&mut stctxt, &parse("ancestor::*", None)?)?;
+                .dispatch(&mut stctxt, &parse("ancestor::*", None, None)?)?;
             assert_eq!(s.len(), 3);
         }
         _ => panic!("unable to unpack node"),
@@ -560,7 +560,7 @@ where
         .context(vec![Item::Value(Rc::new(Value::from("foobar")))])
         .result_document(rd)
         .build()
-        .dispatch(&mut stctxt, &parse(".", None)?)?;
+        .dispatch(&mut stctxt, &parse(".", None, None)?)?;
     assert_eq!(s.len(), 1);
     assert_eq!(s[0].to_string(), "foobar");
     Ok(())
@@ -581,7 +581,7 @@ where
         .context(vec![Item::Value(Rc::new(Value::from("foobar")))])
         .result_document(rd)
         .build()
-        .dispatch(&mut stctxt, &parse("(1)", None)?)?;
+        .dispatch(&mut stctxt, &parse("(1)", None, None)?)?;
     assert_eq!(s.len(), 1);
     assert_eq!(s[0].to_int().unwrap(), 1);
     Ok(())
@@ -886,7 +886,7 @@ where
             .context(vec![Item::Node(top)])
             .previous_context(Some(sd))
             .build()
-            .dispatch(&mut stctxt, &parse("current()/child::a", None)?)
+            .dispatch(&mut stctxt, &parse("current()/child::a", None, None)?)
             .expect("evaluation failed");
         assert_eq!(s.len(), 1)
     } else {
@@ -1341,7 +1341,7 @@ where
             .context(vec![Item::Node(l)])
             .previous_context(Some(sd))
             .build()
-            .dispatch(&mut stctxt, &parse("count(ancestor::*)", None)?)
+            .dispatch(&mut stctxt, &parse("count(ancestor::*)", None, None)?)
             .expect("evaluation failed");
         assert_eq!(s.len(), 1);
         assert_eq!(s.to_int().expect("unable to get int from sequence"), 3)
@@ -1373,15 +1373,23 @@ where
     G: Fn() -> N,
     H: Fn() -> Item<N>,
 {
-    let e: Transform<N> =
-        parse("test:my_func(123)", None).expect("failed to parse expression \"test:my_func(123)\"");
+    let mut namemap = NamespaceMap::new();
+    namemap.push(
+        NamespaceDeclaration::new(
+            Some(NamespacePrefix::try_from("test").unwrap()),
+            NamespaceUri::try_from("urn:my_test").unwrap(),
+        )
+        .unwrap(),
+    );
+    let e: Transform<N> = parse("test:my_func(123)", None, Some(namemap))
+        .expect("failed to parse expression \"test:my_func(123)\"");
     match e {
         Transform::Invoke(qn, ap, _) => {
             assert_eq!(
                 qn,
                 QName::new_from_parts(
-                    NcName::try_from("test").unwrap(),
-                    Some(NamespaceUri::try_from("my_func").unwrap())
+                    NcName::try_from("my_func").unwrap(),
+                    Some(NamespaceUri::try_from("urn:my_test").unwrap())
                 )
             );
             match ap {
@@ -1513,7 +1521,7 @@ where
     let rd = make_empty_doc();
     let sd = make_doc();
     if let Item::Node(d) = sd {
-        let xform = parse("../*[@id eq 'b6']", None).expect("parsing failed");
+        let xform = parse("../*[@id eq 'b6']", None, None).expect("parsing failed");
         let mut stctxt = StaticContextBuilder::new()
             .message(|_| Ok(()))
             .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
@@ -1596,7 +1604,7 @@ where
         .build()
         .dispatch(
             &mut stctxt,
-            &parse("document('urn:example.org/test')", None)
+            &parse("document('urn:example.org/test')", None, None)
                 .expect("unable to parse XPath expression"),
         )
         .expect("evaluation failed");
@@ -1612,7 +1620,7 @@ where
     G: Fn() -> N,
     H: Fn() -> Item<N>,
 {
-    let e: Transform<N> = parse("key('mykey', 'blue')", None)
+    let e: Transform<N> = parse("key('mykey', 'blue')", None, None)
         .expect("failed to parse expression \"key('mykey', 'blue'))\"");
     let mut sd = make_empty_doc();
     let mut top = sd

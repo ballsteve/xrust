@@ -216,10 +216,8 @@ impl ItemNode for RNode {
                 NcName::try_from(nm.to_string().as_str())
                     .map_or(None, |ncn| Some(QName::from_local_name(ncn)))
             }
-            NodeInner::Namespace(_, _p, _) => {
-                //p.as_ref().map(|pf| QName::from_local_name(pf.to_ncname()))
-                // Temporarily return None for debugging purposes
-                None
+            NodeInner::Namespace(_, p, _) => {
+                p.as_ref().map(|pf| QName::from_local_name(pf.to_ncname()))
             }
             _ => None,
         }
@@ -289,7 +287,7 @@ impl ItemNode for RNode {
             | NodeInner::Comment(_, v)
             | NodeInner::ProcessingInstruction(_, _, v)
             | NodeInner::Attribute(_, _, v) => v.clone(),
-            NodeInner::Namespace(_, _, _ns) => Rc::new(Value::from("--namespace--")), // temporary for debugging Rc::new(Value::from(ns.as_str())),
+            NodeInner::Namespace(_, _, ns) => Rc::new(Value::from(ns.as_str())),
             _ => Rc::new(Value::from("")),
         }
     }

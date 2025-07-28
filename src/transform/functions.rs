@@ -7,7 +7,7 @@ use url::Url;
 
 use crate::SequenceTrait;
 use crate::item::{Item, Node, Sequence};
-use crate::parser::xml::qname::qualname_to_qname;
+use crate::parser::xml::qname::eqname_to_qname;
 use crate::parser::{ParseError, ParserState, StaticStateBuilder};
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::{NamespaceMap, Transform};
@@ -151,6 +151,7 @@ pub fn system_property<
     s: &Box<Transform<N>>,
     ns: &Rc<NamespaceMap>,
 ) -> Result<Sequence<N>, Error> {
+    eprintln!("system_property: in-scope-namespaces: {:?}", ns);
     let prop = ctxt.dispatch(stctxt, s)?;
     if prop.len() == 1 {
         let ps: ParserState<N> = ParserState::new();
@@ -161,7 +162,7 @@ pub fn system_property<
             })
             .build();
         let propstr = prop.to_string();
-        let qn = qualname_to_qname()((propstr.as_str(), ps), &mut static_state)
+        let qn = eqname_to_qname()((propstr.as_str(), ps), &mut static_state)
             .map_err(|_| Error::new(ErrorKind::DynamicAbsent, "unable to resolve QName"))?;
         //let qn = QName::try_from((prop.to_string().as_str(), ns.clone()))?;
         if qn.1 == *XSLVERSION {

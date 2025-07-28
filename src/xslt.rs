@@ -85,7 +85,7 @@ use crate::transform::{
 };
 use crate::value::*;
 use crate::xdmerror::*;
-use qualname::{NamespaceUri, NcName, QName};
+use qualname::{NamespaceMap, NamespaceUri, NcName, QName};
 use std::convert::TryFrom;
 use std::sync::LazyLock;
 use url::Url;
@@ -567,7 +567,11 @@ where
             let m = c.get_attribute(&*ATTRMATCH);
             let pat = Pattern::try_from(m.to_string())?;
             let u = c.get_attribute(&*ATTRUSE);
-            keys.push((name, pat, parse::<N>(&u.to_string(), Some(c.clone()))?));
+            keys.push((
+                name,
+                pat,
+                parse::<N>(&u.to_string(), Some(c.clone()), None)?,
+            ));
             Ok(())
         })?;
 
@@ -619,6 +623,7 @@ where
         .template_all(templates)
         .output_definition(od)
         .build();
+
     keys.iter()
         .for_each(|(name, m, u)| newctxt.declare_key(name.to_string(), m.clone(), u.clone()));
 
@@ -668,7 +673,7 @@ where
                                         |_| Error::new(ErrorKind::ParseError, "not a QName"),
                                     )?,
                                 ),
-                                Some(parse::<N>(&sel.to_string(), Some(c.clone()))?),
+                                Some(parse::<N>(&sel.to_string(), Some(c.clone()), None)?),
                             ));
                             Ok(())
                         }
@@ -778,7 +783,7 @@ where
                 Ok(())
             } else {
                 // Parse XPath
-                newctxt.pre_var_push(name, parse::<N>(&sel.to_string(), Some(c.clone()))?);
+                newctxt.pre_var_push(name, parse::<N>(&sel.to_string(), Some(c.clone()), None)?);
                 Ok(())
             }
         })?;
@@ -845,11 +850,11 @@ fn to_transform<N: Node>(
                 if !doe.to_string().is_empty() {
                     match &doe.to_string()[..] {
                         "yes" => Ok(Transform::LiteralText(
-                            Box::new(parse::<N>(&sel.to_string(), Some(n.clone()))?),
+                            Box::new(parse::<N>(&sel.to_string(), Some(n.clone()), None)?),
                             true,
                         )),
                         "no" => Ok(Transform::LiteralText(
-                            Box::new(parse::<N>(&sel.to_string(), Some(n.clone()))?),
+                            Box::new(parse::<N>(&sel.to_string(), Some(n.clone()), None)?),
                             false,
                         )),
                         _ => Err(Error::new(
@@ -859,7 +864,7 @@ fn to_transform<N: Node>(
                     }
                 } else {
                     Ok(Transform::LiteralText(
-                        Box::new(parse::<N>(&sel.to_string(), Some(n.clone()))?),
+                        Box::new(parse::<N>(&sel.to_string(), Some(n.clone()), None)?),
                         false,
                     ))
                 }
@@ -869,7 +874,7 @@ fn to_transform<N: Node>(
                 let sort_keys = get_sort_keys(&n)?;
                 if !sel.to_string().is_empty() {
                     Ok(Transform::ApplyTemplates(
-                        Box::new(parse::<N>(&sel.to_string(), Some(n.clone()))?),
+                        Box::new(parse::<N>(&sel.to_string(), Some(n.clone()), None)?),
                         m.map(|s| {
                             n.to_qname(s.value().to_string())
                                 .expect("unable to resolve qualified name")
@@ -895,7 +900,7 @@ fn to_transform<N: Node>(
             } else if qn == *XSLSEQUENCE {
                 let s = n.get_attribute(&*ATTRSELECT);
                 if !s.to_string().is_empty() {
-                    Ok(parse::<N>(&s.to_string(), Some(n.clone()))?)
+                    Ok(parse::<N>(&s.to_string(), Some(n.clone()), None)?)
                 } else {
                     Result::Err(Error::new(
                         ErrorKind::TypeError,
@@ -907,7 +912,7 @@ fn to_transform<N: Node>(
                 if !t.to_string().is_empty() {
                     Ok(Transform::Switch(
                         vec![(
-                            parse::<N>(&t.to_string(), Some(n.clone()))?,
+                            parse::<N>(&t.to_string(), Some(n.clone()), None)?,
                             Transform::SequenceItems(n.child_iter().try_fold(
                                 vec![],
                                 |mut body, e| {
@@ -940,7 +945,7 @@ fn to_transform<N: Node>(
                                     let t = m.get_attribute(&*ATTRTEST);
                                     if !t.to_string().is_empty() {
                                         clauses.push((
-                                            parse::<N>(&t.to_string(), Some(n.clone()))?,
+                                            parse::<N>(&t.to_string(), Some(n.clone()), None)?,
                                             Transform::SequenceItems(m.child_iter().try_fold(
                                                 vec![],
                                                 |mut body, e| {
@@ -1014,7 +1019,7 @@ fn to_transform<N: Node>(
                 if !s.to_string().is_empty() {
                     Ok(Transform::ForEach(
                         None,
-                        Box::new(parse::<N>(&s.to_string(), Some(n.clone()))?),
+                        Box::new(parse::<N>(&s.to_string(), Some(n.clone()), None)?),
                         Box::new(Transform::SequenceItems(n.child_iter().try_fold(
                             vec![],
                             |mut body, e| {
@@ -1043,8 +1048,8 @@ fn to_transform<N: Node>(
                         n.get_attribute(&*ATTRGROUPENDINGWITH).to_string().as_str(),
                     ) {
                         (by, "", "", "") => Ok(Transform::ForEach(
-                            Some(Grouping::By(vec![parse::<N>(by, Some(n.clone()))?])),
-                            Box::new(parse::<N>(&s.to_string(), Some(n.clone()))?),
+                            Some(Grouping::By(vec![parse::<N>(by, Some(n.clone()), None)?])),
+                            Box::new(parse::<N>(&s.to_string(), Some(n.clone()), None)?),
                             Box::new(Transform::SequenceItems(n.child_iter().try_fold(
                                 vec![],
                                 |mut body, e| {
@@ -1055,8 +1060,12 @@ fn to_transform<N: Node>(
                             ord,
                         )),
                         ("", adj, "", "") => Ok(Transform::ForEach(
-                            Some(Grouping::Adjacent(vec![parse::<N>(adj, Some(n.clone()))?])),
-                            Box::new(parse::<N>(&s.to_string(), Some(n.clone()))?),
+                            Some(Grouping::Adjacent(vec![parse::<N>(
+                                adj,
+                                Some(n.clone()),
+                                None,
+                            )?])),
+                            Box::new(parse::<N>(&s.to_string(), Some(n.clone()), None)?),
                             Box::new(Transform::SequenceItems(n.child_iter().try_fold(
                                 vec![],
                                 |mut body, e| {
@@ -1114,6 +1123,7 @@ fn to_transform<N: Node>(
                     Ok(Transform::DeepCopy(Box::new(parse::<N>(
                         &s.to_string(),
                         Some(n.clone()),
+                        None,
                     )?)))
                 } else {
                     Ok(Transform::DeepCopy(Box::new(Transform::ContextItem)))
@@ -1156,7 +1166,7 @@ fn to_transform<N: Node>(
                                                     Error::new(ErrorKind::ParseError, "not a QName")
                                                 })?,
                                         ),
-                                        parse::<N>(&sel.to_string(), Some(n.clone()))?,
+                                        parse::<N>(&sel.to_string(), Some(n.clone()), None)?,
                                     ));
                                     Ok(())
                                 }
@@ -1294,7 +1304,7 @@ fn to_transform<N: Node>(
                             Box::new(if sel.to_string().is_empty() {
                                 Transform::ContextItem
                             } else {
-                                parse::<N>(&sel.to_string(), Some(n.clone()))?
+                                parse::<N>(&sel.to_string(), Some(n.clone()), None)?
                             }), // select
                             Box::new(Numbering::new(
                                 Level::Single, // TODO: parse level attribute value
@@ -1321,7 +1331,7 @@ fn to_transform<N: Node>(
                 } else {
                     // Place marker is supplied
                     Ok(Transform::FormatInteger(
-                        Box::new(parse::<N>(&value.to_string(), Some(n.clone()))?),
+                        Box::new(parse::<N>(&value.to_string(), Some(n.clone()), None)?),
                         Box::new(Transform::Literal(Item::Value(
                             if format.to_string().is_empty() {
                                 Rc::new(Value::from("1"))
@@ -1418,7 +1428,10 @@ fn get_sort_keys<N: Node>(n: &N) -> Result<Vec<(Order, Transform<N>)>, Error> {
                             _ => Order::Ascending,
                         };
                         let sortsel = c.get_attribute(&*ATTRSELECT);
-                        result.push((ord, parse::<N>(&sortsel.to_string(), Some(n.clone()))?));
+                        result.push((
+                            ord,
+                            parse::<N>(&sortsel.to_string(), Some(n.clone()), None)?,
+                        ));
                     } else {
                         break;
                     }

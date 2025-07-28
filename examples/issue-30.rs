@@ -41,7 +41,7 @@ fn main() {
         Ok(_) => {}
     };
     // Parse the XPath expression
-    let xpath = parse::<RNode>(expr.trim(), None).expect("XPath expression not recognised");
+    let xpath = parse::<RNode>(expr.trim(), None, None).expect("XPath expression not recognised");
 
     // Read the XML file
     let srcpath = Path::new(&args[2]);

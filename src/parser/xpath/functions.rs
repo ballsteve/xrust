@@ -502,6 +502,10 @@ where
                     }
                 }
                 "system-property" => {
+                    eprintln!(
+                        "\n\tsystem-property with current node {:?}\n",
+                        state.cur.clone()
+                    );
                     if a.len() == 1 {
                         let p = a.pop().unwrap();
                         Transform::SystemProperty(

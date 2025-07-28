@@ -1041,7 +1041,7 @@ where
     G: Fn() -> N,
     H: Fn() -> Item<N>,
 {
-    // XPath == child::node()
+    // XPath == self::Level-1
     let x = Transform::Step(NodeMatch {
         axis: Axis::SelfAxis,
         nodetest: NodeTest::Name(NameTest {

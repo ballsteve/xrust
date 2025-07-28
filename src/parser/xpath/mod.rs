@@ -77,25 +77,36 @@ use crate::parser::{
 use crate::item::Node;
 use crate::transform::Transform;
 use crate::xdmerror::{Error, ErrorKind};
-use qualname::{NamespacePrefix, NamespaceUri};
+use qualname::{NamespaceMap, NamespacePrefix, NamespaceUri};
 
-/// Parse an XPath expression to produce a [Transform]. The optional [Node] is used to resolve XML Namespaces.
-pub fn parse<N: Node>(input: &str, n: Option<N>) -> Result<Transform<N>, Error> {
+/// Parse an XPath expression to produce a [Transform]. The optional [Node] or [NamespaceMap] may be used to resolve XML Namespaces (The [Node] will be searched first).
+pub fn parse<N: Node>(
+    input: &str,
+    n: Option<N>,
+    nmap: Option<NamespaceMap>,
+) -> Result<Transform<N>, Error> {
     // Shortcut for empty
     if input.is_empty() {
         return Ok(Transform::Empty);
     }
 
+    eprintln!("\n\txpath parse with node {:?}\n", n);
     let state = n.map_or_else(
         || ParserState::new(),
-        |m| ParserStateBuilder::new().doc(m).build(),
+        |m| ParserStateBuilder::new().doc(m.clone()).current(m).build(),
     );
-    // TODO: define closure that uses Node to lookup in-scope namespaces
-    let mut static_state = StaticStateBuilder::new()
-        .namespace(|_| {
-            NamespaceUri::try_from("urn:xrust").map_err(|_| ParseError::MissingNameSpace)
-        })
-        .build();
+    eprintln!("xpath current node: {:?}", state.cur);
+    let mut static_state = nmap.map_or_else(
+        || StaticState::new(),
+        |nm| {
+            StaticStateBuilder::new()
+                .namespace(move |pre| {
+                    nm.namespace_uri(&Some(pre.clone()))
+                        .ok_or(ParseError::MissingNameSpace)
+                })
+                .build()
+        },
+    );
     match xpath_expr((input, state), &mut static_state) {
         Ok((_, x)) => Ok(x),
         Err(err) => match err {
