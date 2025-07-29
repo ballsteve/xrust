@@ -85,7 +85,7 @@ use crate::transform::{
 };
 use crate::value::*;
 use crate::xdmerror::*;
-use qualname::{NamespaceMap, NamespaceUri, NcName, QName};
+use qualname::{NamespacePrefix, NamespaceUri, NcName, QName};
 use std::convert::TryFrom;
 use std::sync::LazyLock;
 use url::Url;
@@ -804,14 +804,7 @@ fn to_transform<N: Node>(
             n.to_string(),
         ))))),
         NodeType::Element => {
-            // TODO: work out how to match against a static, LazyLock value
-            // i.e. match n.name().unwrap() { *XSLTEXT => {...}}
             let qn = n.name().unwrap();
-            //match n.name().unwrap()
-            /*(
-                n.name().namespace_uri_to_string().as_deref(),
-                n.name().localname_to_string().as_str(),
-            )*/
             if qn == *XSLTEXT {
                 let doe = n.get_attribute(&*ATTRDOE);
                 if !doe.to_string().is_empty() {
@@ -1192,6 +1185,7 @@ fn to_transform<N: Node>(
                     ))
                 }
             } else if qn == *XSLELEMENT {
+                // TODO: insert namespace declaration if element's name is prefixed
                 let m = n.get_attribute(&*ATTRNAME);
                 if m.to_string().is_empty() {
                     return Err(Error::new(ErrorKind::TypeError, "missing name attribute"));
@@ -1353,6 +1347,22 @@ fn to_transform<N: Node>(
             } else {
                 let u = qn.namespace_uri();
                 let a = qn.local_name();
+
+                // Uh-oh! Parsing the stylesheet has thrown away all qualified name prefixes
+                // But there will be a namespace declaration, so recover it from there
+                let prefix: Option<Box<Transform<N>>> = u.as_ref().map_or(None, |nsuri| {
+                    n.namespace_iter()
+                        .find(|nsd| nsd.as_namespace_uri().unwrap() == nsuri)
+                        .unwrap()
+                        .as_namespace_prefix()
+                        .unwrap()
+                        .map(|p| {
+                            Box::new(Transform::Literal(Item::Value(Rc::new(Value::from(
+                                p.to_string(),
+                            )))))
+                        })
+                });
+
                 // Process @xsl:use-attribute-sets
                 let use_atts = n.get_attribute(&*ATTRUSEATTRIBUTESETS);
                 let mut attrs = vec![];
@@ -1366,6 +1376,17 @@ fn to_transform<N: Node>(
                     Ok(())
                 })?;
                 let mut content = vec![];
+
+                // Setup a namespace declaration if required for the element name
+                if u.is_some() {
+                    content.push(Transform::NamespaceDeclaration(
+                        prefix,
+                        Box::new(Transform::Literal(Item::Value(Rc::new(Value::from(
+                            u.clone().unwrap().as_str(),
+                        ))))),
+                    ));
+                }
+
                 // Copy attributes to the result, except for XSLT directives
                 n.attribute_iter()
                     .filter(|e| e.name().unwrap().namespace_uri() != *XSLTNS)

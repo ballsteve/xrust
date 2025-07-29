@@ -6,7 +6,7 @@ use crate::transform::Transform;
 use crate::transform::context::{Context, StaticContext};
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
-use qualname::{NamespacePrefix, NamespaceUri, QName};
+use qualname::{NamespacePrefix, NamespaceUri, NcName, QName};
 use std::rc::Rc;
 use url::Url;
 
@@ -44,24 +44,10 @@ pub(crate) fn literal_element<
 
     let mut e = r.new_element(qn.clone())?;
 
-    // If the element is in a namespace, check if the namespace is in scope.
-    // If not, create and add a Namespace node for that namespace.
+    // If the element is in a namespace, the namespace declaration must be in the content.
     // Issue: the tree is being created from the bottom up, so we can't know if an ancestor will declare the namespace.
     // This will result in lots of redundant Namespace nodes.
-    // TODO: find the prefix for the given namespace URI
-    if let Some(ns) = qn.namespace_uri() {
-        e.add_namespace(
-            r.new_namespace(
-                NamespaceUri::try_from(ns.as_str())
-                    .map_err(|_| Error::new(ErrorKind::ParseError, "invalid namespace URI"))?,
-                Some(
-                    NamespacePrefix::try_from("a_prefix").map_err(|_| {
-                        Error::new(ErrorKind::ParseError, "invalid namespace prefix")
-                    })?,
-                ),
-            )?,
-        )?;
-    }
+    // TODO: have a fixup process that eliminates the redundant declarations.
 
     // Create the content of the new element
     ctxt.dispatch(stctxt, c)?.iter().try_for_each(|i| {
@@ -250,6 +236,43 @@ pub(crate) fn literal_processing_instruction<
         Rc::new(Value::from(ctxt.dispatch(stctxt, t)?.to_string())),
     )?;
     Ok(vec![Item::Node(pi)])
+}
+
+/// Creates a XML Namespace declaration.
+pub(crate) fn namespace_declaration<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
+    ctxt: &Context<N>,
+    stctxt: &mut StaticContext<N, F, G, H>,
+    p: &Option<Box<Transform<N>>>, // prefix
+    u: &Transform<N>,              // namespace URI
+) -> Result<Sequence<N>, Error> {
+    if ctxt.rd.is_none() {
+        return Err(Error::new(
+            ErrorKind::Unknown,
+            String::from("context has no result document"),
+        ));
+    }
+
+    let np = if let Some(pp) = p {
+        Some(
+            NamespacePrefix::try_from(ctxt.dispatch(stctxt, &pp)?.to_string().as_str())
+                .map_err(|_| Error::new(ErrorKind::ParseError, "invalid namespapce prefix"))?,
+        )
+    } else {
+        None
+    };
+
+    Ok(vec![Item::Node(
+        ctxt.rd.as_ref().unwrap().new_namespace(
+            NamespaceUri::try_from(ctxt.dispatch(stctxt, u)?.to_string().as_str())
+                .map_err(|_| Error::new(ErrorKind::ParseError, "invalid namespapce URI"))?,
+            np,
+        )?,
+    )])
 }
 
 /// Set an attribute on the context item, which must be an element-type node.
