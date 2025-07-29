@@ -90,24 +90,37 @@ pub fn parse<N: Node>(
         return Ok(Transform::Empty);
     }
 
-    eprintln!("\n\txpath parse with node {:?}\n", n);
-    let state = n.map_or_else(
+    let state = n.clone().map_or_else(
         || ParserState::new(),
         |m| ParserStateBuilder::new().doc(m.clone()).current(m).build(),
     );
-    eprintln!("xpath current node: {:?}", state.cur);
-    let mut static_state = nmap.map_or_else(
-        || StaticState::new(),
-        |nm| {
-            StaticStateBuilder::new()
-                .namespace(move |pre| {
-                    nm.namespace_uri(&Some(pre.clone()))
-                        .ok_or(ParseError::MissingNameSpace)
-                })
-                .build()
-        },
-    );
-    match xpath_expr((input, state), &mut static_state) {
+    let result = if let Some(m) = n.clone() {
+        let mut static_state = StaticStateBuilder::new()
+            .namespace(move |pre| {
+                m.namespace_iter()
+                    .find(|nsd| nsd.as_namespace_prefix().unwrap().is_some_and(|p| p == pre))
+                    .map_or_else(
+                        || Err(ParseError::MissingNameSpace),
+                        |nsd| Ok(nsd.as_namespace_uri().unwrap().clone()),
+                    )
+            })
+            .build();
+        xpath_expr((input, state), &mut static_state)
+    } else if let Some(nm) = nmap {
+        let mut static_state = StaticStateBuilder::new()
+            .namespace(move |pre: &NamespacePrefix| {
+                nm.namespace_uri(&Some(pre.clone()))
+                    .ok_or(ParseError::MissingNameSpace)
+            })
+            .build();
+        xpath_expr((input, state), &mut static_state)
+    } else {
+        let mut static_state = StaticStateBuilder::new()
+            .namespace(|_| Err(ParseError::MissingNameSpace))
+            .build();
+        xpath_expr((input, state), &mut static_state)
+    };
+    match result {
         Ok((_, x)) => Ok(x),
         Err(err) => match err {
             ParseError::Combinator => Err(Error::new(
