@@ -214,6 +214,12 @@ static ATTRGROUPENDINGWITH: LazyLock<QName> =
     LazyLock::new(|| QName::new_from_parts(NcName::try_from("group-ending-with").unwrap(), None));
 static ATTRUSEATTRIBUTESETS: LazyLock<QName> =
     LazyLock::new(|| QName::new_from_parts(NcName::try_from("use-attribute-sets").unwrap(), None));
+static XSLATTRUSEATTRIBUTESETS: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(
+        NcName::try_from("use-attribute-sets").unwrap(),
+        XSLTNS.clone(),
+    )
+});
 static ATTRTERMINATE: LazyLock<QName> =
     LazyLock::new(|| QName::new_from_parts(NcName::try_from("terminate").unwrap(), None));
 static ATTRVALUE: LazyLock<QName> =
@@ -462,6 +468,8 @@ where
             attr_sets.insert(eqname, attrs);
             Ok(())
         })?;
+
+    eprintln!("got attribute sets: {:?}", attr_sets);
 
     // Iterate over children, looking for templates
     // * compile match pattern
@@ -1088,10 +1096,12 @@ fn to_transform<N: Node>(
                         Ok(body)
                     })?;
                 // Process @xsl:use-attribute-sets
-                let use_atts = n.get_attribute(&*ATTRUSEATTRIBUTESETS);
+                let use_atts = n.get_attribute(&*XSLATTRUSEATTRIBUTESETS);
+                eprintln!("use-attr-sets==\"{}\"", use_atts.to_string());
                 let mut attrs = vec![];
                 use_atts.to_string().split_whitespace().try_for_each(|a| {
                     let eqa = n.to_qname(a)?;
+                    eprintln!("looking for attr-set \"{:?}\"", eqa);
                     attr_sets
                         .get(&eqa)
                         .iter()
@@ -1195,7 +1205,7 @@ fn to_transform<N: Node>(
                     Ok(body)
                 })?;
                 // Process @xsl:use-attribute-sets
-                let use_atts = n.get_attribute(&*ATTRUSEATTRIBUTESETS);
+                let use_atts = n.get_attribute(&*XSLATTRUSEATTRIBUTESETS);
                 let mut attrs = vec![];
                 use_atts.to_string().split_whitespace().try_for_each(|a| {
                     let eqa = n.to_qname(a)?;
