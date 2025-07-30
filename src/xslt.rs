@@ -212,8 +212,8 @@ static ATTRGROUPSTARTINGWITH: LazyLock<QName> =
     LazyLock::new(|| QName::new_from_parts(NcName::try_from("group-starting-with").unwrap(), None));
 static ATTRGROUPENDINGWITH: LazyLock<QName> =
     LazyLock::new(|| QName::new_from_parts(NcName::try_from("group-ending-with").unwrap(), None));
-static ATTRUSEATTRIBUTESETS: LazyLock<QName> =
-    LazyLock::new(|| QName::new_from_parts(NcName::try_from("use-attribute-sets").unwrap(), None));
+//static ATTRUSEATTRIBUTESETS: LazyLock<QName> =
+//    LazyLock::new(|| QName::new_from_parts(NcName::try_from("use-attribute-sets").unwrap(), None));
 static XSLATTRUSEATTRIBUTESETS: LazyLock<QName> = LazyLock::new(|| {
     QName::new_from_parts(
         NcName::try_from("use-attribute-sets").unwrap(),
@@ -1374,7 +1374,7 @@ fn to_transform<N: Node>(
                 });
 
                 // Process @xsl:use-attribute-sets
-                let use_atts = n.get_attribute(&*ATTRUSEATTRIBUTESETS);
+                let use_atts = n.get_attribute(&*XSLATTRUSEATTRIBUTESETS);
                 let mut attrs = vec![];
                 use_atts.to_string().split_whitespace().try_for_each(|a| {
                     let eqa = n.to_qname(a)?; //QName::try_from((a, ns.clone()))?;
