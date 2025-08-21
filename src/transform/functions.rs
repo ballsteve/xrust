@@ -151,7 +151,6 @@ pub fn system_property<
     s: &Box<Transform<N>>,
     ns: &Rc<NamespaceMap>,
 ) -> Result<Sequence<N>, Error> {
-    eprintln!("system_property: in-scope-namespaces: {:?}", ns);
     let prop = ctxt.dispatch(stctxt, s)?;
     if prop.len() == 1 {
         let ps: ParserState<N> = ParserState::new();

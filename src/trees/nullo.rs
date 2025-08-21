@@ -224,6 +224,12 @@ impl Node for Nullo {
     fn validate(&self, _sch: Schema) -> Result<(), ValidationError> {
         Err(ValidationError::SchemaError("Not Implemented".to_string()))
     }
+    fn unattached(&self) -> Vec<Self> {
+        vec![]
+    }
+    fn is_unattached(&self) -> bool {
+        false
+    }
 }
 
 pub struct NulloIter();

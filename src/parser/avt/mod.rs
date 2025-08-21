@@ -126,7 +126,6 @@ where
     //        |(_, e, _)| e
     //    ))
     Box::new(move |(input, state), ss| {
-        eprintln!("AVT braced_expr: input \"{}\"", input);
         match input.get(0..1) {
             Some("{") => match input.find('}') {
                 None => Err(ParseError::Combinator),
@@ -134,10 +133,6 @@ where
                     Ok((_, result)) => {
                         // Successful parse of expression
                         // Must also consume the close brace
-                        eprintln!(
-                            "got expr, consume close brace, remaining input: \"{:?}\"",
-                            input.get((ind + 1)..)
-                        );
                         Ok(((input.get((ind + 1)..).map_or("", |r| r), state), result))
                     }
                     Err(e) => Err(e),

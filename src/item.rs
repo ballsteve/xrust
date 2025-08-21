@@ -454,6 +454,8 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     fn is_element(&self) -> bool {
         self.node_type() == NodeType::Element
     }
+    /// Check if a node is unattached
+    fn is_unattached(&self) -> bool;
 
     /// Check if a node is an XML ID
     fn is_id(&self) -> bool;
@@ -627,4 +629,7 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     fn set_dtd(&self, dtd: DTD) -> Result<(), Error>;
 
     fn validate(&self, schema: Schema) -> Result<(), ValidationError>;
+
+    /// Return a list of nodes that are associated with this document, but are not attached.
+    fn unattached(&self) -> Vec<Self>;
 }

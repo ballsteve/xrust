@@ -194,6 +194,34 @@ impl ItemNode for RNode {
         Rc::new(Node::new())
     }
 
+    fn unattached(&self) -> Vec<Self> {
+        match &self.0 {
+            NodeInner::Document(_, _, u, _) => u.borrow().clone(),
+            _ => vec![],
+        }
+    }
+    fn is_unattached(&self) -> bool {
+        match &self.0 {
+            NodeInner::Element(p, _, _, _, _)
+            | NodeInner::Text(p, _)
+            | NodeInner::Attribute(p, _, _)
+            | NodeInner::Comment(p, _)
+            | NodeInner::ProcessingInstruction(p, _, _) => {
+                if let Some(q) = p.borrow().upgrade() {
+                    match &q.0 {
+                        NodeInner::Document(_, _, u, _) => {
+                            u.borrow().iter().any(|a| a.is_same(self))
+                        }
+                        _ => false,
+                    }
+                } else {
+                    false
+                }
+            }
+            _ => false,
+        }
+    }
+
     fn node_type(&self) -> NodeType {
         match &self.0 {
             NodeInner::Document(_, _, _, _) => NodeType::Document,
@@ -327,7 +355,6 @@ impl ItemNode for RNode {
     // Find the document node, given an arbitrary node in the tree.
     // There is always a document node, so this will not panic.
     fn owner_document(&self) -> Self {
-        eprintln!("smite::owner_doc self {:?}", self);
         match &self.0 {
             NodeInner::Document(_, _, _, _) => self.clone(),
             _ => self.ancestor_iter().last().unwrap(),
@@ -1172,24 +1199,12 @@ fn find_index(parent: &RNode, child: &RNode) -> Result<usize, Error> {
 fn to_prefixed_name(n: &RNode) -> String {
     match &n.0 {
         NodeInner::Element(_, qn, _, _, _) | NodeInner::Attribute(_, qn, _) => {
-            eprintln!("to_prefixed_name {:?}", qn);
-            eprintln!("in-scope namespaces:");
-            n.namespace_iter().for_each(|m| {
-                eprintln!(
-                    "uri {} prefix \"{:?}\"",
-                    m.as_namespace_uri().unwrap().to_string(),
-                    m.as_namespace_prefix().unwrap()
-                )
-            });
             let ns = qn.namespace_uri();
             if ns.is_none() {
                 // Unprefixed name
-                eprintln!("unprefixed");
                 String::from(qn.local_name())
             } else {
-                eprintln!("prefixed");
                 let uns = ns.unwrap();
-                eprintln!("looking for ns {}", uns.to_string());
                 n.namespace_iter()
                     .find(|m| m.ns_uri().unwrap() == uns)
                     .map_or_else(
@@ -1210,7 +1225,6 @@ fn to_prefixed_name(n: &RNode) -> String {
 // This handles the XML serialisation of the document.
 // "indent" is the current level of indentation.
 fn to_xml_int(node: &RNode, od: &OutputDefinition, indent: usize) -> String {
-    eprintln!("to_xml_int");
     match &node.0 {
         NodeInner::Document(_, _, _, _) => {
             node.child_iter().fold(String::new(), |mut result, c| {
@@ -1327,7 +1341,6 @@ pub struct Ancestors {
 
 impl Ancestors {
     fn new(n: &RNode) -> Self {
-        //eprintln!("Ancestors: n=={:?}", n);
         Ancestors { cur: n.clone() }
     }
 }
@@ -1336,7 +1349,6 @@ impl Iterator for Ancestors {
     type Item = RNode;
 
     fn next(&mut self) -> Option<RNode> {
-        //eprintln!("ancestor next: cur={:?}", self.cur);
         let parent = match &self.cur.0 {
             NodeInner::Document(_, _, _, _) => None,
             NodeInner::Element(p, _, _, _, _)
@@ -1346,7 +1358,6 @@ impl Iterator for Ancestors {
             | NodeInner::ProcessingInstruction(p, _, _)
             | NodeInner::Namespace(p, _, _) => Weak::upgrade(&p.borrow()),
         };
-        //eprintln!("ancestor next: parent={:?}", parent);
         parent.map(|q| {
             self.cur = q.clone();
             q

@@ -219,7 +219,6 @@ impl<N: Node> Context<N> {
                     // If there are more than one with the same priority and import level,
                     // then take the one with the higher document order.
                     let templates = self.find_templates(stctxt, i, &None)?;
-                    eprintln!("eval_int: found {} template", templates.len());
                     match templates.len() {
                         0 => Err(Error::new(
                             ErrorKind::DynamicAbsent,
@@ -326,7 +325,40 @@ impl<N: Node> Context<N> {
             for (name, x) in &self.pre_vars {
                 ctxt.var_push(name.clone(), ctxt.dispatch(stctxt, &x)?);
             }
-            ctxt.evaluate_internal(stctxt)
+            let result = ctxt.evaluate_internal(stctxt)?;
+            // If any of the result items are nodes then add them as children of the result document
+            if let Some(mut rd) = ctxt.rd {
+                Ok(result
+                    .into_iter()
+                    .filter_map(|i| {
+                        if let Item::Node(ref n) = i {
+                            if n.owner_document().is_same(&rd) {
+                                if n.is_unattached() {
+                                    // Attach it and leave it in the result
+                                    rd.push(n.clone())
+                                        .expect("unable to attach to result document");
+                                    Some(i)
+                                } else {
+                                    // leave it where it is in the result document
+                                    Some(i)
+                                }
+                            } else {
+                                // This is a node from the source document.
+                                // Copy it to the result document
+                                // and replace the node in the result with the copy
+                                let cp = n.deep_copy().expect("unable to copy node");
+                                rd.push(cp.clone())
+                                    .expect("unable to attach to result document");
+                                Some(Item::Node(cp))
+                            }
+                        } else {
+                            Some(i)
+                        }
+                    })
+                    .collect())
+            } else {
+                Ok(result)
+            }
         }
     }
 
@@ -408,7 +440,6 @@ impl<N: Node> Context<N> {
         stctxt: &mut StaticContext<N, F, G, H>,
         t: &Transform<N>,
     ) -> Result<Sequence<N>, Error> {
-        eprintln!("dispatch: {:?}", t);
         match t {
             Transform::Root => root(self),
             Transform::ContextItem => context(self),

@@ -469,8 +469,6 @@ where
             Ok(())
         })?;
 
-    eprintln!("got attribute sets: {:?}", attr_sets);
-
     // Iterate over children, looking for templates
     // * compile match pattern
     // * compile content into sequence constructor
@@ -1097,11 +1095,9 @@ fn to_transform<N: Node>(
                     })?;
                 // Process @xsl:use-attribute-sets
                 let use_atts = n.get_attribute(&*XSLATTRUSEATTRIBUTESETS);
-                eprintln!("use-attr-sets==\"{}\"", use_atts.to_string());
                 let mut attrs = vec![];
                 use_atts.to_string().split_whitespace().try_for_each(|a| {
                     let eqa = n.to_qname(a)?;
-                    eprintln!("looking for attr-set \"{:?}\"", eqa);
                     attr_sets
                         .get(&eqa)
                         .iter()
