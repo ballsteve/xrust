@@ -263,6 +263,7 @@ impl<N: Node> Context<N> {
     /// use xrust::transform::Transform;
     /// use xrust::transform::context::{Context, StaticContext, StaticContextBuilder};
     /// use xrust::trees::smite::RNode;
+    /// use xrust::parser::ParseError;
     /// use xrust::parser::xml::parse;
     /// use xrust::xslt::from_document;
     ///
@@ -406,12 +407,13 @@ impl<N: Node> Context<N> {
     /// use xrust::transform::{Transform, NodeMatch, NodeTest, KindTest,  Axis};
     /// use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticContextBuilder};
     /// use xrust::trees::smite::RNode;
+    /// use xrust::parser::ParseError;
     /// use xrust::parser::xml::parse;
     ///
     /// // A little helper function to parse a string to a Document Node
     /// fn make_from_str(s: &str) -> RNode {
     ///   let mut d = RNode::new_document();
-    ///   parse(d.clone(), s, None)
+    ///   parse(d.clone(), s, Some(|_: &_| Err(ParseError::MissingNameSpace)))
     ///     .expect("failed to parse XML");
     ///   d
     /// }
@@ -684,8 +686,8 @@ where
 /// The main feature of the static context is the ability to set up a callback for messages.
 /// ```rust
 /// use std::rc::Rc;
+/// use qualname::{QName, NcName};
 /// use xrust::{Error, ErrorKind};
-/// use xrust::qname::QualifiedName;
 /// use xrust::value::Value;
 /// use xrust::item::{Item, Sequence, SequenceTrait, Node, NodeType};
 /// use xrust::trees::smite::RNode;
@@ -694,7 +696,7 @@ where
 ///
 /// let mut message = String::from("no message received");
 /// let xform = Transform::LiteralElement(
-///   Rc::new(QualifiedName::new(None, None, String::from("Example"))),
+///   QName::from_local_name(NcName::try_from("Example").unwrap()),
 ///   Box::new(Transform::SequenceItems(vec![
 ///    Transform::Message(
 ///        Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("a message from the transformation"))))),

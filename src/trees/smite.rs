@@ -14,18 +14,18 @@ NB. The Item module's Node trait is implemented for Rc\<smite::Node\>. For conve
 use std::rc::Rc;
 use xrust::trees::smite::RNode;
 use xrust::item::{Node as ItemNode, NodeType};
-use xrust::qname::QualifiedName;
+use qualname::{QName, NcName};
 use xrust::value::Value;
 use xrust::xdmerror::Error;
 
-pub(crate) type ExtDTDresolver = fn(Option<String>, String) -> Result<String, Error>;
+//pub(crate) type ExtDTDresolver = fn(Option<String>, String) -> Result<String, Error>;
 
 // A document always has a NodeType::Document node as the toplevel node.
 let mut doc = RNode::new_document();
 
 // Create an element-type node. Upon creation, it is *not* attached to the tree.
 let mut top = doc.new_element(
-    Rc::new(QualifiedName::new(None, None, "Top-Level"))
+    QName::from_local_name(NcName::try_from("Top-Level").unwrap())
 ).expect("unable to create element node");
 
 // Nodes are Rc-shared, so it is cheap to clone them.

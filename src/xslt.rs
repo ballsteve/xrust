@@ -13,6 +13,7 @@ use xrust::item::{Item, Node, NodeType, Sequence, SequenceTrait};
 use xrust::transform::Transform;
 use xrust::transform::context::{StaticContext, StaticContextBuilder};
 use xrust::trees::smite::RNode;
+use xrust::parser::ParseError;
 use xrust::parser::xml::parse;
 use xrust::xslt::from_document;
 
@@ -20,7 +21,7 @@ use xrust::xslt::from_document;
 fn make_from_str(s: &str) -> Result<RNode, Error> {
     let doc = RNode::new_document();
     let e = parse(doc.clone(), s,
-        Some(|_: &_| Err(ParseError::MissingNameSpace))))?;
+        Some(|_: &_| Err(ParseError::MissingNameSpace)))?;
     Ok(doc)
 }
 

@@ -19,6 +19,7 @@ To evaluate the transformation we need a Context with a source document as its c
 # use xrust::xdmerror::{Error, ErrorKind};
 use xrust::item::{Sequence, SequenceTrait, Item, Node, NodeType};
 use xrust::trees::smite::RNode;
+use xrust::parser::ParseError;
 use xrust::parser::xml::parse as xmlparse;
 use xrust::parser::xpath::parse;
 use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticContextBuilder};
@@ -27,7 +28,7 @@ let t = parse("/child::A/child::B/child::C", None, None)
     .expect("unable to parse XPath expression");
 
 let source = RNode::new_document();
-xmlparse(source.clone(), "<A><B><C/></B><B><C/></B></A>", None)
+xmlparse(source.clone(), "<A><B><C/></B><B><C/></B></A>", Some(|_: &_| Err(ParseError::MissingNameSpace)))
     .expect("unable to parse XML");
 let mut static_context = StaticContextBuilder::new()
     .message(|_| Ok(()))
