@@ -219,6 +219,7 @@ impl<N: Node> Context<N> {
                     // If there are more than one with the same priority and import level,
                     // then take the one with the higher document order.
                     let templates = self.find_templates(stctxt, i, &None)?;
+                    eprintln!("eval_int: found {} template", templates.len());
                     match templates.len() {
                         0 => Err(Error::new(
                             ErrorKind::DynamicAbsent,
@@ -269,7 +270,8 @@ impl<N: Node> Context<N> {
     /// // A little helper function to parse a string to a Document Node
     /// fn make_from_str(s: &str) -> RNode {
     ///   let mut d = RNode::new_document();
-    ///   parse(d.clone(), s, None)
+    ///   parse(d.clone(), s,
+    ///     Some(|_: &_| Err(ParseError::MissingNameSpace)))
     ///     .expect("failed to parse XML");
     ///   d
     /// }
@@ -406,6 +408,7 @@ impl<N: Node> Context<N> {
         stctxt: &mut StaticContext<N, F, G, H>,
         t: &Transform<N>,
     ) -> Result<Sequence<N>, Error> {
+        eprintln!("dispatch: {:?}", t);
         match t {
             Transform::Root => root(self),
             Transform::ContextItem => context(self),

@@ -401,34 +401,21 @@ impl<N: Node> Debug for Transform<N> {
 
 /// A convenience function to create a namespace mapping from a [Node].
 pub fn in_scope_namespaces<N: Node>(n: Option<N>) -> Rc<NamespaceMap> {
-    eprintln!("in_scope_namespaces: n={:?}", n);
     if let Some(nn) = n {
-        Rc::new(
-            nn.namespace_iter()
-                .inspect(|ns| {
-                    eprintln!(
-                        "nsiter ns={:?}, name={:?}, value={:?}",
-                        ns,
-                        ns.name(),
-                        ns.value().to_string()
-                    )
-                })
-                .fold(NamespaceMap::new(), |mut hm, ns| {
-                    hm.push(
-                        NamespaceDeclaration::new(
-                            Some(
-                                NamespacePrefix::try_from(ns.name().unwrap().local_name()).unwrap(),
-                            ),
-                            NamespaceUri::try_from(ns.value().to_string().as_str()).unwrap(),
-                        )
-                        .unwrap(),
-                    );
-                    eprintln!("built nsmap: {:?}", hm);
-                    hm
-                }),
-        )
+        Rc::new(nn.namespace_iter().fold(NamespaceMap::new(), |mut hm, ns| {
+            hm.push(
+                NamespaceDeclaration::new(
+                    Some(
+                        NamespacePrefix::try_from(ns.name().unwrap().local_name().as_str())
+                            .unwrap(),
+                    ),
+                    NamespaceUri::try_from(ns.value().to_string().as_str()).unwrap(),
+                )
+                .unwrap(),
+            );
+            hm
+        }))
     } else {
-        eprintln!("no node provided");
         Rc::new(NamespaceMap::new())
     }
 }
@@ -523,7 +510,7 @@ impl NodeMatch {
             NodeTest::Name(t) => {
                 match n.node_type() {
                     NodeType::Element | NodeType::Attribute => {
-                        // TODO: namespaces
+                        // NB. QName includes namespaces
                         match &t.name {
                             Some(a) => match a {
                                 WildcardOrName::Wildcard => true,

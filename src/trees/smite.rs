@@ -230,7 +230,8 @@ impl ItemNode for RNode {
             .namespace(|prefix: &NamespacePrefix| {
                 let nsdo = self.namespace_iter().find(|ns| {
                     // TODO: it's annoying to have to convert the namespace node name back to a prefix when we know it is a prefix
-                    NamespacePrefix::try_from(ns.name().unwrap().local_name()).unwrap() == *prefix
+                    NamespacePrefix::try_from(ns.name().unwrap().local_name().as_str()).unwrap()
+                        == *prefix
                 });
                 nsdo.map_or(
                     Err(ParseError::MissingNameSpace),
@@ -287,7 +288,7 @@ impl ItemNode for RNode {
             | NodeInner::Comment(_, v)
             | NodeInner::ProcessingInstruction(_, _, v)
             | NodeInner::Attribute(_, _, v) => v.clone(),
-            NodeInner::Namespace(_, _, ns) => Rc::new(Value::from(ns.as_str())),
+            NodeInner::Namespace(_, _, ns) => Rc::new(Value::from(ns.clone())),
             _ => Rc::new(Value::from("")),
         }
     }
@@ -308,7 +309,7 @@ impl ItemNode for RNode {
             | NodeInner::Text(_, v)
             | NodeInner::Comment(_, v)
             | NodeInner::ProcessingInstruction(_, _, v) => v.to_string(),
-            NodeInner::Namespace(_, _, uri) => String::from(uri.as_str()),
+            NodeInner::Namespace(_, _, uri) => uri.to_string(),
         }
     }
     fn to_xml(&self) -> String {
@@ -326,6 +327,7 @@ impl ItemNode for RNode {
     // Find the document node, given an arbitrary node in the tree.
     // There is always a document node, so this will not panic.
     fn owner_document(&self) -> Self {
+        eprintln!("smite::owner_doc self {:?}", self);
         match &self.0 {
             NodeInner::Document(_, _, _, _) => self.clone(),
             _ => self.ancestor_iter().last().unwrap(),
@@ -943,7 +945,7 @@ impl Debug for Node {
                     f,
                     "namespace-type node \"{}:{}\"",
                     pre.clone().map_or("".to_string(), |v| v.to_string()),
-                    uri.as_str()
+                    uri.to_string()
                 )
             }
         }
@@ -994,7 +996,7 @@ fn dump_tree_children(cv: Vec<RNode>, indent: usize) -> String {
                         format!(
                             " xmlns:{:?}={}",
                             ns.as_namespace_prefix().unwrap(),
-                            ns.as_namespace_uri().unwrap().as_str()
+                            ns.as_namespace_uri().unwrap().to_string()
                         )
                         .as_str(),
                     )
@@ -1171,6 +1173,14 @@ fn to_prefixed_name(n: &RNode) -> String {
     match &n.0 {
         NodeInner::Element(_, qn, _, _, _) | NodeInner::Attribute(_, qn, _) => {
             eprintln!("to_prefixed_name {:?}", qn);
+            eprintln!("in-scope namespaces:");
+            n.namespace_iter().for_each(|m| {
+                eprintln!(
+                    "uri {} prefix \"{:?}\"",
+                    m.as_namespace_uri().unwrap().to_string(),
+                    m.as_namespace_prefix().unwrap()
+                )
+            });
             let ns = qn.namespace_uri();
             if ns.is_none() {
                 // Unprefixed name
@@ -1179,6 +1189,7 @@ fn to_prefixed_name(n: &RNode) -> String {
             } else {
                 eprintln!("prefixed");
                 let uns = ns.unwrap();
+                eprintln!("looking for ns {}", uns.to_string());
                 n.namespace_iter()
                     .find(|m| m.ns_uri().unwrap() == uns)
                     .map_or_else(
@@ -1214,12 +1225,12 @@ fn to_xml_int(node: &RNode, od: &OutputDefinition, indent: usize) -> String {
             // Namespace declarations
             ns.borrow().iter().for_each(|(_, nsd)| {
                 let decl = nsd.as_namespace_prefix().unwrap().map_or_else(
-                    || format!(" xmlns='{}'", nsd.as_namespace_uri().unwrap().as_str()),
+                    || format!(" xmlns='{}'", nsd.as_namespace_uri().unwrap().to_string()),
                     |p| {
                         format!(
                             " xmlns:{}='{}'",
                             p.to_string(),
-                            nsd.as_namespace_uri().unwrap().as_str()
+                            nsd.as_namespace_uri().unwrap().to_string()
                         )
                     },
                 );
@@ -1316,6 +1327,7 @@ pub struct Ancestors {
 
 impl Ancestors {
     fn new(n: &RNode) -> Self {
+        //eprintln!("Ancestors: n=={:?}", n);
         Ancestors { cur: n.clone() }
     }
 }
@@ -1324,6 +1336,7 @@ impl Iterator for Ancestors {
     type Item = RNode;
 
     fn next(&mut self) -> Option<RNode> {
+        //eprintln!("ancestor next: cur={:?}", self.cur);
         let parent = match &self.cur.0 {
             NodeInner::Document(_, _, _, _) => None,
             NodeInner::Element(p, _, _, _, _)
@@ -1333,6 +1346,7 @@ impl Iterator for Ancestors {
             | NodeInner::ProcessingInstruction(p, _, _)
             | NodeInner::Namespace(p, _, _) => Weak::upgrade(&p.borrow()),
         };
+        //eprintln!("ancestor next: parent={:?}", parent);
         parent.map(|q| {
             self.cur = q.clone();
             q

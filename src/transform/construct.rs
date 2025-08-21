@@ -6,7 +6,7 @@ use crate::transform::Transform;
 use crate::transform::context::{Context, StaticContext};
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
-use qualname::{NamespacePrefix, NamespaceUri, NcName, QName};
+use qualname::{NamespacePrefix, NamespaceUri, QName};
 use std::rc::Rc;
 use url::Url;
 

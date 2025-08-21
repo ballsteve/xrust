@@ -9,7 +9,6 @@ NB. This module, by default, does not resolve include or import statements. See 
 ```rust
 use std::rc::Rc;
 use xrust::xdmerror::{Error, ErrorKind};
-use xrust::qname::QualifiedName;
 use xrust::item::{Item, Node, NodeType, Sequence, SequenceTrait};
 use xrust::transform::Transform;
 use xrust::transform::context::{StaticContext, StaticContextBuilder};
@@ -20,7 +19,8 @@ use xrust::xslt::from_document;
 // A little helper function to parse an XML document
 fn make_from_str(s: &str) -> Result<RNode, Error> {
     let doc = RNode::new_document();
-    let e = parse(doc.clone(), s, None)?;
+    let e = parse(doc.clone(), s,
+        Some(|_: &_| Err(ParseError::MissingNameSpace))))?;
     Ok(doc)
 }
 
@@ -85,7 +85,7 @@ use crate::transform::{
 };
 use crate::value::*;
 use crate::xdmerror::*;
-use qualname::{NamespacePrefix, NamespaceUri, NcName, QName};
+use qualname::{NamespaceUri, NcName, QName};
 use std::convert::TryFrom;
 use std::sync::LazyLock;
 use url::Url;
@@ -479,7 +479,7 @@ where
     stylenode
         .child_iter()
         .filter(|c| c.is_element() && c.name().is_some_and(|cn| cn == *XSLTEMPLATE))
-        .filter(|c| !c.get_attribute(&*ATTRMATCH).to_string().is_empty())
+        .filter(|c| c.get_attribute_node(&*ATTRMATCH).is_some())
         .try_for_each(|c| {
             let m = c.get_attribute(&*ATTRMATCH);
             let pat = Pattern::try_from(m.to_string()).map_err(|e| {
@@ -1392,7 +1392,7 @@ fn to_transform<N: Node>(
                     content.push(Transform::NamespaceDeclaration(
                         prefix,
                         Box::new(Transform::Literal(Item::Value(Rc::new(Value::from(
-                            u.clone().unwrap().as_str(),
+                            u.clone().unwrap(),
                         ))))),
                     ));
                 }
@@ -1410,7 +1410,7 @@ fn to_transform<N: Node>(
                 })?;
                 Ok(Transform::LiteralElement(
                     QName::new_from_parts(
-                        NcName::try_from(a)
+                        NcName::try_from(a.as_str())
                             .map_err(|_| Error::new(ErrorKind::ParseError, "not a NcName"))?,
                         u,
                     ),

@@ -2,7 +2,7 @@
 //!
 //! An atomic value that is an item in a sequence.
 
-use qualname::QName;
+use qualname::{NamespaceUri, NcName, QName};
 
 use crate::xdmerror::{Error, ErrorKind};
 use chrono::{DateTime, Local, NaiveDate};
@@ -133,7 +133,7 @@ pub enum Value {
     /// NameStartChar NameChar+
     Name,
     /// (Letter | '_') NCNameChar+ (i.e. a Name without the colon)
-    NCName,
+    NCName(NcName),
     /// Same format as NCName
     ID(String),
     /// Same format as NCName
@@ -146,6 +146,7 @@ pub enum Value {
     //anyURI,
     /// Qualified Name
     QName(QName),
+    NamespaceUri(NamespaceUri),
     //NOTATION
 }
 
@@ -174,6 +175,8 @@ impl fmt::Display for Value {
             Value::DateTime(dt) => dt.format("%Y-%m-%dT%H:%M:%S%z").to_string(),
             Value::Date(d) => d.format("%Y-%m-%d").to_string(),
             Value::QName(q) => q.to_string(),
+            Value::NCName(n) => n.to_string(),
+            Value::NamespaceUri(n) => n.to_string(),
             Value::ID(s) => s.to_string(),
             Value::IDREF(s) => s.to_string(),
             Value::IDREFS(s) => s.join(" ").to_string(),
@@ -203,6 +206,10 @@ impl Value {
             Value::Double(n) => *n != 0.0,
             Value::Integer(i) => *i != 0,
             Value::Int(i) => *i != 0,
+
+            // These are non-empty strings by definition, so must be true
+            Value::NCName(_) | Value::NamespaceUri(_) | Value::QName(_) => true,
+
             _ => false,
         }
     }
@@ -269,7 +276,8 @@ impl Value {
             Value::Language => "Language",
             Value::NMTOKEN => "NMTOKEN",
             Value::Name => "Name",
-            Value::NCName => "NCName",
+            Value::NamespaceUri(_) => "NamespaceUri",
+            Value::NCName(_) => "NCName",
             Value::ID(_) => "ID",
             Value::IDREF(_) => "IDREF",
             Value::ENTITY => "ENTITY",
@@ -354,6 +362,16 @@ impl Value {
                 (Operator::NotEqual, Value::QName(r)) => Ok(*q != *r),
                 _ => Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
             },
+            Value::NCName(q) => match (op, other) {
+                (Operator::Equal, Value::NCName(r)) => Ok(*q == *r),
+                (Operator::NotEqual, Value::NCName(r)) => Ok(*q != *r),
+                _ => Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
+            },
+            Value::NamespaceUri(q) => match (op, other) {
+                (Operator::Equal, Value::NamespaceUri(r)) => Ok(*q == *r),
+                (Operator::NotEqual, Value::NamespaceUri(r)) => Ok(*q != *r),
+                _ => Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
+            },
             _ => Result::Err(Error::new(
                 ErrorKind::Unknown,
                 format!(
@@ -384,6 +402,18 @@ impl PartialEq for Value {
             Value::Double(d) => match other {
                 Value::Double(e) => d == e,
                 _ => false, // type error? coerce to integer?
+            },
+            Value::NCName(n) => match other {
+                Value::NCName(o) => n == o,
+                _ => false,
+            },
+            Value::QName(n) => match other {
+                Value::QName(o) => n == o,
+                _ => false,
+            },
+            Value::NamespaceUri(n) => match other {
+                Value::NamespaceUri(o) => n == o,
+                _ => false,
             },
             _ => false, // not yet implemented
         }
@@ -520,6 +550,16 @@ impl From<bool> for Value {
 impl From<QName> for Value {
     fn from(q: QName) -> Self {
         Value::QName(q)
+    }
+}
+impl From<NcName> for Value {
+    fn from(q: NcName) -> Self {
+        Value::NCName(q)
+    }
+}
+impl From<NamespaceUri> for Value {
+    fn from(q: NamespaceUri) -> Self {
+        Value::NamespaceUri(q)
     }
 }
 

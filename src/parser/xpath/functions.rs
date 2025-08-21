@@ -558,7 +558,7 @@ where
                 //prefix: p,
             }) => Transform::Invoke(
                 QName::new_from_parts(
-                    NcName::try_from(localpart.local_name()).unwrap(),
+                    NcName::try_from(localpart.local_name().as_str()).unwrap(),
                     Some(nsuri),
                 ),
                 ActualParameters::Positional(a),
