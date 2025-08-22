@@ -7,7 +7,7 @@ IBM test cases
 use crate::conformance::dtdfileresolve;
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::{xml, ParserConfig};
+use xrust::parser::{ParseError, ParserStateBuilder, StaticStateBuilder, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
@@ -26,7 +26,7 @@ fn ibm11valid_p02ibm02v01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/ibm02v01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -48,7 +48,7 @@ fn ibm11valid_p02ibm02v02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/ibm02v02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -71,7 +71,7 @@ fn ibm11valid_p02ibm02v03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/ibm02v03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -93,7 +93,7 @@ fn ibm11valid_p02ibm02v04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/ibm02v04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -115,7 +115,7 @@ fn ibm11valid_p02ibm02v05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/ibm02v05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -132,17 +132,22 @@ fn ibm11valid_p02ibm02v06xml() {
         Description:This test case contains valid char references in the CDATA section, comment and processing instruction of an external entity that match the char production.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/ibm02v06.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_ok());
@@ -157,17 +162,23 @@ fn ibm11valid_p03ibm03v01xml() {
         Spec Sections:2.11
         Description:The two character sequence #x0D #x85 in an external entity must be normalized to a single newline.
     */
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/".to_string())
+        .build();
+
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v01.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -175,7 +186,7 @@ fn ibm11valid_p03ibm03v01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -197,17 +208,22 @@ fn ibm11valid_p03ibm03v02xml() {
         Spec Sections:2.11
         Description:The single character sequence #x85 in an external entity must be normalized to a single newline.
     */
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v02.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -215,7 +231,7 @@ fn ibm11valid_p03ibm03v02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -237,17 +253,22 @@ fn ibm11valid_p03ibm03v03xml() {
         Spec Sections:2.11
         Description:The two character sequence #x0D #x85 in an external entity must be normalized to a single newline.
     */
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v03.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -255,7 +276,7 @@ fn ibm11valid_p03ibm03v03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -277,17 +298,22 @@ fn ibm11valid_p03ibm03v04xml() {
         Spec Sections:2.11
         Description:The single character sequence #x85 in an external entity must be normalized to a single newline.
     */
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v04.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -295,7 +321,7 @@ fn ibm11valid_p03ibm03v04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -317,17 +343,22 @@ fn ibm11valid_p03ibm03v05xml() {
         Spec Sections:2.11
         Description:The two character sequence #x0D #x85 in a document entity must be normalized to a single newline.
     */
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v05.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -335,7 +366,7 @@ fn ibm11valid_p03ibm03v05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -357,17 +388,22 @@ fn ibm11valid_p03ibm03v06xml() {
         Spec Sections:2.11
         Description:The single character sequence #x85 in a document entity must be normalized to a single newline.
     */
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v06.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -375,7 +411,7 @@ fn ibm11valid_p03ibm03v06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -405,7 +441,7 @@ fn ibm11valid_p03ibm03v07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -413,7 +449,7 @@ fn ibm11valid_p03ibm03v07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -442,7 +478,7 @@ fn ibm11valid_p03ibm03v08xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -450,7 +486,7 @@ fn ibm11valid_p03ibm03v08xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -480,7 +516,7 @@ fn ibm11valid_p03ibm03v09xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v09.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -488,7 +524,7 @@ fn ibm11valid_p03ibm03v09xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v09.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -523,7 +559,7 @@ fn ibm11valid_p04ibm04v01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P04/ibm04v01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -547,7 +583,7 @@ fn ibm11valid_p04ibm04av01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P04a/ibm04av01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -575,7 +611,7 @@ fn ibm11valid_p05ibm05v01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P05/ibm05v01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -600,7 +636,7 @@ fn ibm11valid_p05ibm05v02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P05/ibm05v02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -628,7 +664,7 @@ fn ibm11valid_p05ibm05v03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P05/ibm05v03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -652,7 +688,7 @@ fn ibm11valid_p05ibm05v04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P05/ibm05v04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -680,7 +716,7 @@ fn ibm11valid_p05ibm05v05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P05/ibm05v05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -704,7 +740,7 @@ fn ibm11valid_p047ibm07v01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P07/ibm07v01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -721,17 +757,22 @@ fn ibm11valid_p77ibm77v01xml() {
         Description:The VersionNum of the document entity is 1.1 whereas the VersionNum of the external DTD is 1.0. The character #xC0 which is a valid XML 1.1 but an invalid XML 1.0 character is present in both documents.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v01.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_ok());
@@ -748,17 +789,22 @@ fn ibm11valid_p77ibm77v02xml() {
         Description:The VersionNum of the document entity is 1.1 whereas the VersionNum of the external DTD is 1.0. The character #x1FFF which is a valid XML 1.1 but an invalid XML 1.0 character is present in both documents.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v02.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_ok());
@@ -775,17 +821,22 @@ fn ibm11valid_p77ibm77v03xml() {
         Description:The VersionNum of the document entity is 1.1 whereas the VersionNum of the external DTD is 1.0. The character #xF901 which is a valid XML 1.1 but an invalid XML 1.0 character is present in both documents.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v03.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_ok());
@@ -808,7 +859,7 @@ fn ibm11valid_p77ibm77v04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -831,7 +882,7 @@ fn ibm11valid_p77ibm77v05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -854,7 +905,7 @@ fn ibm11valid_p77ibm77v06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -871,17 +922,22 @@ fn ibm11valid_p77ibm77v07xml() {
         Description:The VersionNum of the document and external dtd is 1.1 and both contain the valid XML1.1 but invalid XML1.0 character #xD8.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v07.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_ok());
@@ -898,17 +954,22 @@ fn ibm11valid_p77ibm77v08xml() {
         Description:The VersionNum of the document and external dtd is 1.1 and both contain the valid XML1.1 but invalid XML1.0 character #x1FFF.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v08.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_ok());
@@ -925,17 +986,22 @@ fn ibm11valid_p77ibm77v09xml() {
         Description:The VersionNum of the document and external dtd is 1.1 and both contain the valid XML1.1 but invalid XML1.0 character #xF901.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v09.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_ok());
@@ -958,7 +1024,7 @@ fn ibm11valid_p77ibm77v10xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v10.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -981,7 +1047,7 @@ fn ibm11valid_p77ibm77v11xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v11.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1004,7 +1070,7 @@ fn ibm11valid_p77ibm77v12xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v12.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1021,17 +1087,22 @@ fn ibm11valid_p77ibm77v13xml() {
         Description:The VersionNum of the document entity is 1.1 but the external dtd does not contain a textDecl and both contain the valid XML1.1 but invalid XML1.0 character #xF8.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v13.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_ok());
@@ -1048,17 +1119,22 @@ fn ibm11valid_p77ibm77v14xml() {
         Description:The VersionNum of the document entity is 1.1 but the external dtd does not contain a textDecl and both contain the valid XML1.1 but invalid XML1.0 character #x1FFF.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v14.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_ok());
@@ -1075,17 +1151,22 @@ fn ibm11valid_p77ibm77v15xml() {
         Description:The VersionNum of the document entity is 1.1 but the external dtd does not contain a textDecl and both contain the valid XML1.1 but invalid XML1.0 character #xF901.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v15.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_ok());
@@ -1108,7 +1189,7 @@ fn ibm11valid_p77ibm77v16xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v16.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1131,7 +1212,7 @@ fn ibm11valid_p77ibm77v17xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v17.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1154,7 +1235,7 @@ fn ibm11valid_p77ibm77v18xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v18.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1171,17 +1252,22 @@ fn ibm11valid_p77ibm77v19xml() {
         Description:The VersionNum of the document and external dtd is 1.1. The replacement text of an entity declared in the external DTD contains a reference to the character #x7F. This entity is not referenced in the document entity.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v19.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_ok());
@@ -1198,17 +1284,22 @@ fn ibm11valid_p77ibm77v20xml() {
         Description:The VersionNum of the document and external dtd is 1.1. The replacement text of an entity declared in the external DTD contains a reference to the character #x80. This entity is not referenced in the document entity.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v20.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_ok());
@@ -1225,17 +1316,22 @@ fn ibm11valid_p77ibm77v21xml() {
         Description:The VersionNum of the document and external dtd is 1.1. The replacement text of an entity declared in the external DTD contains a reference to the character #x9F. This entity is not referenced in the document entity.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v21.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_ok());
@@ -1258,7 +1354,7 @@ fn ibm11valid_p77ibm77v22xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v22.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1281,7 +1377,7 @@ fn ibm11valid_p77ibm77v23xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v23.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1304,7 +1400,7 @@ fn ibm11valid_p77ibm77v24xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v24.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1321,17 +1417,22 @@ fn ibm11valid_p77ibm77v25xml() {
         Description:The VersionNum of the document is 1.1 and the textDecl is missing in the external DTD. The replacement text of an entity declared in the external DTD contains a reference to the character #x7F, #x8F. This entity is not referenced in the document entity.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v25.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_ok());
@@ -1348,17 +1449,22 @@ fn ibm11valid_p77ibm77v26xml() {
         Description:The VersionNum of the document is 1.1 and the textDecl is missing in the external DTD. The replacement text of an entity declared in the external DTD contains a reference to the character #x80, #x90. This entity is not referenced in the document entity.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v26.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_ok());
@@ -1375,17 +1481,22 @@ fn ibm11valid_p77ibm77v27xml() {
         Description:The VersionNum of the document is 1.1 and the textDecl is missing in the external DTD. The replacement text of an entity declared in the external DTD contains a reference to the character #x81, #x9F. This entity is not referenced in the document entity.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v27.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_ok());
@@ -1408,7 +1519,7 @@ fn ibm11valid_p77ibm77v28xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v28.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1431,7 +1542,7 @@ fn ibm11valid_p77ibm77v29xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v29.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1454,7 +1565,7 @@ fn ibm11valid_p77ibm77v30xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v30.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());

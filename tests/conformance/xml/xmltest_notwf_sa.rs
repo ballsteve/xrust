@@ -9,7 +9,7 @@ James Clark XMLTEST cases - Standalone
 
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::xml;
+use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 
 #[test]
@@ -26,7 +26,7 @@ fn notwfsa001() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/001.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -46,7 +46,7 @@ fn notwfsa002() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/002.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -66,7 +66,7 @@ fn notwfsa003() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/003.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -86,7 +86,7 @@ fn notwfsa004() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/004.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -106,7 +106,7 @@ fn notwfsa005() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/005.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -126,7 +126,7 @@ fn notwfsa006() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/006.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -146,7 +146,7 @@ fn notwfsa007() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/007.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -166,7 +166,7 @@ fn notwfsa008() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/008.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -186,7 +186,7 @@ fn notwfsa009() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/009.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -206,7 +206,7 @@ fn notwfsa010() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/010.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -226,7 +226,7 @@ fn notwfsa011() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/011.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -246,7 +246,7 @@ fn notwfsa012() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/012.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -266,7 +266,7 @@ fn notwfsa013() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/013.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -286,7 +286,7 @@ fn notwfsa014() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/014.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -306,7 +306,7 @@ fn notwfsa015() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/015.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -326,7 +326,7 @@ fn notwfsa016() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/016.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -346,7 +346,7 @@ fn notwfsa017() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/017.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -366,7 +366,7 @@ fn notwfsa018() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/018.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -386,7 +386,7 @@ fn notwfsa019() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/019.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -406,7 +406,7 @@ fn notwfsa020() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/020.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -426,7 +426,7 @@ fn notwfsa021() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/021.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -446,7 +446,7 @@ fn notwfsa022() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/022.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -466,7 +466,7 @@ fn notwfsa023() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/023.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -486,7 +486,7 @@ fn notwfsa024() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/024.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -506,7 +506,7 @@ fn notwfsa025() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/025.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -526,7 +526,7 @@ fn notwfsa026() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/026.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -546,7 +546,7 @@ fn notwfsa027() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/027.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -566,7 +566,7 @@ fn notwfsa028() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/028.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -586,7 +586,7 @@ fn notwfsa029() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/029.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -606,7 +606,7 @@ fn notwfsa030() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/030.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -626,7 +626,7 @@ fn notwfsa031() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/031.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -646,7 +646,7 @@ fn notwfsa032() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/032.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -666,7 +666,7 @@ fn notwfsa033() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/033.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -686,7 +686,7 @@ fn notwfsa034() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/034.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -706,7 +706,7 @@ fn notwfsa035() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/035.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -726,7 +726,7 @@ fn notwfsa036() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/036.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -746,7 +746,7 @@ fn notwfsa037() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/037.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -766,7 +766,7 @@ fn notwfsa038() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/038.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -786,7 +786,7 @@ fn notwfsa039() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/039.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -806,7 +806,7 @@ fn notwfsa040() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/040.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -826,7 +826,7 @@ fn notwfsa041() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/041.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -846,7 +846,7 @@ fn notwfsa042() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/042.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -866,7 +866,7 @@ fn notwfsa043() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/043.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -886,7 +886,7 @@ fn notwfsa044() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/044.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -906,7 +906,7 @@ fn notwfsa045() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/045.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -926,7 +926,7 @@ fn notwfsa046() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/046.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -946,7 +946,7 @@ fn notwfsa047() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/047.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -966,7 +966,7 @@ fn notwfsa048() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/048.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -986,7 +986,7 @@ fn notwfsa049() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/049.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1006,7 +1006,7 @@ fn notwfsa050() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/050.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1026,7 +1026,7 @@ fn notwfsa051() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/051.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1046,7 +1046,7 @@ fn notwfsa052() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/052.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1066,7 +1066,7 @@ fn notwfsa053() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/053.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1086,7 +1086,7 @@ fn notwfsa054() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/054.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1106,7 +1106,7 @@ fn notwfsa055() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/055.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1126,7 +1126,7 @@ fn notwfsa056() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/056.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1146,7 +1146,7 @@ fn notwfsa057() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/057.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1166,7 +1166,7 @@ fn notwfsa058() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/058.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1186,7 +1186,7 @@ fn notwfsa059() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/059.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1206,7 +1206,7 @@ fn notwfsa060() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/060.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1226,7 +1226,7 @@ fn notwfsa061() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/061.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1246,7 +1246,7 @@ fn notwfsa062() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/062.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1266,7 +1266,7 @@ fn notwfsa063() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/063.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1286,7 +1286,7 @@ fn notwfsa064() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/064.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1306,7 +1306,7 @@ fn notwfsa065() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/065.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1326,7 +1326,7 @@ fn notwfsa066() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/066.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1346,7 +1346,7 @@ fn notwfsa067() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/067.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1366,7 +1366,7 @@ fn notwfsa068() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/068.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1386,7 +1386,7 @@ fn notwfsa069() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/069.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1406,7 +1406,7 @@ fn notwfsa070() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/070.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1426,7 +1426,7 @@ fn notwfsa071() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/071.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1446,7 +1446,7 @@ fn notwfsa072() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/072.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1466,7 +1466,7 @@ fn notwfsa073() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/073.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1486,7 +1486,7 @@ fn notwfsa074() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/074.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1506,7 +1506,7 @@ fn notwfsa075() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/075.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1526,7 +1526,7 @@ fn notwfsa076() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/076.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1546,7 +1546,7 @@ fn notwfsa077() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/077.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1566,7 +1566,7 @@ fn notwfsa078() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/078.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1586,7 +1586,7 @@ fn notwfsa079() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/079.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1606,7 +1606,7 @@ fn notwfsa080() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/080.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1626,7 +1626,7 @@ fn notwfsa081() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/081.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1646,7 +1646,7 @@ fn notwfsa082() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/082.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1666,7 +1666,7 @@ fn notwfsa083() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/083.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1686,7 +1686,7 @@ fn notwfsa084() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/084.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1706,7 +1706,7 @@ fn notwfsa085() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/085.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1726,7 +1726,7 @@ fn notwfsa086() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/086.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1746,7 +1746,7 @@ fn notwfsa087() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/087.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1766,7 +1766,7 @@ fn notwfsa088() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/088.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1786,7 +1786,7 @@ fn notwfsa089() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/089.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1806,7 +1806,7 @@ fn notwfsa090() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/090.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1826,7 +1826,7 @@ fn notwfsa091() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/091.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1846,7 +1846,7 @@ fn notwfsa092() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/092.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1866,7 +1866,7 @@ fn notwfsa093() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/093.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1886,7 +1886,7 @@ fn notwfsa094() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/094.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1906,7 +1906,7 @@ fn notwfsa095() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/095.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1926,7 +1926,7 @@ fn notwfsa096() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/096.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1946,7 +1946,7 @@ fn notwfsa097() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/097.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1966,7 +1966,7 @@ fn notwfsa098() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/098.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1986,7 +1986,7 @@ fn notwfsa099() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/099.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2006,7 +2006,7 @@ fn notwfsa100() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/100.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2026,7 +2026,7 @@ fn notwfsa101() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/101.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2046,7 +2046,7 @@ fn notwfsa102() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/102.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2066,7 +2066,7 @@ fn notwfsa103() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/103.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2086,7 +2086,7 @@ fn notwfsa104() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/104.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2106,7 +2106,7 @@ fn notwfsa105() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/105.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2126,7 +2126,7 @@ fn notwfsa106() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/106.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2146,7 +2146,7 @@ fn notwfsa107() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/107.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2166,7 +2166,7 @@ fn notwfsa108() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/108.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2186,7 +2186,7 @@ fn notwfsa109() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/109.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2206,7 +2206,7 @@ fn notwfsa110() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/110.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2226,7 +2226,7 @@ fn notwfsa111() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/111.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2246,7 +2246,7 @@ fn notwfsa112() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/112.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2266,7 +2266,7 @@ fn notwfsa113() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/113.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2286,7 +2286,7 @@ fn notwfsa114() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/114.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2306,7 +2306,7 @@ fn notwfsa115() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/115.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2326,7 +2326,7 @@ fn notwfsa116() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/116.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2346,7 +2346,7 @@ fn notwfsa117() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/117.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2366,7 +2366,7 @@ fn notwfsa118() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/118.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2386,7 +2386,7 @@ fn notwfsa119() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/119.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2406,7 +2406,7 @@ fn notwfsa120() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/120.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2426,7 +2426,7 @@ fn notwfsa121() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/121.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2446,7 +2446,7 @@ fn notwfsa122() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/122.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2466,7 +2466,7 @@ fn notwfsa123() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/123.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2486,7 +2486,7 @@ fn notwfsa124() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/124.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2506,7 +2506,7 @@ fn notwfsa125() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/125.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2526,7 +2526,7 @@ fn notwfsa126() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/126.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2546,7 +2546,7 @@ fn notwfsa127() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/127.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2566,7 +2566,7 @@ fn notwfsa128() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/128.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2586,7 +2586,7 @@ fn notwfsa129() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/129.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2606,7 +2606,7 @@ fn notwfsa130() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/130.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2626,7 +2626,7 @@ fn notwfsa131() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/131.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2646,7 +2646,7 @@ fn notwfsa132() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/132.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2666,7 +2666,7 @@ fn notwfsa133() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/133.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2686,7 +2686,7 @@ fn notwfsa134() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/134.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2706,7 +2706,7 @@ fn notwfsa135() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/135.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2726,7 +2726,7 @@ fn notwfsa136() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/136.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2746,7 +2746,7 @@ fn notwfsa137() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/137.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2766,7 +2766,7 @@ fn notwfsa138() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/138.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2786,7 +2786,7 @@ fn notwfsa139() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/139.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2814,7 +2814,7 @@ fn notwfsa140() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/140.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2842,7 +2842,7 @@ fn notwfsa141() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/141.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2863,7 +2863,7 @@ fn notwfsa142() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/142.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2883,7 +2883,7 @@ fn notwfsa143() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/143.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2903,7 +2903,7 @@ fn notwfsa144() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/144.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2923,7 +2923,7 @@ fn notwfsa145() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/145.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2943,7 +2943,7 @@ fn notwfsa146() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/146.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2963,7 +2963,7 @@ fn notwfsa147() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/147.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2983,7 +2983,7 @@ fn notwfsa148() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/148.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3003,7 +3003,7 @@ fn notwfsa149() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/149.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3023,7 +3023,7 @@ fn notwfsa150() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/150.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3043,7 +3043,7 @@ fn notwfsa151() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/151.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3063,7 +3063,7 @@ fn notwfsa152() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/152.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3083,7 +3083,7 @@ fn notwfsa153() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/153.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3103,7 +3103,7 @@ fn notwfsa154() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/154.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3123,7 +3123,7 @@ fn notwfsa155() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/155.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3143,7 +3143,7 @@ fn notwfsa156() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/156.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3163,7 +3163,7 @@ fn notwfsa157() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/157.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3183,7 +3183,7 @@ fn notwfsa158() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/158.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3203,7 +3203,7 @@ fn notwfsa159() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/159.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3223,7 +3223,7 @@ fn notwfsa160() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/160.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3243,7 +3243,7 @@ fn notwfsa161() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/161.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3263,7 +3263,7 @@ fn notwfsa162() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/162.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3283,7 +3283,7 @@ fn notwfsa163() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/163.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3303,7 +3303,7 @@ fn notwfsa164() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/164.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3323,7 +3323,7 @@ fn notwfsa165() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/165.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3343,7 +3343,7 @@ fn notwfsa166() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/166.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3363,7 +3363,7 @@ fn notwfsa167() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/167.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3384,7 +3384,7 @@ fn notwfsa168() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/168.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3405,7 +3405,7 @@ fn notwfsa169() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/169.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3426,7 +3426,7 @@ fn notwfsa170() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/170.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3446,7 +3446,7 @@ fn notwfsa171() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/171.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3466,7 +3466,7 @@ fn notwfsa172() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/172.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3486,7 +3486,7 @@ fn notwfsa173() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/173.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3506,7 +3506,7 @@ fn notwfsa174() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/174.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3526,7 +3526,7 @@ fn notwfsa175() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/175.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3546,7 +3546,7 @@ fn notwfsa176() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/176.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3566,7 +3566,7 @@ fn notwfsa177() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/177.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3586,7 +3586,7 @@ fn notwfsa178() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/178.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3606,7 +3606,7 @@ fn notwfsa179() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/179.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3626,7 +3626,7 @@ fn notwfsa180() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/180.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3646,7 +3646,7 @@ fn notwfsa181() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/181.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3666,7 +3666,7 @@ fn notwfsa182() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/182.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3686,7 +3686,7 @@ fn notwfsa183() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/183.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3706,7 +3706,7 @@ fn notwfsa184() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/184.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3726,7 +3726,7 @@ fn notwfsa185() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/185.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3746,7 +3746,7 @@ fn notwfsa186() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/186.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());

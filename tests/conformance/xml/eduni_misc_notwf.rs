@@ -6,7 +6,7 @@ Bjoern Hoehrmann via HST 2013-09-18
 
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::xml;
+use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 
 #[test]
@@ -24,7 +24,7 @@ fn hstbh001() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/001.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -45,7 +45,7 @@ fn hstbh002() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/002.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -66,7 +66,7 @@ fn hstbh003() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/003.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -87,7 +87,7 @@ fn hstbh004() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/004.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -109,7 +109,7 @@ fn hstlhs007() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/007.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -131,7 +131,7 @@ fn hstlhs008() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/008.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -153,7 +153,7 @@ fn hstlhs009() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/009.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());

@@ -7,7 +7,7 @@ IBM test cases
 use crate::conformance::{dtdfileresolve, non_utf8_file_reader};
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::{xml, ParserConfig};
+use xrust::parser::{ParseError, ParserStateBuilder, StaticStateBuilder, xml};
 use xrust::trees::smite::RNode;
 
 #[test]
@@ -25,7 +25,7 @@ fn ibmnotwf_p01ibm01n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P01/ibm01n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -46,7 +46,7 @@ fn ibmnotwf_p01ibm01n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P01/ibm01n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -67,7 +67,7 @@ fn ibmnotwf_p01ibm01n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P01/ibm01n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -88,7 +88,7 @@ fn ibmnotwf_p02ibm02n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -109,7 +109,7 @@ fn ibmnotwf_p02ibm02n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -130,7 +130,7 @@ fn ibmnotwf_p02ibm02n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -151,7 +151,7 @@ fn ibmnotwf_p02ibm02n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -172,7 +172,7 @@ fn ibmnotwf_p02ibm02n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -193,7 +193,7 @@ fn ibmnotwf_p02ibm02n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -214,7 +214,7 @@ fn ibmnotwf_p02ibm02n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -235,7 +235,7 @@ fn ibmnotwf_p02ibm02n08xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -256,7 +256,7 @@ fn ibmnotwf_p02ibm02n09xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n09.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -277,7 +277,7 @@ fn ibmnotwf_p02ibm02n10xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n10.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -298,7 +298,7 @@ fn ibmnotwf_p02ibm02n11xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n11.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -319,7 +319,7 @@ fn ibmnotwf_p02ibm02n12xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n12.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -340,7 +340,7 @@ fn ibmnotwf_p02ibm02n13xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n13.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -361,7 +361,7 @@ fn ibmnotwf_p02ibm02n14xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n14.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -382,7 +382,7 @@ fn ibmnotwf_p02ibm02n15xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n15.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -403,7 +403,7 @@ fn ibmnotwf_p02ibm02n16xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n16.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -424,7 +424,7 @@ fn ibmnotwf_p02ibm02n17xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n17.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -445,7 +445,7 @@ fn ibmnotwf_p02ibm02n18xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n18.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -466,7 +466,7 @@ fn ibmnotwf_p02ibm02n19xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n19.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -487,7 +487,7 @@ fn ibmnotwf_p02ibm02n20xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n20.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -508,7 +508,7 @@ fn ibmnotwf_p02ibm02n21xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n21.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -529,7 +529,7 @@ fn ibmnotwf_p02ibm02n22xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n22.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -550,7 +550,7 @@ fn ibmnotwf_p02ibm02n23xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n23.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -571,7 +571,7 @@ fn ibmnotwf_p02ibm02n24xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n24.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -592,7 +592,7 @@ fn ibmnotwf_p02ibm02n25xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n25.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -613,7 +613,7 @@ fn ibmnotwf_p02ibm02n26xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n26.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -634,7 +634,7 @@ fn ibmnotwf_p02ibm02n27xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n27.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -655,7 +655,7 @@ fn ibmnotwf_p02ibm02n28xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n28.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -676,7 +676,7 @@ fn ibmnotwf_p02ibm02n29xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n29.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -696,7 +696,7 @@ fn ibmnotwf_p02ibm02n30xml() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n30.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -716,7 +716,7 @@ fn ibmnotwf_p02ibm02n31xml() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n31.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -737,7 +737,7 @@ fn ibmnotwf_p02ibm02n32xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n32.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -758,7 +758,7 @@ fn ibmnotwf_p02ibm02n33xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n33.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -779,7 +779,7 @@ fn ibmnotwf_p03ibm03n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P03/ibm03n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -800,7 +800,7 @@ fn ibmnotwf_p04ibm04n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -821,7 +821,7 @@ fn ibmnotwf_p04ibm04n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -842,7 +842,7 @@ fn ibmnotwf_p04ibm04n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -863,7 +863,7 @@ fn ibmnotwf_p04ibm04n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -884,7 +884,7 @@ fn ibmnotwf_p04ibm04n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -905,7 +905,7 @@ fn ibmnotwf_p04ibm04n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -926,7 +926,7 @@ fn ibmnotwf_p04ibm04n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -947,7 +947,7 @@ fn ibmnotwf_p04ibm04n08xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -968,7 +968,7 @@ fn ibmnotwf_p04ibm04n09xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n09.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -989,7 +989,7 @@ fn ibmnotwf_p04ibm04n10xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n10.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1010,7 +1010,7 @@ fn ibmnotwf_p04ibm04n11xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n11.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1031,7 +1031,7 @@ fn ibmnotwf_p04ibm04n12xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n12.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1052,7 +1052,7 @@ fn ibmnotwf_p04ibm04n13xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n13.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1073,7 +1073,7 @@ fn ibmnotwf_p04ibm04n14xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n14.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1094,7 +1094,7 @@ fn ibmnotwf_p04ibm04n15xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n15.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1115,7 +1115,7 @@ fn ibmnotwf_p04ibm04n16xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n16.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1136,7 +1136,7 @@ fn ibmnotwf_p04ibm04n17xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n17.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1157,7 +1157,7 @@ fn ibmnotwf_p04ibm04n18xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n18.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1178,7 +1178,7 @@ fn ibmnotwf_p05ibm05n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P05/ibm05n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1199,7 +1199,7 @@ fn ibmnotwf_p05ibm05n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P05/ibm05n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1220,7 +1220,7 @@ fn ibmnotwf_p05ibm05n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P05/ibm05n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1241,7 +1241,7 @@ fn ibmnotwf_p09ibm09n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P09/ibm09n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1262,7 +1262,7 @@ fn ibmnotwf_p09ibm09n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P09/ibm09n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1283,7 +1283,7 @@ fn ibmnotwf_p09ibm09n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P09/ibm09n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1304,7 +1304,7 @@ fn ibmnotwf_p09ibm09n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P09/ibm09n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1325,7 +1325,7 @@ fn ibmnotwf_p10ibm10n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1346,7 +1346,7 @@ fn ibmnotwf_p10ibm10n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1367,7 +1367,7 @@ fn ibmnotwf_p10ibm10n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1388,7 +1388,7 @@ fn ibmnotwf_p10ibm10n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1409,7 +1409,7 @@ fn ibmnotwf_p10ibm10n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1430,7 +1430,7 @@ fn ibmnotwf_p10ibm10n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1451,7 +1451,7 @@ fn ibmnotwf_p10ibm10n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1472,7 +1472,7 @@ fn ibmnotwf_p10ibm10n08xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1493,7 +1493,7 @@ fn ibmnotwf_p11ibm11n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P11/ibm11n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1514,7 +1514,7 @@ fn ibmnotwf_p11ibm11n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P11/ibm11n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1535,7 +1535,7 @@ fn ibmnotwf_p11ibm11n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P11/ibm11n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1556,7 +1556,7 @@ fn ibmnotwf_p11ibm11n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P11/ibm11n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1577,7 +1577,7 @@ fn ibmnotwf_p12ibm12n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P12/ibm12n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1598,7 +1598,7 @@ fn ibmnotwf_p12ibm12n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P12/ibm12n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1619,7 +1619,7 @@ fn ibmnotwf_p12ibm12n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P12/ibm12n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1640,7 +1640,7 @@ fn ibmnotwf_p13ibm13n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P13/ibm13n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1661,7 +1661,7 @@ fn ibmnotwf_p13ibm13n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P13/ibm13n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1682,7 +1682,7 @@ fn ibmnotwf_p13ibm13n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P13/ibm13n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1703,7 +1703,7 @@ fn ibmnotwf_p14ibm14n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P14/ibm14n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1724,7 +1724,7 @@ fn ibmnotwf_p14ibm14n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P14/ibm14n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1745,7 +1745,7 @@ fn ibmnotwf_p14ibm14n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P14/ibm14n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1766,7 +1766,7 @@ fn ibmnotwf_p15ibm15n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P15/ibm15n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1787,7 +1787,7 @@ fn ibmnotwf_p15ibm15n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P15/ibm15n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1808,7 +1808,7 @@ fn ibmnotwf_p15ibm15n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P15/ibm15n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1829,7 +1829,7 @@ fn ibmnotwf_p15ibm15n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P15/ibm15n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1850,7 +1850,7 @@ fn ibmnotwf_p16ibm16n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P16/ibm16n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1871,7 +1871,7 @@ fn ibmnotwf_p16ibm16n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P16/ibm16n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1892,7 +1892,7 @@ fn ibmnotwf_p16ibm16n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P16/ibm16n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1913,7 +1913,7 @@ fn ibmnotwf_p16ibm16n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P16/ibm16n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1934,7 +1934,7 @@ fn ibmnotwf_p17ibm17n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P17/ibm17n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1955,7 +1955,7 @@ fn ibmnotwf_p17ibm17n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P17/ibm17n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1976,7 +1976,7 @@ fn ibmnotwf_p17ibm17n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P17/ibm17n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1997,7 +1997,7 @@ fn ibmnotwf_p17ibm17n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P17/ibm17n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2018,7 +2018,7 @@ fn ibmnotwf_p18ibm18n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P18/ibm18n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2039,7 +2039,7 @@ fn ibmnotwf_p18ibm18n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P18/ibm18n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2060,7 +2060,7 @@ fn ibmnotwf_p19ibm19n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P19/ibm19n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2081,7 +2081,7 @@ fn ibmnotwf_p19ibm19n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P19/ibm19n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2102,7 +2102,7 @@ fn ibmnotwf_p19ibm19n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P19/ibm19n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2123,7 +2123,7 @@ fn ibmnotwf_p20ibm20n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P20/ibm20n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2144,7 +2144,7 @@ fn ibmnotwf_p21ibm21n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P21/ibm21n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2165,7 +2165,7 @@ fn ibmnotwf_p21ibm21n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P21/ibm21n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2186,7 +2186,7 @@ fn ibmnotwf_p21ibm21n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P21/ibm21n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2207,7 +2207,7 @@ fn ibmnotwf_p22ibm22n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P22/ibm22n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2228,7 +2228,7 @@ fn ibmnotwf_p22ibm22n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P22/ibm22n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2249,7 +2249,7 @@ fn ibmnotwf_p22ibm22n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P22/ibm22n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2270,7 +2270,7 @@ fn ibmnotwf_p23ibm23n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P23/ibm23n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2291,7 +2291,7 @@ fn ibmnotwf_p23ibm23n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P23/ibm23n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2312,7 +2312,7 @@ fn ibmnotwf_p23ibm23n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P23/ibm23n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2333,7 +2333,7 @@ fn ibmnotwf_p23ibm23n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P23/ibm23n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2354,7 +2354,7 @@ fn ibmnotwf_p23ibm23n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P23/ibm23n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2375,7 +2375,7 @@ fn ibmnotwf_p23ibm23n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P23/ibm23n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2396,7 +2396,7 @@ fn ibmnotwf_p24ibm24n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2417,7 +2417,7 @@ fn ibmnotwf_p24ibm24n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2438,7 +2438,7 @@ fn ibmnotwf_p24ibm24n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2459,7 +2459,7 @@ fn ibmnotwf_p24ibm24n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2480,7 +2480,7 @@ fn ibmnotwf_p24ibm24n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2501,7 +2501,7 @@ fn ibmnotwf_p24ibm24n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2522,7 +2522,7 @@ fn ibmnotwf_p24ibm24n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2543,7 +2543,7 @@ fn ibmnotwf_p24ibm24n08xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2564,7 +2564,7 @@ fn ibmnotwf_p24ibm24n09xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n09.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2585,7 +2585,7 @@ fn ibmnotwf_p25ibm25n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P25/ibm25n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2606,7 +2606,7 @@ fn ibmnotwf_p25ibm25n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P25/ibm25n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2627,7 +2627,7 @@ fn ibmnotwf_p26ibm26n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P26/ibm26n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2648,7 +2648,7 @@ fn ibmnotwf_p27ibm27n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P27/ibm27n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2669,7 +2669,7 @@ fn ibmnotwf_p28ibm28n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2690,7 +2690,7 @@ fn ibmnotwf_p28ibm28n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2711,7 +2711,7 @@ fn ibmnotwf_p28ibm28n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2732,7 +2732,7 @@ fn ibmnotwf_p28ibm28n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2753,7 +2753,7 @@ fn ibmnotwf_p28ibm28n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2774,7 +2774,7 @@ fn ibmnotwf_p28ibm28n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2795,7 +2795,7 @@ fn ibmnotwf_p28ibm28n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2816,7 +2816,7 @@ fn ibmnotwf_p28ibm28n08xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2831,17 +2831,22 @@ fn ibmnotwf_p28aibm28an01xml() {
         Description:This test violates WFC:PE Between Declarations in Production 28a. The last character of a markup declaration is not contained in the same parameter-entity text replacement.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/p28a/ibm28an01.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -2862,7 +2867,7 @@ fn ibmnotwf_p29ibm29n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2883,7 +2888,7 @@ fn ibmnotwf_p29ibm29n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2904,7 +2909,7 @@ fn ibmnotwf_p29ibm29n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2925,7 +2930,7 @@ fn ibmnotwf_p29ibm29n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2946,7 +2951,7 @@ fn ibmnotwf_p29ibm29n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2967,7 +2972,7 @@ fn ibmnotwf_p29ibm29n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2988,7 +2993,7 @@ fn ibmnotwf_p29ibm29n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3003,17 +3008,22 @@ fn ibmnotwf_p30ibm30n01xml() {
         Description:Tests extSubset with wrong field ordering. In the file "ibm30n01.dtd", the TextDecl occurs after the extSubsetDecl (the element declaration).
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P30/ibm30n01.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -3028,17 +3038,22 @@ fn ibmnotwf_p31ibm31n01xml() {
         Description:Tests extSubsetDecl with an illegal field. A general entity reference occurs in file "ibm31n01.dtd".
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P31/ibm31n01.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -3059,7 +3074,7 @@ fn ibmnotwf_p32ibm32n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3080,7 +3095,7 @@ fn ibmnotwf_p32ibm32n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3101,7 +3116,7 @@ fn ibmnotwf_p32ibm32n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3122,7 +3137,7 @@ fn ibmnotwf_p32ibm32n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3143,7 +3158,7 @@ fn ibmnotwf_p32ibm32n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3164,7 +3179,7 @@ fn ibmnotwf_p32ibm32n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3185,7 +3200,7 @@ fn ibmnotwf_p32ibm32n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3206,7 +3221,7 @@ fn ibmnotwf_p32ibm32n08xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3227,7 +3242,7 @@ fn ibmnotwf_p32ibm32n09xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n09.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3248,7 +3263,7 @@ fn ibmnotwf_p39ibm39n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P39/ibm39n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3269,7 +3284,7 @@ fn ibmnotwf_p39ibm39n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P39/ibm39n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3290,7 +3305,7 @@ fn ibmnotwf_p39ibm39n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P39/ibm39n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3311,7 +3326,7 @@ fn ibmnotwf_p39ibm39n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P39/ibm39n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3332,7 +3347,7 @@ fn ibmnotwf_p39ibm39n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P39/ibm39n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3353,7 +3368,7 @@ fn ibmnotwf_p39ibm39n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P39/ibm39n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3374,7 +3389,7 @@ fn ibmnotwf_p40ibm40n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P40/ibm40n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3395,7 +3410,7 @@ fn ibmnotwf_p40ibm40n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P40/ibm40n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3416,7 +3431,7 @@ fn ibmnotwf_p40ibm40n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P40/ibm40n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3437,7 +3452,7 @@ fn ibmnotwf_p40ibm40n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P40/ibm40n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3458,7 +3473,7 @@ fn ibmnotwf_p40ibm40n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P40/ibm40n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3479,7 +3494,7 @@ fn ibmnotwf_p41ibm41n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3500,7 +3515,7 @@ fn ibmnotwf_p41ibm41n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3521,7 +3536,7 @@ fn ibmnotwf_p41ibm41n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3542,7 +3557,7 @@ fn ibmnotwf_p41ibm41n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3563,7 +3578,7 @@ fn ibmnotwf_p41ibm41n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3584,7 +3599,7 @@ fn ibmnotwf_p41ibm41n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3605,7 +3620,7 @@ fn ibmnotwf_p41ibm41n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3626,7 +3641,7 @@ fn ibmnotwf_p41ibm41n08xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3647,7 +3662,7 @@ fn ibmnotwf_p41ibm41n09xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n09.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3668,7 +3683,7 @@ fn ibmnotwf_p41ibm41n10xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n10.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3689,7 +3704,7 @@ fn ibmnotwf_p41ibm41n11xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n11.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3710,7 +3725,7 @@ fn ibmnotwf_p41ibm41n12xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n12.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3731,7 +3746,7 @@ fn ibmnotwf_p41ibm41n13xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n13.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3752,7 +3767,7 @@ fn ibmnotwf_p41ibm41n14xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n14.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3773,7 +3788,7 @@ fn ibmnotwf_p42ibm42n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P42/ibm42n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3794,7 +3809,7 @@ fn ibmnotwf_p42ibm42n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P42/ibm42n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3815,7 +3830,7 @@ fn ibmnotwf_p42ibm42n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P42/ibm42n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3836,7 +3851,7 @@ fn ibmnotwf_p42ibm42n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P42/ibm42n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3857,7 +3872,7 @@ fn ibmnotwf_p42ibm42n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P42/ibm42n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3878,7 +3893,7 @@ fn ibmnotwf_p43ibm43n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P43/ibm43n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3899,7 +3914,7 @@ fn ibmnotwf_p43ibm43n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P43/ibm43n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3920,7 +3935,7 @@ fn ibmnotwf_p43ibm43n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P43/ibm43n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3941,7 +3956,7 @@ fn ibmnotwf_p43ibm43n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P43/ibm43n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3962,7 +3977,7 @@ fn ibmnotwf_p44ibm44n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P44/ibm44n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3983,7 +3998,7 @@ fn ibmnotwf_p44ibm44n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P44/ibm44n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4004,7 +4019,7 @@ fn ibmnotwf_p44ibm44n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P44/ibm44n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4025,7 +4040,7 @@ fn ibmnotwf_p44ibm44n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P44/ibm44n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4046,7 +4061,7 @@ fn ibmnotwf_p45ibm45n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4067,7 +4082,7 @@ fn ibmnotwf_p45ibm45n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4088,7 +4103,7 @@ fn ibmnotwf_p45ibm45n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4109,7 +4124,7 @@ fn ibmnotwf_p45ibm45n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4130,7 +4145,7 @@ fn ibmnotwf_p45ibm45n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4151,7 +4166,7 @@ fn ibmnotwf_p45ibm45n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4172,7 +4187,7 @@ fn ibmnotwf_p45ibm45n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4193,7 +4208,7 @@ fn ibmnotwf_p45ibm45n08xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4214,7 +4229,7 @@ fn ibmnotwf_p45ibm45n09xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n09.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4235,7 +4250,7 @@ fn ibmnotwf_p46ibm46n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P46/ibm46n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4256,7 +4271,7 @@ fn ibmnotwf_p46ibm46n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P46/ibm46n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4277,7 +4292,7 @@ fn ibmnotwf_p46ibm46n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P46/ibm46n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4298,7 +4313,7 @@ fn ibmnotwf_p46ibm46n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P46/ibm46n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4319,7 +4334,7 @@ fn ibmnotwf_p46ibm46n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P46/ibm46n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4340,7 +4355,7 @@ fn ibmnotwf_p47ibm47n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P47/ibm47n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4361,7 +4376,7 @@ fn ibmnotwf_p47ibm47n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P47/ibm47n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4382,7 +4397,7 @@ fn ibmnotwf_p47ibm47n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P47/ibm47n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4403,7 +4418,7 @@ fn ibmnotwf_p47ibm47n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P47/ibm47n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4424,7 +4439,7 @@ fn ibmnotwf_p47ibm47n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P47/ibm47n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4445,7 +4460,7 @@ fn ibmnotwf_p47ibm47n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P47/ibm47n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4466,7 +4481,7 @@ fn ibmnotwf_p48ibm48n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4487,7 +4502,7 @@ fn ibmnotwf_p48ibm48n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4508,7 +4523,7 @@ fn ibmnotwf_p48ibm48n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4529,7 +4544,7 @@ fn ibmnotwf_p48ibm48n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4550,7 +4565,7 @@ fn ibmnotwf_p48ibm48n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4571,7 +4586,7 @@ fn ibmnotwf_p48ibm48n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4592,7 +4607,7 @@ fn ibmnotwf_p48ibm48n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4613,7 +4628,7 @@ fn ibmnotwf_p49ibm49n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P49/ibm49n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4634,7 +4649,7 @@ fn ibmnotwf_p49ibm49n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P49/ibm49n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4655,7 +4670,7 @@ fn ibmnotwf_p49ibm49n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P49/ibm49n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4676,7 +4691,7 @@ fn ibmnotwf_p49ibm49n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P49/ibm49n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4697,7 +4712,7 @@ fn ibmnotwf_p49ibm49n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P49/ibm49n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4718,7 +4733,7 @@ fn ibmnotwf_p49ibm49n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P49/ibm49n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4739,7 +4754,7 @@ fn ibmnotwf_p50ibm50n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4760,7 +4775,7 @@ fn ibmnotwf_p50ibm50n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4781,7 +4796,7 @@ fn ibmnotwf_p50ibm50n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4802,7 +4817,7 @@ fn ibmnotwf_p50ibm50n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4823,7 +4838,7 @@ fn ibmnotwf_p50ibm50n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4844,7 +4859,7 @@ fn ibmnotwf_p50ibm50n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4865,7 +4880,7 @@ fn ibmnotwf_p50ibm50n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4886,7 +4901,7 @@ fn ibmnotwf_p51ibm51n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4907,7 +4922,7 @@ fn ibmnotwf_p51ibm51n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4928,7 +4943,7 @@ fn ibmnotwf_p51ibm51n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4949,7 +4964,7 @@ fn ibmnotwf_p51ibm51n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4970,7 +4985,7 @@ fn ibmnotwf_p51ibm51n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4991,7 +5006,7 @@ fn ibmnotwf_p51ibm51n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5012,7 +5027,7 @@ fn ibmnotwf_p51ibm51n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5033,7 +5048,7 @@ fn ibmnotwf_p52ibm52n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P52/ibm52n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5054,7 +5069,7 @@ fn ibmnotwf_p52ibm52n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P52/ibm52n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5075,7 +5090,7 @@ fn ibmnotwf_p52ibm52n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P52/ibm52n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5096,7 +5111,7 @@ fn ibmnotwf_p52ibm52n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P52/ibm52n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5117,7 +5132,7 @@ fn ibmnotwf_p52ibm52n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P52/ibm52n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5138,7 +5153,7 @@ fn ibmnotwf_p52ibm52n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P52/ibm52n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5159,7 +5174,7 @@ fn ibmnotwf_p53ibm53n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5180,7 +5195,7 @@ fn ibmnotwf_p53ibm53n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5201,7 +5216,7 @@ fn ibmnotwf_p53ibm53n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5222,7 +5237,7 @@ fn ibmnotwf_p53ibm53n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5243,7 +5258,7 @@ fn ibmnotwf_p53ibm53n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5264,7 +5279,7 @@ fn ibmnotwf_p53ibm53n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5285,7 +5300,7 @@ fn ibmnotwf_p53ibm53n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5306,7 +5321,7 @@ fn ibmnotwf_p53ibm53n08xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5327,7 +5342,7 @@ fn ibmnotwf_p54ibm54n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P54/ibm54n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5348,7 +5363,7 @@ fn ibmnotwf_p54ibm54n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P54/ibm54n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5369,7 +5384,7 @@ fn ibmnotwf_p55ibm55n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P55/ibm55n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5390,7 +5405,7 @@ fn ibmnotwf_p55ibm55n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P55/ibm55n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5411,7 +5426,7 @@ fn ibmnotwf_p55ibm55n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P55/ibm55n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5432,7 +5447,7 @@ fn ibmnotwf_p56ibm56n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5453,7 +5468,7 @@ fn ibmnotwf_p56ibm56n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5474,7 +5489,7 @@ fn ibmnotwf_p56ibm56n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5495,7 +5510,7 @@ fn ibmnotwf_p56ibm56n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5516,7 +5531,7 @@ fn ibmnotwf_p56ibm56n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5537,7 +5552,7 @@ fn ibmnotwf_p56ibm56n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5558,7 +5573,7 @@ fn ibmnotwf_p56ibm56n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5579,7 +5594,7 @@ fn ibmnotwf_p57ibm57n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P57/ibm57n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5600,7 +5615,7 @@ fn ibmnotwf_p58ibm58n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5621,7 +5636,7 @@ fn ibmnotwf_p58ibm58n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5642,7 +5657,7 @@ fn ibmnotwf_p58ibm58n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5663,7 +5678,7 @@ fn ibmnotwf_p58ibm58n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5684,7 +5699,7 @@ fn ibmnotwf_p58ibm58n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5705,7 +5720,7 @@ fn ibmnotwf_p58ibm58n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5726,7 +5741,7 @@ fn ibmnotwf_p58ibm58n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5747,7 +5762,7 @@ fn ibmnotwf_p58ibm58n08xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5768,7 +5783,7 @@ fn ibmnotwf_p59ibm59n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P59/ibm59n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5789,7 +5804,7 @@ fn ibmnotwf_p59ibm59n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P59/ibm59n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5810,7 +5825,7 @@ fn ibmnotwf_p59ibm59n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P59/ibm59n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5831,7 +5846,7 @@ fn ibmnotwf_p59ibm59n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P59/ibm59n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5852,7 +5867,7 @@ fn ibmnotwf_p59ibm59n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P59/ibm59n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5873,7 +5888,7 @@ fn ibmnotwf_p59ibm59n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P59/ibm59n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5894,7 +5909,7 @@ fn ibmnotwf_p60ibm60n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5915,7 +5930,7 @@ fn ibmnotwf_p60ibm60n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5936,7 +5951,7 @@ fn ibmnotwf_p60ibm60n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5957,7 +5972,7 @@ fn ibmnotwf_p60ibm60n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5978,7 +5993,7 @@ fn ibmnotwf_p60ibm60n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5999,7 +6014,7 @@ fn ibmnotwf_p60ibm60n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -6020,7 +6035,7 @@ fn ibmnotwf_p60ibm60n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -6041,7 +6056,7 @@ fn ibmnotwf_p60ibm60n08xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -6056,17 +6071,22 @@ fn ibmnotwf_p61ibm61n01xml() {
         Description:Tests conditionalSect with a wrong option. The word "NOTINCLUDE" is used as part of an option which is wrong in the coditionalSect.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P61/ibm61n01.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -6081,17 +6101,22 @@ fn ibmnotwf_p62ibm62n01xml() {
         Description:Tests includeSect with wrong key word. The string "include" is used as a key word in the beginning sequence in the includeSect in the file ibm62n01.dtd.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P62/ibm62n01.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -6106,17 +6131,22 @@ fn ibmnotwf_p62ibm62n02xml() {
         Description:Tests includeSect with wrong beginning sequence. An extra "[" occurs in the beginning sequence in the includeSect in the file ibm62n02.dtd.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P62/ibm62n02.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -6131,17 +6161,22 @@ fn ibmnotwf_p62ibm62n03xml() {
         Description:Tests includeSect with wrong beginning sequence. A wrong character "?" occurs in the beginning sequence in the includeSect in the file ibm62n03.dtd.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P62/ibm62n03.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -6156,17 +6191,22 @@ fn ibmnotwf_p62ibm62n04xml() {
         Description:Tests includeSect with a required field missing. The key word "INCLUDE" is missing in the includeSect in the file ibm62n04.dtd.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P62/ibm62n04.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -6181,17 +6221,22 @@ fn ibmnotwf_p62ibm62n05xml() {
         Description:Tests includeSect with a required field missing. The "[" is missing after the key word "INCLUDE" in the includeSect in the file ibm62n05.dtd.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P62/ibm62n05.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -6206,17 +6251,22 @@ fn ibmnotwf_p62ibm62n06xml() {
         Description:Tests includeSect with wrong field ordering. The two external subset declarations occur before the key word "INCLUDE" in the includeSect in the file ibm62n06.dtd.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P62/ibm62n06.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -6231,17 +6281,22 @@ fn ibmnotwf_p62ibm62n07xml() {
         Description:Tests includeSect with a required field missing. The closing sequence "]](greater than)" is missing in the includeSect in the file ibm62n07.dtd.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P62/ibm62n07.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -6256,17 +6311,22 @@ fn ibmnotwf_p62ibm62n08xml() {
         Description:Tests includeSect with a required field missing. One "]" is missing in the closing sequence in the includeSect in the file ibm62n08.dtd.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P62/ibm62n08.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -6281,17 +6341,22 @@ fn ibmnotwf_p63ibm63n01xml() {
         Description:Tests ignoreSect with wrong key word. The string "ignore" is used as a key word in the beginning sequence in the ignoreSect in the file ibm63n01.dtd.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P63/ibm63n01.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -6306,17 +6371,22 @@ fn ibmnotwf_p63ibm63n02xml() {
         Description:Tests ignoreSect with wrong beginning sequence. An extra "[" occurs in the beginning sequence in the ignoreSect in the file ibm63n02.dtd.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P63/ibm63n02.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -6331,17 +6401,22 @@ fn ibmnotwf_p63ibm63n03xml() {
         Description:Tests ignoreSect with wrong beginning sequence. A wrong character "?" occurs in the beginning sequence in the ignoreSect in the file ibm63n03.dtd.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P63/ibm63n03.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -6356,17 +6431,22 @@ fn ibmnotwf_p63ibm63n04xml() {
         Description:Tests ignoreSect with a required field missing. The key word "IGNORE" is missing in the ignoreSect in the file ibm63n04.dtd.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P63/ibm63n04.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -6381,17 +6461,22 @@ fn ibmnotwf_p63ibm63n05xml() {
         Description:Tests ignoreSect with a required field missing. The "[" is missing after the key word "IGNORE" in the ignoreSect in the file ibm63n05.dtd.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P63/ibm63n05.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -6406,17 +6491,22 @@ fn ibmnotwf_p63ibm63n06xml() {
         Description:Tests includeSect with wrong field ordering. The two external subset declarations occur before the key word "IGNORE" in the ignoreSect in the file ibm63n06.dtd.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P63/ibm63n06.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -6431,17 +6521,22 @@ fn ibmnotwf_p63ibm63n07xml() {
         Description:Tests ignoreSect with a required field missing. The closing sequence "]](greater than)" is missing in the ignoreSect in the file ibm63n07.dtd.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P63/ibm63n07.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -6456,17 +6551,22 @@ fn ibmnotwf_p64ibm64n01xml() {
         Description:Tests ignoreSectContents with wrong beginning sequence. The "?" occurs in beginning sequence the ignoreSectContents in the file ibm64n01.dtd.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P64/ibm64n01.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -6481,17 +6581,22 @@ fn ibmnotwf_p64ibm64n02xml() {
         Description:Tests ignoreSectContents with a required field missing.The closing sequence is missing in the ignoreSectContents in the file ibm64n02.dtd.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P64/ibm64n02.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -6506,17 +6611,22 @@ fn ibmnotwf_p64ibm64n03xml() {
         Description:Tests ignoreSectContents with a required field missing.The beginning sequence is missing in the ignoreSectContents in the file ibm64n03.dtd.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P64/ibm64n03.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -6531,17 +6641,22 @@ fn ibmnotwf_p65ibm65n01xml() {
         Description:Tests Ignore with illegal string included. The string "]](greater than)" is contained before "this" in the Ignore in the ignoreSectContents in the file ibm65n01.dtd
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P65/ibm65n01.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -6556,17 +6671,22 @@ fn ibmnotwf_p65ibm65n02xml() {
         Description:Tests Ignore with illegal string included. The string "(less than)![" is contained before "this" in the Ignore in the ignoreSectContents in the file ibm65n02.dtd
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/ibm/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P65/ibm65n02.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -6587,7 +6707,7 @@ fn ibmnotwf_p66ibm66n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -6608,7 +6728,7 @@ fn ibmnotwf_p66ibm66n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -6629,7 +6749,7 @@ fn ibmnotwf_p66ibm66n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -6650,7 +6770,7 @@ fn ibmnotwf_p66ibm66n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -6671,7 +6791,7 @@ fn ibmnotwf_p66ibm66n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -6692,7 +6812,7 @@ fn ibmnotwf_p66ibm66n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -6713,7 +6833,7 @@ fn ibmnotwf_p66ibm66n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -6734,7 +6854,7 @@ fn ibmnotwf_p66ibm66n08xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -6755,7 +6875,7 @@ fn ibmnotwf_p66ibm66n09xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n09.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -6776,7 +6896,7 @@ fn ibmnotwf_p66ibm66n10xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n10.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -6797,7 +6917,7 @@ fn ibmnotwf_p66ibm66n11xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n11.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -6818,7 +6938,7 @@ fn ibmnotwf_p66ibm66n12xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n12.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -6839,7 +6959,7 @@ fn ibmnotwf_p66ibm66n13xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n13.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -6860,7 +6980,7 @@ fn ibmnotwf_p66ibm66n14xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n14.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -6881,7 +7001,7 @@ fn ibmnotwf_p66ibm66n15xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n15.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -6902,7 +7022,7 @@ fn ibmnotwf_p68ibm68n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -6923,7 +7043,7 @@ fn ibmnotwf_p68ibm68n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -6944,7 +7064,7 @@ fn ibmnotwf_p68ibm68n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -6965,7 +7085,7 @@ fn ibmnotwf_p68ibm68n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -6986,7 +7106,7 @@ fn ibmnotwf_p68ibm68n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7007,7 +7127,7 @@ fn ibmnotwf_p68ibm68n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7028,7 +7148,7 @@ fn ibmnotwf_p68ibm68n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7049,7 +7169,7 @@ fn ibmnotwf_p68ibm68n08xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7070,7 +7190,7 @@ fn ibmnotwf_p68ibm68n09xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n09.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7091,7 +7211,7 @@ fn ibmnotwf_p68ibm68n10xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n10.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7112,7 +7232,7 @@ fn ibmnotwf_p69ibm69n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P69/ibm69n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7133,7 +7253,7 @@ fn ibmnotwf_p69ibm69n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P69/ibm69n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7154,7 +7274,7 @@ fn ibmnotwf_p69ibm69n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P69/ibm69n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7175,7 +7295,7 @@ fn ibmnotwf_p69ibm69n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P69/ibm69n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7196,7 +7316,7 @@ fn ibmnotwf_p69ibm69n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P69/ibm69n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7217,7 +7337,7 @@ fn ibmnotwf_p69ibm69n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P69/ibm69n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7238,7 +7358,7 @@ fn ibmnotwf_p71ibm70n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm70n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7259,7 +7379,7 @@ fn ibmnotwf_p71ibm71n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7280,7 +7400,7 @@ fn ibmnotwf_p71ibm71n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7301,7 +7421,7 @@ fn ibmnotwf_p71ibm71n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7322,7 +7442,7 @@ fn ibmnotwf_p71ibm71n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7343,7 +7463,7 @@ fn ibmnotwf_p71ibm71n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7364,7 +7484,7 @@ fn ibmnotwf_p71ibm71n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7385,7 +7505,7 @@ fn ibmnotwf_p71ibm71n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7406,7 +7526,7 @@ fn ibmnotwf_p71ibm71n08xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7427,7 +7547,7 @@ fn ibmnotwf_p72ibm72n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7448,7 +7568,7 @@ fn ibmnotwf_p72ibm72n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7469,7 +7589,7 @@ fn ibmnotwf_p72ibm72n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7490,7 +7610,7 @@ fn ibmnotwf_p72ibm72n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7511,7 +7631,7 @@ fn ibmnotwf_p72ibm72n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7532,7 +7652,7 @@ fn ibmnotwf_p72ibm72n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7553,7 +7673,7 @@ fn ibmnotwf_p72ibm72n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7574,7 +7694,7 @@ fn ibmnotwf_p72ibm72n08xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7595,7 +7715,7 @@ fn ibmnotwf_p72ibm72n09xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n09.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7616,7 +7736,7 @@ fn ibmnotwf_p73ibm73n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P73/ibm73n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7637,7 +7757,7 @@ fn ibmnotwf_p73ibm73n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P73/ibm73n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7658,7 +7778,7 @@ fn ibmnotwf_p74ibm74n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P74/ibm74n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7679,7 +7799,7 @@ fn ibmnotwf_p75ibm75n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7700,7 +7820,7 @@ fn ibmnotwf_p75ibm75n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7721,7 +7841,7 @@ fn ibmnotwf_p75ibm75n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7742,7 +7862,7 @@ fn ibmnotwf_p75ibm75n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7763,7 +7883,7 @@ fn ibmnotwf_p75ibm75n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7784,7 +7904,7 @@ fn ibmnotwf_p75ibm75n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7805,7 +7925,7 @@ fn ibmnotwf_p75ibm75n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7826,7 +7946,7 @@ fn ibmnotwf_p75ibm75n08xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7847,7 +7967,7 @@ fn ibmnotwf_p75ibm75n09xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n09.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7868,7 +7988,7 @@ fn ibmnotwf_p75ibm75n10xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n10.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7889,7 +8009,7 @@ fn ibmnotwf_p75ibm75n11xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n11.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7910,7 +8030,7 @@ fn ibmnotwf_p75ibm75n12xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n12.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7931,7 +8051,7 @@ fn ibmnotwf_p75ibm75n13xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n13.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7952,7 +8072,7 @@ fn ibmnotwf_p76ibm76n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7973,7 +8093,7 @@ fn ibmnotwf_p76ibm76n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -7994,7 +8114,7 @@ fn ibmnotwf_p76ibm76n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8015,7 +8135,7 @@ fn ibmnotwf_p76ibm76n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8036,7 +8156,7 @@ fn ibmnotwf_p76ibm76n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8057,7 +8177,7 @@ fn ibmnotwf_p76ibm76n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8078,7 +8198,7 @@ fn ibmnotwf_p76ibm76n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8099,7 +8219,7 @@ fn ibmnotwf_p77ibm77n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P77/ibm77n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8120,7 +8240,7 @@ fn ibmnotwf_p77ibm77n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P77/ibm77n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8141,7 +8261,7 @@ fn ibmnotwf_p77ibm77n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P77/ibm77n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8162,7 +8282,7 @@ fn ibmnotwf_p77ibm77n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P77/ibm77n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8183,7 +8303,7 @@ fn ibmnotwf_p78ibm78n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P78/ibm78n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8204,7 +8324,7 @@ fn ibmnotwf_p78ibm78n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P78/ibm78n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8225,7 +8345,7 @@ fn ibmnotwf_p79ibm79n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P79/ibm79n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8246,7 +8366,7 @@ fn ibmnotwf_p79ibm79n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P79/ibm79n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8267,7 +8387,7 @@ fn ibmnotwf_p80ibm80n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P80/ibm80n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8288,7 +8408,7 @@ fn ibmnotwf_p80ibm80n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P80/ibm80n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8309,7 +8429,7 @@ fn ibmnotwf_p80ibm80n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P80/ibm80n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8330,7 +8450,7 @@ fn ibmnotwf_p80ibm80n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P80/ibm80n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8351,7 +8471,7 @@ fn ibmnotwf_p80ibm80n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P80/ibm80n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8372,7 +8492,7 @@ fn ibmnotwf_p80ibm80n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P80/ibm80n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8393,7 +8513,7 @@ fn ibmnotwf_p81ibm81n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8414,7 +8534,7 @@ fn ibmnotwf_p81ibm81n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8435,7 +8555,7 @@ fn ibmnotwf_p81ibm81n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8456,7 +8576,7 @@ fn ibmnotwf_p81ibm81n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8477,7 +8597,7 @@ fn ibmnotwf_p81ibm81n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8498,7 +8618,7 @@ fn ibmnotwf_p81ibm81n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8519,7 +8639,7 @@ fn ibmnotwf_p81ibm81n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8540,7 +8660,7 @@ fn ibmnotwf_p81ibm81n08xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8561,7 +8681,7 @@ fn ibmnotwf_p81ibm81n09xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n09.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8582,7 +8702,7 @@ fn ibmnotwf_p82ibm82n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8603,7 +8723,7 @@ fn ibmnotwf_p82ibm82n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8624,7 +8744,7 @@ fn ibmnotwf_p82ibm82n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8645,7 +8765,7 @@ fn ibmnotwf_p82ibm82n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8666,7 +8786,7 @@ fn ibmnotwf_p82ibm82n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8687,7 +8807,7 @@ fn ibmnotwf_p82ibm82n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8708,7 +8828,7 @@ fn ibmnotwf_p82ibm82n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8729,7 +8849,7 @@ fn ibmnotwf_p82ibm82n08xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8750,7 +8870,7 @@ fn ibmnotwf_p83ibm83n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P83/ibm83n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8771,7 +8891,7 @@ fn ibmnotwf_p83ibm83n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P83/ibm83n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8792,7 +8912,7 @@ fn ibmnotwf_p83ibm83n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P83/ibm83n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8813,7 +8933,7 @@ fn ibmnotwf_p83ibm83n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P83/ibm83n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8834,7 +8954,7 @@ fn ibmnotwf_p83ibm83n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P83/ibm83n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8855,7 +8975,7 @@ fn ibmnotwf_p83ibm83n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P83/ibm83n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8876,7 +8996,7 @@ fn ibmnotwf_p85ibm85n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8897,7 +9017,7 @@ fn ibmnotwf_p85ibm85n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8924,7 +9044,7 @@ fn ibmnotwf_p85ibm85n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8952,7 +9072,7 @@ fn ibmnotwf_p85ibm85n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -8980,7 +9100,7 @@ fn ibmnotwf_p85ibm85n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9008,7 +9128,7 @@ fn ibmnotwf_p85ibm85n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9036,7 +9156,7 @@ fn ibmnotwf_p85ibm85n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9064,7 +9184,7 @@ fn ibmnotwf_p85ibm85n08xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9092,7 +9212,7 @@ fn ibmnotwf_p85ibm85n09xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n09.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9120,7 +9240,7 @@ fn ibmnotwf_p85ibm85n10xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n10.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9148,7 +9268,7 @@ fn ibmnotwf_p85ibm85n100xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n100.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9176,7 +9296,7 @@ fn ibmnotwf_p85ibm85n101xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n101.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9204,7 +9324,7 @@ fn ibmnotwf_p85ibm85n102xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n102.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9232,7 +9352,7 @@ fn ibmnotwf_p85ibm85n103xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n103.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9260,7 +9380,7 @@ fn ibmnotwf_p85ibm85n104xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n104.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9288,7 +9408,7 @@ fn ibmnotwf_p85ibm85n105xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n105.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9316,7 +9436,7 @@ fn ibmnotwf_p85ibm85n106xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n106.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9344,7 +9464,7 @@ fn ibmnotwf_p85ibm85n107xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n107.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9372,7 +9492,7 @@ fn ibmnotwf_p85ibm85n108xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n108.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9400,7 +9520,7 @@ fn ibmnotwf_p85ibm85n109xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n109.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9428,7 +9548,7 @@ fn ibmnotwf_p85ibm85n11xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n11.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9456,7 +9576,7 @@ fn ibmnotwf_p85ibm85n110xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n110.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9484,7 +9604,7 @@ fn ibmnotwf_p85ibm85n111xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n111.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9512,7 +9632,7 @@ fn ibmnotwf_p85ibm85n112xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n112.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9540,7 +9660,7 @@ fn ibmnotwf_p85ibm85n113xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n113.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9568,7 +9688,7 @@ fn ibmnotwf_p85ibm85n114xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n114.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9596,7 +9716,7 @@ fn ibmnotwf_p85ibm85n115xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n115.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9624,7 +9744,7 @@ fn ibmnotwf_p85ibm85n116xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n116.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9652,7 +9772,7 @@ fn ibmnotwf_p85ibm85n117xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n117.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9680,7 +9800,7 @@ fn ibmnotwf_p85ibm85n118xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n118.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9708,7 +9828,7 @@ fn ibmnotwf_p85ibm85n119xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n119.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9736,7 +9856,7 @@ fn ibmnotwf_p85ibm85n12xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n12.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9764,7 +9884,7 @@ fn ibmnotwf_p85ibm85n120xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n120.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9792,7 +9912,7 @@ fn ibmnotwf_p85ibm85n121xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n121.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9820,7 +9940,7 @@ fn ibmnotwf_p85ibm85n122xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n122.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9848,7 +9968,7 @@ fn ibmnotwf_p85ibm85n123xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n123.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9876,7 +9996,7 @@ fn ibmnotwf_p85ibm85n124xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n124.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9904,7 +10024,7 @@ fn ibmnotwf_p85ibm85n125xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n125.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9932,7 +10052,7 @@ fn ibmnotwf_p85ibm85n126xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n126.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9960,7 +10080,7 @@ fn ibmnotwf_p85ibm85n127xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n127.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -9988,7 +10108,7 @@ fn ibmnotwf_p85ibm85n128xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n128.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10016,7 +10136,7 @@ fn ibmnotwf_p85ibm85n129xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n129.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10044,7 +10164,7 @@ fn ibmnotwf_p85ibm85n13xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n13.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10072,7 +10192,7 @@ fn ibmnotwf_p85ibm85n130xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n130.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10100,7 +10220,7 @@ fn ibmnotwf_p85ibm85n131xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n131.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10128,7 +10248,7 @@ fn ibmnotwf_p85ibm85n132xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n132.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10156,7 +10276,7 @@ fn ibmnotwf_p85ibm85n133xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n133.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10184,7 +10304,7 @@ fn ibmnotwf_p85ibm85n134xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n134.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10212,7 +10332,7 @@ fn ibmnotwf_p85ibm85n135xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n135.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10240,7 +10360,7 @@ fn ibmnotwf_p85ibm85n136xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n136.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10268,7 +10388,7 @@ fn ibmnotwf_p85ibm85n137xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n137.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10296,7 +10416,7 @@ fn ibmnotwf_p85ibm85n138xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n138.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10324,7 +10444,7 @@ fn ibmnotwf_p85ibm85n139xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n139.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10352,7 +10472,7 @@ fn ibmnotwf_p85ibm85n14xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n14.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10380,7 +10500,7 @@ fn ibmnotwf_p85ibm85n140xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n140.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10408,7 +10528,7 @@ fn ibmnotwf_p85ibm85n141xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n141.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10436,7 +10556,7 @@ fn ibmnotwf_p85ibm85n142xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n142.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10464,7 +10584,7 @@ fn ibmnotwf_p85ibm85n143xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n143.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10492,7 +10612,7 @@ fn ibmnotwf_p85ibm85n144xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n144.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10520,7 +10640,7 @@ fn ibmnotwf_p85ibm85n145xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n145.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10548,7 +10668,7 @@ fn ibmnotwf_p85ibm85n146xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n146.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10576,7 +10696,7 @@ fn ibmnotwf_p85ibm85n147xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n147.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10604,7 +10724,7 @@ fn ibmnotwf_p85ibm85n148xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n148.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10632,7 +10752,7 @@ fn ibmnotwf_p85ibm85n149xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n149.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10660,7 +10780,7 @@ fn ibmnotwf_p85ibm85n15xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n15.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10688,7 +10808,7 @@ fn ibmnotwf_p85ibm85n150xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n150.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10716,7 +10836,7 @@ fn ibmnotwf_p85ibm85n151xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n151.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10744,7 +10864,7 @@ fn ibmnotwf_p85ibm85n152xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n152.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10772,7 +10892,7 @@ fn ibmnotwf_p85ibm85n153xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n153.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10800,7 +10920,7 @@ fn ibmnotwf_p85ibm85n154xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n154.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10828,7 +10948,7 @@ fn ibmnotwf_p85ibm85n155xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n155.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10856,7 +10976,7 @@ fn ibmnotwf_p85ibm85n156xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n156.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10884,7 +11004,7 @@ fn ibmnotwf_p85ibm85n157xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n157.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10912,7 +11032,7 @@ fn ibmnotwf_p85ibm85n158xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n158.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10940,7 +11060,7 @@ fn ibmnotwf_p85ibm85n159xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n159.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10968,7 +11088,7 @@ fn ibmnotwf_p85ibm85n16xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n16.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -10996,7 +11116,7 @@ fn ibmnotwf_p85ibm85n160xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n160.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11024,7 +11144,7 @@ fn ibmnotwf_p85ibm85n161xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n161.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11052,7 +11172,7 @@ fn ibmnotwf_p85ibm85n162xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n162.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11080,7 +11200,7 @@ fn ibmnotwf_p85ibm85n163xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n163.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11108,7 +11228,7 @@ fn ibmnotwf_p85ibm85n164xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n164.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11136,7 +11256,7 @@ fn ibmnotwf_p85ibm85n165xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n165.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11164,7 +11284,7 @@ fn ibmnotwf_p85ibm85n166xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n166.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11192,7 +11312,7 @@ fn ibmnotwf_p85ibm85n167xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n167.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11220,7 +11340,7 @@ fn ibmnotwf_p85ibm85n168xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n168.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11248,7 +11368,7 @@ fn ibmnotwf_p85ibm85n169xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n169.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11276,7 +11396,7 @@ fn ibmnotwf_p85ibm85n17xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n17.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11304,7 +11424,7 @@ fn ibmnotwf_p85ibm85n170xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n170.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11332,7 +11452,7 @@ fn ibmnotwf_p85ibm85n171xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n171.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11360,7 +11480,7 @@ fn ibmnotwf_p85ibm85n172xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n172.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11388,7 +11508,7 @@ fn ibmnotwf_p85ibm85n173xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n173.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11416,7 +11536,7 @@ fn ibmnotwf_p85ibm85n174xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n174.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11444,7 +11564,7 @@ fn ibmnotwf_p85ibm85n175xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n175.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11472,7 +11592,7 @@ fn ibmnotwf_p85ibm85n176xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n176.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11500,7 +11620,7 @@ fn ibmnotwf_p85ibm85n177xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n177.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11528,7 +11648,7 @@ fn ibmnotwf_p85ibm85n178xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n178.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11556,7 +11676,7 @@ fn ibmnotwf_p85ibm85n179xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n179.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11584,7 +11704,7 @@ fn ibmnotwf_p85ibm85n18xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n18.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11612,7 +11732,7 @@ fn ibmnotwf_p85ibm85n180xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n180.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11640,7 +11760,7 @@ fn ibmnotwf_p85ibm85n181xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n181.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11668,7 +11788,7 @@ fn ibmnotwf_p85ibm85n182xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n182.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11696,7 +11816,7 @@ fn ibmnotwf_p85ibm85n183xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n183.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11724,7 +11844,7 @@ fn ibmnotwf_p85ibm85n184xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n184.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11752,7 +11872,7 @@ fn ibmnotwf_p85ibm85n185xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n185.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11780,7 +11900,7 @@ fn ibmnotwf_p85ibm85n186xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n186.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11808,7 +11928,7 @@ fn ibmnotwf_p85ibm85n187xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n187.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11836,7 +11956,7 @@ fn ibmnotwf_p85ibm85n188xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n188.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11864,7 +11984,7 @@ fn ibmnotwf_p85ibm85n189xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n189.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11892,7 +12012,7 @@ fn ibmnotwf_p85ibm85n19xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n19.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11920,7 +12040,7 @@ fn ibmnotwf_p85ibm85n190xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n190.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11948,7 +12068,7 @@ fn ibmnotwf_p85ibm85n191xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n191.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -11976,7 +12096,7 @@ fn ibmnotwf_p85ibm85n192xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n192.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12004,7 +12124,7 @@ fn ibmnotwf_p85ibm85n193xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n193.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12032,7 +12152,7 @@ fn ibmnotwf_p85ibm85n194xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n194.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12060,7 +12180,7 @@ fn ibmnotwf_p85ibm85n195xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n195.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12088,7 +12208,7 @@ fn ibmnotwf_p85ibm85n196xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n196.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12116,7 +12236,7 @@ fn ibmnotwf_p85ibm85n197xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n197.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12144,7 +12264,7 @@ fn ibmnotwf_p85ibm85n198xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n198.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12172,7 +12292,7 @@ fn ibmnotwf_p85ibm85n20xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n20.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12200,7 +12320,7 @@ fn ibmnotwf_p85ibm85n21xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n21.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12228,7 +12348,7 @@ fn ibmnotwf_p85ibm85n22xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n22.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12256,7 +12376,7 @@ fn ibmnotwf_p85ibm85n23xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n23.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12284,7 +12404,7 @@ fn ibmnotwf_p85ibm85n24xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n24.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12312,7 +12432,7 @@ fn ibmnotwf_p85ibm85n25xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n25.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12340,7 +12460,7 @@ fn ibmnotwf_p85ibm85n26xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n26.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12368,7 +12488,7 @@ fn ibmnotwf_p85ibm85n27xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n27.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12396,7 +12516,7 @@ fn ibmnotwf_p85ibm85n28xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n28.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12424,7 +12544,7 @@ fn ibmnotwf_p85ibm85n29xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n29.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12452,7 +12572,7 @@ fn ibmnotwf_p85ibm85n30xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n30.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12480,7 +12600,7 @@ fn ibmnotwf_p85ibm85n31xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n31.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12508,7 +12628,7 @@ fn ibmnotwf_p85ibm85n32xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n32.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12536,7 +12656,7 @@ fn ibmnotwf_p85ibm85n33xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n33.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12564,7 +12684,7 @@ fn ibmnotwf_p85ibm85n34xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n34.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12592,7 +12712,7 @@ fn ibmnotwf_p85ibm85n35xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n35.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12620,7 +12740,7 @@ fn ibmnotwf_p85ibm85n36xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n36.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12648,7 +12768,7 @@ fn ibmnotwf_p85ibm85n37xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n37.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12676,7 +12796,7 @@ fn ibmnotwf_p85ibm85n38xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n38.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12704,7 +12824,7 @@ fn ibmnotwf_p85ibm85n39xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n39.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12732,7 +12852,7 @@ fn ibmnotwf_p85ibm85n40xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n40.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12760,7 +12880,7 @@ fn ibmnotwf_p85ibm85n41xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n41.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12788,7 +12908,7 @@ fn ibmnotwf_p85ibm85n42xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n42.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12816,7 +12936,7 @@ fn ibmnotwf_p85ibm85n43xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n43.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12844,7 +12964,7 @@ fn ibmnotwf_p85ibm85n44xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n44.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12872,7 +12992,7 @@ fn ibmnotwf_p85ibm85n45xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n45.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12900,7 +13020,7 @@ fn ibmnotwf_p85ibm85n46xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n46.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12928,7 +13048,7 @@ fn ibmnotwf_p85ibm85n47xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n47.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12956,7 +13076,7 @@ fn ibmnotwf_p85ibm85n48xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n48.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -12984,7 +13104,7 @@ fn ibmnotwf_p85ibm85n49xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n49.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13012,7 +13132,7 @@ fn ibmnotwf_p85ibm85n50xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n50.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13040,7 +13160,7 @@ fn ibmnotwf_p85ibm85n51xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n51.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13068,7 +13188,7 @@ fn ibmnotwf_p85ibm85n52xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n52.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13096,7 +13216,7 @@ fn ibmnotwf_p85ibm85n53xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n53.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13124,7 +13244,7 @@ fn ibmnotwf_p85ibm85n54xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n54.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13152,7 +13272,7 @@ fn ibmnotwf_p85ibm85n55xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n55.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13180,7 +13300,7 @@ fn ibmnotwf_p85ibm85n56xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n56.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13208,7 +13328,7 @@ fn ibmnotwf_p85ibm85n57xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n57.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13236,7 +13356,7 @@ fn ibmnotwf_p85ibm85n58xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n58.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13264,7 +13384,7 @@ fn ibmnotwf_p85ibm85n59xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n59.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13292,7 +13412,7 @@ fn ibmnotwf_p85ibm85n60xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n60.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13320,7 +13440,7 @@ fn ibmnotwf_p85ibm85n61xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n61.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13348,7 +13468,7 @@ fn ibmnotwf_p85ibm85n62xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n62.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13376,7 +13496,7 @@ fn ibmnotwf_p85ibm85n63xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n63.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13404,7 +13524,7 @@ fn ibmnotwf_p85ibm85n64xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n64.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13432,7 +13552,7 @@ fn ibmnotwf_p85ibm85n65xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n65.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13460,7 +13580,7 @@ fn ibmnotwf_p85ibm85n66xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n66.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13488,7 +13608,7 @@ fn ibmnotwf_p85ibm85n67xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n67.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13516,7 +13636,7 @@ fn ibmnotwf_p85ibm85n68xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n68.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13544,7 +13664,7 @@ fn ibmnotwf_p85ibm85n69xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n69.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13572,7 +13692,7 @@ fn ibmnotwf_p85ibm85n70xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n70.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13600,7 +13720,7 @@ fn ibmnotwf_p85ibm85n71xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n71.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13628,7 +13748,7 @@ fn ibmnotwf_p85ibm85n72xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n72.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13656,7 +13776,7 @@ fn ibmnotwf_p85ibm85n73xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n73.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13684,7 +13804,7 @@ fn ibmnotwf_p85ibm85n74xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n74.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13712,7 +13832,7 @@ fn ibmnotwf_p85ibm85n75xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n75.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13740,7 +13860,7 @@ fn ibmnotwf_p85ibm85n76xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n76.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13768,7 +13888,7 @@ fn ibmnotwf_p85ibm85n77xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n77.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13796,7 +13916,7 @@ fn ibmnotwf_p85ibm85n78xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n78.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13824,7 +13944,7 @@ fn ibmnotwf_p85ibm85n79xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n79.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13852,7 +13972,7 @@ fn ibmnotwf_p85ibm85n80xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n80.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13880,7 +14000,7 @@ fn ibmnotwf_p85ibm85n81xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n81.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13908,7 +14028,7 @@ fn ibmnotwf_p85ibm85n82xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n82.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13936,7 +14056,7 @@ fn ibmnotwf_p85ibm85n83xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n83.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13964,7 +14084,7 @@ fn ibmnotwf_p85ibm85n84xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n84.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -13992,7 +14112,7 @@ fn ibmnotwf_p85ibm85n85xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n85.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14020,7 +14140,7 @@ fn ibmnotwf_p85ibm85n86xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n86.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14048,7 +14168,7 @@ fn ibmnotwf_p85ibm85n87xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n87.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14076,7 +14196,7 @@ fn ibmnotwf_p85ibm85n88xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n88.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14104,7 +14224,7 @@ fn ibmnotwf_p85ibm85n89xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n89.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14132,7 +14252,7 @@ fn ibmnotwf_p85ibm85n90xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n90.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14160,7 +14280,7 @@ fn ibmnotwf_p85ibm85n91xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n91.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14188,7 +14308,7 @@ fn ibmnotwf_p85ibm85n92xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n92.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14216,7 +14336,7 @@ fn ibmnotwf_p85ibm85n93xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n93.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14244,7 +14364,7 @@ fn ibmnotwf_p85ibm85n94xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n94.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14272,7 +14392,7 @@ fn ibmnotwf_p85ibm85n95xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n95.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14300,7 +14420,7 @@ fn ibmnotwf_p85ibm85n96xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n96.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14328,7 +14448,7 @@ fn ibmnotwf_p85ibm85n97xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n97.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14356,7 +14476,7 @@ fn ibmnotwf_p85ibm85n98xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n98.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14384,7 +14504,7 @@ fn ibmnotwf_p85ibm85n99xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n99.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14412,7 +14532,7 @@ fn ibmnotwf_p86ibm86n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P86/ibm86n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14440,7 +14560,7 @@ fn ibmnotwf_p86ibm86n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P86/ibm86n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14468,7 +14588,7 @@ fn ibmnotwf_p86ibm86n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P86/ibm86n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14496,7 +14616,7 @@ fn ibmnotwf_p86ibm86n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P86/ibm86n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14524,7 +14644,7 @@ fn ibmnotwf_p87ibm87n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14552,7 +14672,7 @@ fn ibmnotwf_p87ibm87n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14580,7 +14700,7 @@ fn ibmnotwf_p87ibm87n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14608,7 +14728,7 @@ fn ibmnotwf_p87ibm87n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14636,7 +14756,7 @@ fn ibmnotwf_p87ibm87n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14664,7 +14784,7 @@ fn ibmnotwf_p87ibm87n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14692,7 +14812,7 @@ fn ibmnotwf_p87ibm87n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14720,7 +14840,7 @@ fn ibmnotwf_p87ibm87n08xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14748,7 +14868,7 @@ fn ibmnotwf_p87ibm87n09xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n09.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14776,7 +14896,7 @@ fn ibmnotwf_p87ibm87n10xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n10.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14804,7 +14924,7 @@ fn ibmnotwf_p87ibm87n11xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n11.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14832,7 +14952,7 @@ fn ibmnotwf_p87ibm87n12xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n12.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14860,7 +14980,7 @@ fn ibmnotwf_p87ibm87n13xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n13.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14888,7 +15008,7 @@ fn ibmnotwf_p87ibm87n14xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n14.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14916,7 +15036,7 @@ fn ibmnotwf_p87ibm87n15xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n15.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14944,7 +15064,7 @@ fn ibmnotwf_p87ibm87n16xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n16.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -14972,7 +15092,7 @@ fn ibmnotwf_p87ibm87n17xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n17.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15000,7 +15120,7 @@ fn ibmnotwf_p87ibm87n18xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n18.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15028,7 +15148,7 @@ fn ibmnotwf_p87ibm87n19xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n19.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15056,7 +15176,7 @@ fn ibmnotwf_p87ibm87n20xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n20.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15084,7 +15204,7 @@ fn ibmnotwf_p87ibm87n21xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n21.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15112,7 +15232,7 @@ fn ibmnotwf_p87ibm87n22xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n22.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15140,7 +15260,7 @@ fn ibmnotwf_p87ibm87n23xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n23.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15168,7 +15288,7 @@ fn ibmnotwf_p87ibm87n24xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n24.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15196,7 +15316,7 @@ fn ibmnotwf_p87ibm87n25xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n25.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15224,7 +15344,7 @@ fn ibmnotwf_p87ibm87n26xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n26.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15252,7 +15372,7 @@ fn ibmnotwf_p87ibm87n27xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n27.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15280,7 +15400,7 @@ fn ibmnotwf_p87ibm87n28xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n28.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15308,7 +15428,7 @@ fn ibmnotwf_p87ibm87n29xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n29.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15336,7 +15456,7 @@ fn ibmnotwf_p87ibm87n30xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n30.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15364,7 +15484,7 @@ fn ibmnotwf_p87ibm87n31xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n31.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15392,7 +15512,7 @@ fn ibmnotwf_p87ibm87n32xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n32.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15420,7 +15540,7 @@ fn ibmnotwf_p87ibm87n33xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n33.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15448,7 +15568,7 @@ fn ibmnotwf_p87ibm87n34xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n34.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15476,7 +15596,7 @@ fn ibmnotwf_p87ibm87n35xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n35.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15504,7 +15624,7 @@ fn ibmnotwf_p87ibm87n36xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n36.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15532,7 +15652,7 @@ fn ibmnotwf_p87ibm87n37xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n37.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15560,7 +15680,7 @@ fn ibmnotwf_p87ibm87n38xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n38.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15588,7 +15708,7 @@ fn ibmnotwf_p87ibm87n39xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n39.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15616,7 +15736,7 @@ fn ibmnotwf_p87ibm87n40xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n40.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15644,7 +15764,7 @@ fn ibmnotwf_p87ibm87n41xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n41.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15672,7 +15792,7 @@ fn ibmnotwf_p87ibm87n42xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n42.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15700,7 +15820,7 @@ fn ibmnotwf_p87ibm87n43xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n43.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15728,7 +15848,7 @@ fn ibmnotwf_p87ibm87n44xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n44.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15756,7 +15876,7 @@ fn ibmnotwf_p87ibm87n45xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n45.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15784,7 +15904,7 @@ fn ibmnotwf_p87ibm87n46xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n46.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15812,7 +15932,7 @@ fn ibmnotwf_p87ibm87n47xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n47.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15840,7 +15960,7 @@ fn ibmnotwf_p87ibm87n48xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n48.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15868,7 +15988,7 @@ fn ibmnotwf_p87ibm87n49xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n49.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15896,7 +16016,7 @@ fn ibmnotwf_p87ibm87n50xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n50.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15924,7 +16044,7 @@ fn ibmnotwf_p87ibm87n51xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n51.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15952,7 +16072,7 @@ fn ibmnotwf_p87ibm87n52xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n52.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -15980,7 +16100,7 @@ fn ibmnotwf_p87ibm87n53xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n53.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16008,7 +16128,7 @@ fn ibmnotwf_p87ibm87n54xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n54.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16036,7 +16156,7 @@ fn ibmnotwf_p87ibm87n55xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n55.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16064,7 +16184,7 @@ fn ibmnotwf_p87ibm87n56xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n56.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16092,7 +16212,7 @@ fn ibmnotwf_p87ibm87n57xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n57.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16120,7 +16240,7 @@ fn ibmnotwf_p87ibm87n58xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n58.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16148,7 +16268,7 @@ fn ibmnotwf_p87ibm87n59xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n59.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16176,7 +16296,7 @@ fn ibmnotwf_p87ibm87n60xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n60.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16204,7 +16324,7 @@ fn ibmnotwf_p87ibm87n61xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n61.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16232,7 +16352,7 @@ fn ibmnotwf_p87ibm87n62xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n62.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16260,7 +16380,7 @@ fn ibmnotwf_p87ibm87n63xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n63.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16288,7 +16408,7 @@ fn ibmnotwf_p87ibm87n64xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n64.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16316,7 +16436,7 @@ fn ibmnotwf_p87ibm87n66xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n66.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16344,7 +16464,7 @@ fn ibmnotwf_p87ibm87n67xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n67.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16372,7 +16492,7 @@ fn ibmnotwf_p87ibm87n68xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n68.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16400,7 +16520,7 @@ fn ibmnotwf_p87ibm87n69xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n69.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16428,7 +16548,7 @@ fn ibmnotwf_p87ibm87n70xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n70.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16456,7 +16576,7 @@ fn ibmnotwf_p87ibm87n71xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n71.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16484,7 +16604,7 @@ fn ibmnotwf_p87ibm87n72xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n72.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16512,7 +16632,7 @@ fn ibmnotwf_p87ibm87n73xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n73.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16540,7 +16660,7 @@ fn ibmnotwf_p87ibm87n74xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n74.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16568,7 +16688,7 @@ fn ibmnotwf_p87ibm87n75xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n75.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16596,7 +16716,7 @@ fn ibmnotwf_p87ibm87n76xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n76.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16624,7 +16744,7 @@ fn ibmnotwf_p87ibm87n77xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n77.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16652,7 +16772,7 @@ fn ibmnotwf_p87ibm87n78xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n78.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16680,7 +16800,7 @@ fn ibmnotwf_p87ibm87n79xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n79.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16708,7 +16828,7 @@ fn ibmnotwf_p87ibm87n80xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n80.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16736,7 +16856,7 @@ fn ibmnotwf_p87ibm87n81xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n81.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16764,7 +16884,7 @@ fn ibmnotwf_p87ibm87n82xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n82.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16792,7 +16912,7 @@ fn ibmnotwf_p87ibm87n83xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n83.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16820,7 +16940,7 @@ fn ibmnotwf_p87ibm87n84xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n84.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16848,7 +16968,7 @@ fn ibmnotwf_p87ibm87n85xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n85.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16870,7 +16990,7 @@ fn ibmnotwf_p88ibm88n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16891,7 +17011,7 @@ fn ibmnotwf_p88ibm88n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16918,7 +17038,7 @@ fn ibmnotwf_p88ibm88n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16946,7 +17066,7 @@ fn ibmnotwf_p88ibm88n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -16974,7 +17094,7 @@ fn ibmnotwf_p88ibm88n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -17002,7 +17122,7 @@ fn ibmnotwf_p88ibm88n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -17030,7 +17150,7 @@ fn ibmnotwf_p88ibm88n08xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -17058,7 +17178,7 @@ fn ibmnotwf_p88ibm88n09xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n09.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -17086,7 +17206,7 @@ fn ibmnotwf_p88ibm88n10xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n10.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -17114,7 +17234,7 @@ fn ibmnotwf_p88ibm88n11xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n11.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -17142,7 +17262,7 @@ fn ibmnotwf_p88ibm88n12xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n12.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -17170,7 +17290,7 @@ fn ibmnotwf_p88ibm88n13xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n13.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -17198,7 +17318,7 @@ fn ibmnotwf_p88ibm88n14xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n14.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -17226,7 +17346,7 @@ fn ibmnotwf_p88ibm88n15xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n15.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -17254,7 +17374,7 @@ fn ibmnotwf_p88ibm88n16xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n16.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -17276,7 +17396,7 @@ fn ibmnotwf_p89ibm89n01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -17297,7 +17417,7 @@ fn ibmnotwf_p89ibm89n02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -17324,7 +17444,7 @@ fn ibmnotwf_p89ibm89n03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -17352,7 +17472,7 @@ fn ibmnotwf_p89ibm89n04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -17380,7 +17500,7 @@ fn ibmnotwf_p89ibm89n05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -17402,7 +17522,7 @@ fn ibmnotwf_p89ibm89n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -17423,7 +17543,7 @@ fn ibmnotwf_p89ibm89n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -17444,7 +17564,7 @@ fn ibmnotwf_p89ibm89n08xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -17465,7 +17585,7 @@ fn ibmnotwf_p89ibm89n09xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n09.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -17486,7 +17606,7 @@ fn ibmnotwf_p89ibm89n10xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n10.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -17507,7 +17627,7 @@ fn ibmnotwf_p89ibm89n11xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n11.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -17528,7 +17648,7 @@ fn ibmnotwf_p89ibm89n12xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n12.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());

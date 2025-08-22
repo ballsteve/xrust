@@ -4,7 +4,7 @@ Richard Tobin's XML 1.0 3rd edition errata test suite 1 June 2006
 
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::xml;
+use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
@@ -23,7 +23,7 @@ fn rmte3e05a() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E05a.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -49,7 +49,7 @@ fn rmte3e05b() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E05b.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -76,7 +76,7 @@ fn rmte3e06i() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06i.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());

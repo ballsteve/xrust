@@ -6,7 +6,7 @@ Richard Tobin's XML Namespaces 1.0 test suite 14 Feb 2003
 
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::xml;
+use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 
 #[test]
@@ -24,7 +24,7 @@ fn rmtns10009() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/009.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -45,7 +45,7 @@ fn rmtns10010() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/010.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -66,7 +66,7 @@ fn rmtns10011() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/011.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -87,7 +87,7 @@ fn rmtns10012() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/012.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -108,7 +108,7 @@ fn rmtns10013() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/013.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -129,7 +129,7 @@ fn rmtns10014() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/014.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -150,7 +150,7 @@ fn rmtns10015() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/015.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -171,7 +171,7 @@ fn rmtns10016() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/016.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -192,7 +192,7 @@ fn rmtns10023() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/023.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -213,7 +213,7 @@ fn rmtns10025() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/025.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -234,7 +234,7 @@ fn rmtns10026() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/026.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -255,7 +255,7 @@ fn rmtns10029() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/029.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -276,7 +276,7 @@ fn rmtns10030() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/030.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -297,7 +297,7 @@ fn rmtns10031() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/031.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -318,7 +318,7 @@ fn rmtns10032() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/032.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -339,7 +339,7 @@ fn rmtns10033() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/033.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -360,7 +360,7 @@ fn rmtns10035() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/035.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -381,7 +381,7 @@ fn rmtns10036() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/036.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -402,7 +402,7 @@ fn rmtns10042() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/042.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -423,7 +423,7 @@ fn rmtns10043() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/043.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -444,7 +444,7 @@ fn rmtns10044() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/044.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());

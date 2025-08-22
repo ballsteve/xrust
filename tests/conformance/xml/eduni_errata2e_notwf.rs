@@ -6,6 +6,7 @@ Richard Tobin's XML 1.0 2nd edition errata test suite.
 
 use std::fs;
 use xrust::item::Node;
+use xrust::parser::ParseError;
 use xrust::parser::xml;
 use xrust::trees::smite::RNode;
 
@@ -25,7 +26,7 @@ fn rmte2e27() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E27.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -46,7 +47,7 @@ fn rmte2e38() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E38.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -68,7 +69,7 @@ fn rmte2e61() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E61.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());

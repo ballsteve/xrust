@@ -8,7 +8,7 @@ James Clark XMLTEST cases - Standalone
 
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::xml;
+use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 
 #[test]
@@ -25,7 +25,7 @@ fn validsa001() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/001.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -46,7 +46,7 @@ fn validsa002() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/002.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -67,7 +67,7 @@ fn validsa003() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/003.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -88,7 +88,7 @@ fn validsa004() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/004.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -109,7 +109,7 @@ fn validsa005() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/005.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -130,7 +130,7 @@ fn validsa006() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/006.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -151,7 +151,7 @@ fn validsa007() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/007.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -172,7 +172,7 @@ fn validsa008() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/008.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -193,7 +193,7 @@ fn validsa009() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/009.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -214,7 +214,7 @@ fn validsa010() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/010.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -235,7 +235,7 @@ fn validsa011() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/011.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -262,7 +262,7 @@ fn validsa012() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/012.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -284,7 +284,7 @@ fn validsa013() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/013.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -305,7 +305,7 @@ fn validsa014() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/014.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -326,7 +326,7 @@ fn validsa015() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/015.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -347,7 +347,7 @@ fn validsa016() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/016.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -368,7 +368,7 @@ fn validsa017() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/017.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -389,7 +389,7 @@ fn validsa018() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/018.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -410,7 +410,7 @@ fn validsa019() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/019.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -431,7 +431,7 @@ fn validsa020() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/020.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -452,7 +452,7 @@ fn validsa021() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/021.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -473,7 +473,7 @@ fn validsa022() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/022.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -494,7 +494,7 @@ fn validsa023() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/023.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -515,7 +515,7 @@ fn validsa024() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/024.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -536,7 +536,7 @@ fn validsa025() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/025.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -557,7 +557,7 @@ fn validsa026() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/026.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -578,7 +578,7 @@ fn validsa027() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/027.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -599,7 +599,7 @@ fn validsa028() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/028.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -620,7 +620,7 @@ fn validsa029() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/029.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -641,7 +641,7 @@ fn validsa030() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/030.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -662,7 +662,7 @@ fn validsa031() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/031.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -683,7 +683,7 @@ fn validsa032() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/032.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -704,7 +704,7 @@ fn validsa033() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/033.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -725,7 +725,7 @@ fn validsa034() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/034.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -746,7 +746,7 @@ fn validsa035() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/035.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -767,7 +767,7 @@ fn validsa036() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/036.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -788,7 +788,7 @@ fn validsa017a() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/017a.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -809,7 +809,7 @@ fn validsa037() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/037.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -830,7 +830,7 @@ fn validsa038() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/038.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -851,7 +851,7 @@ fn validsa039() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/039.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -872,7 +872,7 @@ fn validsa040() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/040.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -893,7 +893,7 @@ fn validsa041() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/041.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -914,7 +914,7 @@ fn validsa042() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/042.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -935,7 +935,7 @@ fn validsa043() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/043.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -956,7 +956,7 @@ fn validsa044() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/044.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -977,7 +977,7 @@ fn validsa045() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/045.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -998,7 +998,7 @@ fn validsa046() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/046.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1019,7 +1019,7 @@ fn validsa047() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/047.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1040,7 +1040,7 @@ fn validsa048() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/048.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1061,7 +1061,7 @@ fn validsa049() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/049.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1082,7 +1082,7 @@ fn validsa050() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/050.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1103,7 +1103,7 @@ fn validsa051() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/051.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1124,7 +1124,7 @@ fn validsa052() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/052.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1145,7 +1145,7 @@ fn validsa053() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/053.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1166,7 +1166,7 @@ fn validsa054() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/054.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1187,7 +1187,7 @@ fn validsa055() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/055.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1208,7 +1208,7 @@ fn validsa056() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/056.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1229,7 +1229,7 @@ fn validsa057() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/057.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1250,7 +1250,7 @@ fn validsa058() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/058.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1271,7 +1271,7 @@ fn validsa059() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/059.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1292,7 +1292,7 @@ fn validsa060() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/060.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1313,7 +1313,7 @@ fn validsa061() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/061.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1334,7 +1334,7 @@ fn validsa062() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/062.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1355,7 +1355,7 @@ fn validsa063() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/063.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1376,7 +1376,7 @@ fn validsa064() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/064.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1397,7 +1397,7 @@ fn validsa065() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/065.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1418,7 +1418,7 @@ fn validsa066() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/066.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1439,7 +1439,7 @@ fn validsa067() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/067.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1460,7 +1460,7 @@ fn validsa068() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/068.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1481,7 +1481,7 @@ fn validsa069() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/069.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1502,7 +1502,7 @@ fn validsa070() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/070.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1523,7 +1523,7 @@ fn validsa071() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/071.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1544,7 +1544,7 @@ fn validsa072() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/072.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1565,7 +1565,7 @@ fn validsa073() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/073.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1586,7 +1586,7 @@ fn validsa074() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/074.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1607,7 +1607,7 @@ fn validsa075() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/075.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1628,7 +1628,7 @@ fn validsa076() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/076.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1649,7 +1649,7 @@ fn validsa077() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/077.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1670,7 +1670,7 @@ fn validsa078() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/078.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1691,7 +1691,7 @@ fn validsa079() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/079.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1712,7 +1712,7 @@ fn validsa080() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/080.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1733,7 +1733,7 @@ fn validsa081() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/081.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1754,7 +1754,7 @@ fn validsa082() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/082.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1775,7 +1775,7 @@ fn validsa083() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/083.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1796,7 +1796,7 @@ fn validsa084() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/084.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1817,7 +1817,7 @@ fn validsa085() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/085.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1838,7 +1838,7 @@ fn validsa086() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/086.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1859,7 +1859,7 @@ fn validsa087() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/087.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1880,7 +1880,7 @@ fn validsa088() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/088.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1901,7 +1901,7 @@ fn validsa089() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/089.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1922,7 +1922,7 @@ fn validsa090() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/090.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1943,7 +1943,7 @@ fn validsa091() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/091.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1964,7 +1964,7 @@ fn validsa092() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/092.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1985,7 +1985,7 @@ fn validsa093() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/093.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -2006,7 +2006,7 @@ fn validsa094() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/094.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -2027,7 +2027,7 @@ fn validsa095() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/095.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -2048,7 +2048,7 @@ fn validsa096() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/096.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -2069,7 +2069,7 @@ fn validsa097() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/097.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -2090,7 +2090,7 @@ fn validsa098() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/098.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -2111,7 +2111,7 @@ fn validsa099() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/099.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -2132,7 +2132,7 @@ fn validsa100() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/100.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -2153,7 +2153,7 @@ fn validsa101() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/101.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -2174,7 +2174,7 @@ fn validsa102() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/102.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -2195,7 +2195,7 @@ fn validsa103() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/103.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -2216,7 +2216,7 @@ fn validsa104() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/104.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -2237,7 +2237,7 @@ fn validsa105() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/105.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -2258,7 +2258,7 @@ fn validsa106() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/106.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -2279,7 +2279,7 @@ fn validsa107() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/107.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -2300,7 +2300,7 @@ fn validsa108() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/108.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -2321,7 +2321,7 @@ fn validsa109() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/109.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -2342,7 +2342,7 @@ fn validsa110() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/110.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -2363,7 +2363,7 @@ fn validsa111() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/111.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -2384,7 +2384,7 @@ fn validsa112() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/112.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -2405,7 +2405,7 @@ fn validsa113() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/113.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -2426,7 +2426,7 @@ fn validsa114() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/114.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -2447,7 +2447,7 @@ fn validsa115() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/115.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -2468,7 +2468,7 @@ fn validsa116() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/116.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -2489,7 +2489,7 @@ fn validsa117() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/117.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -2510,7 +2510,7 @@ fn validsa118() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/118.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -2531,7 +2531,7 @@ fn validsa119() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/119.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());

@@ -6,15 +6,15 @@ OASIS/NIST test cases
 
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::xml;
+use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 
 #[test]
 fn op11pass1() {
     /*
-        Conforming XML 1.0 Processors are permitted to ignore certain errors, or to report them at user option.
-        For this one, we are ignoring the error. If you want us to start reporting it, raise a ticket!
-     */
+       Conforming XML 1.0 Processors are permitted to ignore certain errors, or to report them at user option.
+       For this one, we are ignoring the error. If you want us to start reporting it, raise a ticket!
+    */
     /*
         Test ID:o-p11pass1
         Test URI:p11pass1.xml
@@ -28,7 +28,7 @@ fn op11pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p11pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());

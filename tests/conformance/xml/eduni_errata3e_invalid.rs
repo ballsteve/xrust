@@ -6,7 +6,7 @@ Richard Tobin's XML 1.0 3rd edition errata test suite 1 June 2006
 
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::xml;
+use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 
 #[test]
@@ -24,7 +24,7 @@ fn rmte3e06a() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06a.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     assert!(parseresult.is_err());
 }
@@ -44,7 +44,7 @@ fn rmte3e06b() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06b.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -65,7 +65,7 @@ fn rmte3e06c() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06c.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -86,7 +86,7 @@ fn rmte3e06d() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06d.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -108,7 +108,7 @@ fn rmte3e06e() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06e.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -130,7 +130,7 @@ fn rmte3e06f() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06f.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -152,7 +152,7 @@ fn rmte3e06g() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06g.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -174,7 +174,7 @@ fn rmte3e06h() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06h.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -195,7 +195,7 @@ fn rmte3e13() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E13.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());

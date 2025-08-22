@@ -7,7 +7,7 @@ OASIS/NIST test cases
 use crate::conformance::{dtdfileresolve, non_utf8_file_reader};
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::{xml, ParserConfig};
+use xrust::parser::{ParseError, ParserStateBuilder, StaticStateBuilder, xml};
 use xrust::trees::smite::RNode;
 
 #[test]
@@ -19,17 +19,22 @@ fn op01fail1() {
         Description:S cannot occur before the prolog
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/oasis/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p01fail1.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -50,7 +55,7 @@ fn op01fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p01fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -71,7 +76,7 @@ fn op01fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p01fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -92,7 +97,7 @@ fn op01fail4() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p01fail4.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -111,7 +116,7 @@ fn op02fail1() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail1.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -130,7 +135,7 @@ fn op02fail10() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail10.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -149,7 +154,7 @@ fn op02fail11() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail11.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -168,7 +173,7 @@ fn op02fail12() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail12.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -187,7 +192,7 @@ fn op02fail13() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail13.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -206,7 +211,7 @@ fn op02fail14() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail14.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -225,7 +230,7 @@ fn op02fail15() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail15.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -244,7 +249,7 @@ fn op02fail16() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail16.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -263,7 +268,7 @@ fn op02fail17() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail17.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -282,7 +287,7 @@ fn op02fail18() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail18.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -301,7 +306,7 @@ fn op02fail19() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail19.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -320,7 +325,7 @@ fn op02fail2() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail2.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -339,7 +344,7 @@ fn op02fail20() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail20.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -358,7 +363,7 @@ fn op02fail21() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail21.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -377,7 +382,7 @@ fn op02fail22() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail22.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -396,7 +401,7 @@ fn op02fail23() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail23.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -415,7 +420,7 @@ fn op02fail24() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail24.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -434,7 +439,7 @@ fn op02fail25() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail25.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -453,7 +458,7 @@ fn op02fail26() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail26.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -472,7 +477,7 @@ fn op02fail27() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail27.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -491,7 +496,7 @@ fn op02fail28() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail28.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -510,7 +515,7 @@ fn op02fail29() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail29.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -529,7 +534,7 @@ fn op02fail3() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail3.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -548,7 +553,7 @@ fn op02fail30() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail30.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -567,7 +572,7 @@ fn op02fail31() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail31.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -586,7 +591,7 @@ fn op02fail4() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail4.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -605,7 +610,7 @@ fn op02fail5() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail5.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -624,7 +629,7 @@ fn op02fail6() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail6.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -643,7 +648,7 @@ fn op02fail7() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail7.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -662,7 +667,7 @@ fn op02fail8() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail8.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -681,7 +686,7 @@ fn op02fail9() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail9.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -702,7 +707,7 @@ fn op03fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -723,7 +728,7 @@ fn op03fail10() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail10.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -744,7 +749,7 @@ fn op03fail11() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail11.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -765,7 +770,7 @@ fn op03fail12() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail12.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -786,7 +791,7 @@ fn op03fail13() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail13.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -807,7 +812,7 @@ fn op03fail14() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail14.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -828,7 +833,7 @@ fn op03fail15() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail15.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -849,7 +854,7 @@ fn op03fail16() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail16.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -870,7 +875,7 @@ fn op03fail17() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail17.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -891,7 +896,7 @@ fn op03fail18() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail18.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -912,7 +917,7 @@ fn op03fail19() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail19.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -933,7 +938,7 @@ fn op03fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -954,7 +959,7 @@ fn op03fail20() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail20.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -975,7 +980,7 @@ fn op03fail21() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail21.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -996,7 +1001,7 @@ fn op03fail22() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail22.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1017,7 +1022,7 @@ fn op03fail23() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail23.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1038,7 +1043,7 @@ fn op03fail24() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail24.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1059,7 +1064,7 @@ fn op03fail25() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail25.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1080,7 +1085,7 @@ fn op03fail26() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail26.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1101,7 +1106,7 @@ fn op03fail27() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail27.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1122,7 +1127,7 @@ fn op03fail28() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail28.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1143,7 +1148,7 @@ fn op03fail29() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail29.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1164,7 +1169,7 @@ fn op03fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1185,7 +1190,7 @@ fn op03fail4() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail4.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1206,7 +1211,7 @@ fn op03fail5() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail5.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1227,7 +1232,7 @@ fn op03fail7() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail7.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1248,7 +1253,7 @@ fn op03fail8() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail8.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1269,7 +1274,7 @@ fn op03fail9() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail9.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1290,7 +1295,7 @@ fn op04fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p04fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1311,7 +1316,7 @@ fn op04fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p04fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1332,7 +1337,7 @@ fn op04fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p04fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1353,7 +1358,7 @@ fn op05fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p05fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1374,7 +1379,7 @@ fn op05fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p05fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1395,7 +1400,7 @@ fn op05fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p05fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1416,7 +1421,7 @@ fn op05fail4() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p05fail4.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1437,7 +1442,7 @@ fn op05fail5() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p05fail5.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1452,17 +1457,22 @@ fn op09fail1() {
         Description:EntityValue excludes '%'
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/oasis/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p09fail1.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -1483,7 +1493,7 @@ fn op09fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p09fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1504,7 +1514,7 @@ fn op09fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p09fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1525,7 +1535,7 @@ fn op09fail4() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p09fail4.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1546,7 +1556,7 @@ fn op09fail5() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p09fail5.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1567,7 +1577,7 @@ fn op10fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p10fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1588,7 +1598,7 @@ fn op10fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p10fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1609,7 +1619,7 @@ fn op10fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p10fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1630,7 +1640,7 @@ fn op11fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p11fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1651,7 +1661,7 @@ fn op11fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p11fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1672,7 +1682,7 @@ fn op12fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p12fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1693,7 +1703,7 @@ fn op12fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p12fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1714,7 +1724,7 @@ fn op12fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p12fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1735,7 +1745,7 @@ fn op12fail4() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p12fail4.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1756,7 +1766,7 @@ fn op12fail5() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p12fail5.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1777,7 +1787,7 @@ fn op12fail6() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p12fail6.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1798,7 +1808,7 @@ fn op12fail7() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p12fail7.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1819,7 +1829,7 @@ fn op14fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p14fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1840,7 +1850,7 @@ fn op14fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p14fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1861,7 +1871,7 @@ fn op14fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p14fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1882,7 +1892,7 @@ fn op15fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p15fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1903,7 +1913,7 @@ fn op15fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p15fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1924,7 +1934,7 @@ fn op15fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p15fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1945,7 +1955,7 @@ fn op16fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p16fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1966,7 +1976,7 @@ fn op16fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p16fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1987,7 +1997,7 @@ fn op16fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p16fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2008,7 +2018,7 @@ fn op18fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p18fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2029,7 +2039,7 @@ fn op18fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p18fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2050,7 +2060,7 @@ fn op18fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p18fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2071,7 +2081,7 @@ fn op22fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p22fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2092,7 +2102,7 @@ fn op22fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p22fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2113,7 +2123,7 @@ fn op23fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p23fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2134,7 +2144,7 @@ fn op23fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p23fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2155,7 +2165,7 @@ fn op23fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p23fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2176,7 +2186,7 @@ fn op23fail4() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p23fail4.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2197,7 +2207,7 @@ fn op23fail5() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p23fail5.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2218,7 +2228,7 @@ fn op24fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p24fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2239,7 +2249,7 @@ fn op24fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p24fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2260,7 +2270,7 @@ fn op25fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p25fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2281,7 +2291,7 @@ fn op26fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p26fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2302,7 +2312,7 @@ fn op26fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p26fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2323,7 +2333,7 @@ fn op27fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p27fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2344,7 +2354,7 @@ fn op28fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p28fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2365,7 +2375,7 @@ fn op29fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p29fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2380,17 +2390,22 @@ fn op30fail1() {
         Description:An XML declaration is not the same as a TextDecl
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/oasis/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p30fail1.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -2405,17 +2420,22 @@ fn op31fail1() {
         Description:external subset excludes doctypedecl
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/oasis/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p31fail1.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -2436,7 +2456,7 @@ fn op32fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p32fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2457,7 +2477,7 @@ fn op32fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p32fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2478,7 +2498,7 @@ fn op32fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p32fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2499,7 +2519,7 @@ fn op32fail4() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p32fail4.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2520,7 +2540,7 @@ fn op32fail5() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p32fail5.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2541,7 +2561,7 @@ fn op39fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p39fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2562,7 +2582,7 @@ fn op39fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p39fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2583,7 +2603,7 @@ fn op39fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p39fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2604,7 +2624,7 @@ fn op39fail4() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p39fail4.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2625,7 +2645,7 @@ fn op39fail5() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p39fail5.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2646,7 +2666,7 @@ fn op40fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p40fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2667,7 +2687,7 @@ fn op40fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p40fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2688,7 +2708,7 @@ fn op40fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p40fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2709,7 +2729,7 @@ fn op40fail4() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p40fail4.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2730,7 +2750,7 @@ fn op41fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p41fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2751,7 +2771,7 @@ fn op41fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p41fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2772,7 +2792,7 @@ fn op41fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p41fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2793,7 +2813,7 @@ fn op42fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p42fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2814,7 +2834,7 @@ fn op42fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p42fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2835,7 +2855,7 @@ fn op42fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p42fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2856,7 +2876,7 @@ fn op43fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p43fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2877,7 +2897,7 @@ fn op43fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p43fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2898,7 +2918,7 @@ fn op43fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p43fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2919,7 +2939,7 @@ fn op44fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p44fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2940,7 +2960,7 @@ fn op44fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p44fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2961,7 +2981,7 @@ fn op44fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p44fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -2982,7 +3002,7 @@ fn op44fail4() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p44fail4.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3003,7 +3023,7 @@ fn op44fail5() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p44fail5.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3024,7 +3044,7 @@ fn op45fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p45fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3045,7 +3065,7 @@ fn op45fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p45fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3066,7 +3086,7 @@ fn op45fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p45fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3087,7 +3107,7 @@ fn op45fail4() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p45fail4.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3108,7 +3128,7 @@ fn op46fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p46fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3129,7 +3149,7 @@ fn op46fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p46fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3150,7 +3170,7 @@ fn op46fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p46fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3171,7 +3191,7 @@ fn op46fail4() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p46fail4.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3192,7 +3212,7 @@ fn op46fail5() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p46fail5.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3213,7 +3233,7 @@ fn op46fail6() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p46fail6.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3234,7 +3254,7 @@ fn op47fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p47fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3255,7 +3275,7 @@ fn op47fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p47fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3276,7 +3296,7 @@ fn op47fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p47fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3297,7 +3317,7 @@ fn op47fail4() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p47fail4.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3318,7 +3338,7 @@ fn op48fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p48fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3339,7 +3359,7 @@ fn op48fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p48fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3360,7 +3380,7 @@ fn op49fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p49fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3381,7 +3401,7 @@ fn op50fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p50fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3402,7 +3422,7 @@ fn op51fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p51fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3423,7 +3443,7 @@ fn op51fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p51fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3444,7 +3464,7 @@ fn op51fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p51fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3465,7 +3485,7 @@ fn op51fail4() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p51fail4.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3486,7 +3506,7 @@ fn op51fail5() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p51fail5.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3507,7 +3527,7 @@ fn op51fail6() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p51fail6.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3528,7 +3548,7 @@ fn op51fail7() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p51fail7.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3549,7 +3569,7 @@ fn op52fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p52fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3570,7 +3590,7 @@ fn op52fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p52fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3591,7 +3611,7 @@ fn op53fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p53fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3612,7 +3632,7 @@ fn op53fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p53fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3633,7 +3653,7 @@ fn op53fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p53fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3654,7 +3674,7 @@ fn op53fail4() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p53fail4.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3675,7 +3695,7 @@ fn op53fail5() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p53fail5.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3696,7 +3716,7 @@ fn op54fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p54fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3717,7 +3737,7 @@ fn op55fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p55fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3738,7 +3758,7 @@ fn op56fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p56fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3759,7 +3779,7 @@ fn op56fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p56fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3780,7 +3800,7 @@ fn op56fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p56fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3801,7 +3821,7 @@ fn op56fail4() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p56fail4.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3822,7 +3842,7 @@ fn op56fail5() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p56fail5.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3843,7 +3863,7 @@ fn op57fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p57fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3864,7 +3884,7 @@ fn op58fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p58fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3885,7 +3905,7 @@ fn op58fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p58fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3906,7 +3926,7 @@ fn op58fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p58fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3927,7 +3947,7 @@ fn op58fail4() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p58fail4.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3948,7 +3968,7 @@ fn op58fail5() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p58fail5.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3969,7 +3989,7 @@ fn op58fail6() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p58fail6.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -3990,7 +4010,7 @@ fn op58fail7() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p58fail7.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4011,7 +4031,7 @@ fn op58fail8() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p58fail8.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4032,7 +4052,7 @@ fn op59fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p59fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4053,7 +4073,7 @@ fn op59fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p59fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4074,7 +4094,7 @@ fn op59fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p59fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4095,7 +4115,7 @@ fn op60fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p60fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4116,7 +4136,7 @@ fn op60fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p60fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4137,7 +4157,7 @@ fn op60fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p60fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4158,7 +4178,7 @@ fn op60fail4() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p60fail4.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4179,7 +4199,7 @@ fn op60fail5() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p60fail5.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4194,17 +4214,22 @@ fn op61fail1() {
         Description:no other types, including TEMP, which is valid in SGML
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/oasis/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p61fail1.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -4219,17 +4244,22 @@ fn op62fail1() {
         Description:INCLUDE must be upper case
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/oasis/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p62fail1.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -4244,17 +4274,22 @@ fn op62fail2() {
         Description:no spaces in terminating delimiter
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/oasis/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p62fail2.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -4269,17 +4304,22 @@ fn op63fail1() {
         Description:IGNORE must be upper case
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/oasis/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p63fail1.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -4294,17 +4334,22 @@ fn op63fail2() {
         Description:delimiters must be balanced
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/oasis/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p63fail2.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -4319,17 +4364,22 @@ fn op64fail1() {
         Description:section delimiters must balance
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/oasis/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p64fail1.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -4344,17 +4394,22 @@ fn op64fail2() {
         Description:section delimiters must balance
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/oasis/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p64fail2.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -4375,7 +4430,7 @@ fn op66fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p66fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4396,7 +4451,7 @@ fn op66fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p66fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4417,7 +4472,7 @@ fn op66fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p66fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4438,7 +4493,7 @@ fn op66fail4() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p66fail4.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4459,7 +4514,7 @@ fn op66fail5() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p66fail5.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4480,7 +4535,7 @@ fn op66fail6() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p66fail6.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4501,7 +4556,7 @@ fn op68fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p68fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4522,7 +4577,7 @@ fn op68fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p68fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4543,7 +4598,7 @@ fn op68fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p68fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4564,7 +4619,7 @@ fn op69fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p69fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4585,7 +4640,7 @@ fn op69fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p69fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4606,7 +4661,7 @@ fn op69fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p69fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4627,7 +4682,7 @@ fn op70fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p70fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4648,7 +4703,7 @@ fn op71fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p71fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4669,7 +4724,7 @@ fn op71fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p71fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4690,7 +4745,7 @@ fn op71fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p71fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4711,7 +4766,7 @@ fn op71fail4() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p71fail4.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4732,7 +4787,7 @@ fn op72fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p72fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4753,7 +4808,7 @@ fn op72fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p72fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4774,7 +4829,7 @@ fn op72fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p72fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4795,7 +4850,7 @@ fn op72fail4() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p72fail4.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4816,7 +4871,7 @@ fn op73fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p73fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4837,7 +4892,7 @@ fn op73fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p73fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4858,7 +4913,7 @@ fn op73fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p73fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4879,7 +4934,7 @@ fn op73fail4() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p73fail4.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4900,7 +4955,7 @@ fn op73fail5() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p73fail5.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4921,7 +4976,7 @@ fn op74fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p74fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4942,7 +4997,7 @@ fn op74fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p74fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4963,7 +5018,7 @@ fn op74fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p74fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -4984,7 +5039,7 @@ fn op75fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p75fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5005,7 +5060,7 @@ fn op75fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p75fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5026,7 +5081,7 @@ fn op75fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p75fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5047,7 +5102,7 @@ fn op75fail4() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p75fail4.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5068,7 +5123,7 @@ fn op75fail5() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p75fail5.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5089,7 +5144,7 @@ fn op75fail6() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p75fail6.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5110,7 +5165,7 @@ fn op76fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p76fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5131,7 +5186,7 @@ fn op76fail2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p76fail2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5152,7 +5207,7 @@ fn op76fail3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p76fail3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -5173,7 +5228,7 @@ fn op76fail4() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p76fail4.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());

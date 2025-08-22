@@ -6,7 +6,7 @@ Sun Microsystems test cases
 use crate::conformance::dtdfileresolve;
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::{xml, ParserConfig};
+use xrust::parser::{ParseError, ParserStateBuilder, StaticStateBuilder, xml};
 use xrust::trees::smite::RNode;
 
 #[test]
@@ -24,7 +24,7 @@ fn notwfsa03() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/not-sa03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -45,7 +45,7 @@ fn attlist01() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -66,7 +66,7 @@ fn attlist02() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -87,7 +87,7 @@ fn attlist03() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -108,7 +108,7 @@ fn attlist04() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -129,7 +129,7 @@ fn attlist05() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -150,7 +150,7 @@ fn attlist06() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -171,7 +171,7 @@ fn attlist07() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -192,7 +192,7 @@ fn attlist08() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -213,7 +213,7 @@ fn attlist09() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist09.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -234,7 +234,7 @@ fn attlist10() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist10.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -255,7 +255,7 @@ fn attlist11() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist11.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -270,17 +270,22 @@ fn cond01() {
         Description:Only INCLUDE and IGNORE are conditional section keywords
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/sun/not-wf/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/sun/not-wf/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/cond01.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -295,17 +300,22 @@ fn cond02() {
         Description:Must have keyword in conditional sections
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/sun/not-wf/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/sun/not-wf/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/cond02.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -326,7 +336,7 @@ fn content01() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/content01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -347,7 +357,7 @@ fn content02() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/content02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -368,7 +378,7 @@ fn content03() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/content03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -389,7 +399,7 @@ fn decl01() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/decl01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -410,7 +420,7 @@ fn nwfdtd00() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd00.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -431,7 +441,7 @@ fn nwfdtd01() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -452,7 +462,7 @@ fn dtd02() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -473,7 +483,7 @@ fn dtd03() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -494,7 +504,7 @@ fn dtd04() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -515,7 +525,7 @@ fn dtd05() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -530,17 +540,22 @@ fn dtd07() {
         Description:        Text declarations (which optionally begin any external entity)        are required to have "encoding=...".
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/sun/not-wf/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/sun/not-wf/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd07.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -561,7 +576,7 @@ fn element00() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/element00.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -582,7 +597,7 @@ fn element01() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/element01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -603,7 +618,7 @@ fn element02() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/element02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -624,7 +639,7 @@ fn element03() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/element03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -645,7 +660,7 @@ fn element04() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/element04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -666,7 +681,7 @@ fn encoding01() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -687,7 +702,7 @@ fn encoding02() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -708,7 +723,7 @@ fn encoding03() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -729,7 +744,7 @@ fn encoding04() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -750,7 +765,7 @@ fn encoding05() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -771,7 +786,7 @@ fn encoding06() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -792,7 +807,7 @@ fn encoding07() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -813,7 +828,7 @@ fn pi() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pi.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -834,7 +849,7 @@ fn pubid01() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pubid01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -855,7 +870,7 @@ fn pubid02() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pubid02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -876,7 +891,7 @@ fn pubid03() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pubid03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -897,7 +912,7 @@ fn pubid04() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pubid04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -918,7 +933,7 @@ fn pubid05() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pubid05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -939,7 +954,7 @@ fn sgml01() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -960,7 +975,7 @@ fn sgml02() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -981,7 +996,7 @@ fn sgml03() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1002,7 +1017,7 @@ fn sgml04() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1023,7 +1038,7 @@ fn sgml05() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1044,7 +1059,7 @@ fn sgml06() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1065,7 +1080,7 @@ fn sgml07() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1086,7 +1101,7 @@ fn sgml08() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1107,7 +1122,7 @@ fn sgml09() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml09.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1128,7 +1143,7 @@ fn sgml10() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml10.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1149,7 +1164,7 @@ fn sgml11() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml11.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1170,7 +1185,7 @@ fn sgml12() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml12.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -1191,7 +1206,7 @@ fn sgml13() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml13.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());

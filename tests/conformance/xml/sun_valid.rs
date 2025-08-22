@@ -1,7 +1,7 @@
 use crate::conformance::dtdfileresolve;
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::{xml, ParserConfig};
+use xrust::parser::{ParseError, ParserStateBuilder, StaticStateBuilder, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
@@ -21,7 +21,7 @@ fn pe01() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/pe01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -29,7 +29,7 @@ fn pe01() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -58,7 +58,7 @@ fn dtd00() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/dtd00.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -66,7 +66,7 @@ fn dtd00() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/dtd00.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -95,7 +95,7 @@ fn dtd01() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/dtd01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -103,7 +103,7 @@ fn dtd01() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/dtd01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -132,7 +132,7 @@ fn element() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/element.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -140,7 +140,7 @@ fn element() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/element.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -167,7 +167,7 @@ fn ext01() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/ext01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -175,7 +175,7 @@ fn ext01() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/ext01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -205,7 +205,7 @@ fn ext02() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/ext02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -213,7 +213,7 @@ fn ext02() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/ext02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -237,17 +237,22 @@ fn notsa01() {
         Description:A non-standalone document is valid if declared as such.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/sun/valid/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/sun/valid/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/not-sa01.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -255,7 +260,7 @@ fn notsa01() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/not-sa01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -285,7 +290,7 @@ fn notsa02() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/not-sa02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -293,7 +298,7 @@ fn notsa02() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/not-sa02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -323,7 +328,7 @@ fn notsa03() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/not-sa03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -331,7 +336,7 @@ fn notsa03() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/not-sa03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -361,7 +366,7 @@ fn notsa04() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/not-sa04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -369,7 +374,7 @@ fn notsa04() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/not-sa04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -399,7 +404,7 @@ fn notation01() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/notation01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -407,7 +412,7 @@ fn notation01() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/notation01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -437,7 +442,7 @@ fn optional() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/optional.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -445,7 +450,7 @@ fn optional() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/optional.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -474,7 +479,7 @@ fn required00() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/required00.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -482,7 +487,7 @@ fn required00() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/required00.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -511,7 +516,7 @@ fn sa01() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/sa01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -519,7 +524,7 @@ fn sa01() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/sa01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -549,7 +554,7 @@ fn sa02() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/sa02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -557,7 +562,7 @@ fn sa02() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/sa02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -587,7 +592,7 @@ fn sa03() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/sa03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -595,7 +600,7 @@ fn sa03() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/sa03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -625,7 +630,7 @@ fn sa04() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/sa04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -633,7 +638,7 @@ fn sa04() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/sa04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -657,17 +662,22 @@ fn sa05() {
         Description:Like sa01 but this document is standalone since it has no optional whitespace.On output, requires notations to be correctly reported.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/sun/valid/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/sun/valid/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/sa05.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -675,7 +685,7 @@ fn sa05() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/sa05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -705,7 +715,7 @@ fn vsgml01() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/sgml01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -713,7 +723,7 @@ fn vsgml01() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/sgml01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -742,7 +752,7 @@ fn vlang01() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/v-lang01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -750,7 +760,7 @@ fn vlang01() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/v-lang01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -779,7 +789,7 @@ fn vlang02() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/v-lang02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -787,7 +797,7 @@ fn vlang02() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/v-lang02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -816,7 +826,7 @@ fn vlang03() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/v-lang03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -824,7 +834,7 @@ fn vlang03() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/v-lang03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -853,7 +863,7 @@ fn vlang04() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/v-lang04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -861,7 +871,7 @@ fn vlang04() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/v-lang04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -890,7 +900,7 @@ fn vlang05() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/v-lang05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -898,7 +908,7 @@ fn vlang05() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/v-lang05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -927,7 +937,7 @@ fn vlang06() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/v-lang06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -935,7 +945,7 @@ fn vlang06() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/v-lang06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -965,7 +975,7 @@ fn vpe00() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/pe00.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -973,7 +983,7 @@ fn vpe00() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/pe00.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1002,7 +1012,7 @@ fn vpe03() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/pe03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -1010,7 +1020,7 @@ fn vpe03() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/pe03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1037,7 +1047,7 @@ fn vpe02() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/pe02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -1045,7 +1055,7 @@ fn vpe02() {
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/pe02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());

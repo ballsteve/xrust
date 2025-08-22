@@ -6,7 +6,7 @@ IBM test cases
 
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::xml;
+use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 
 #[test]
@@ -25,7 +25,7 @@ fn ibminvalid_p28ibm28i01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P28/ibm28i01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -46,7 +46,7 @@ fn ibminvalid_p32ibm32i01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P32/ibm32i01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -67,7 +67,7 @@ fn ibminvalid_p32ibm32i03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P32/ibm32i03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -88,7 +88,7 @@ fn ibminvalid_p32ibm32i04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P32/ibm32i04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -110,7 +110,7 @@ fn ibminvalid_p39ibm39i01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P39/ibm39i01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -132,7 +132,7 @@ fn ibminvalid_p39ibm39i02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P39/ibm39i02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -154,7 +154,7 @@ fn ibminvalid_p39ibm39i03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P39/ibm39i03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -176,7 +176,7 @@ fn ibminvalid_p39ibm39i04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P39/ibm39i04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -198,7 +198,7 @@ fn ibminvalid_p41ibm41i01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P41/ibm41i01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -220,7 +220,7 @@ fn ibminvalid_p41ibm41i02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P41/ibm41i02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -242,7 +242,7 @@ fn ibminvalid_p45ibm45i01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P45/ibm45i01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -263,7 +263,7 @@ fn ibminvalid_p49ibm49i01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P49/ibm49i01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -284,7 +284,7 @@ fn ibminvalid_p50ibm50i01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P50/ibm50i01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -305,7 +305,7 @@ fn ibminvalid_p51ibm51i01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P51/ibm51i01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -327,7 +327,7 @@ fn ibminvalid_p51ibm51i03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P51/ibm51i03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -349,7 +349,7 @@ fn ibminvalid_p56ibm56i01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -371,7 +371,7 @@ fn ibminvalid_p56ibm56i02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -393,7 +393,7 @@ fn ibminvalid_p56ibm56i03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -415,7 +415,7 @@ fn ibminvalid_p56ibm56i05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -437,7 +437,7 @@ fn ibminvalid_p56ibm56i06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -458,7 +458,7 @@ fn ibminvalid_p56ibm56i07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -479,7 +479,7 @@ fn ibminvalid_p56ibm56i08xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -500,7 +500,7 @@ fn ibminvalid_p56ibm56i09xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i09.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -521,7 +521,7 @@ fn ibminvalid_p56ibm56i10xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i10.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -542,7 +542,7 @@ fn ibminvalid_p56ibm56i11xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i11.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -563,7 +563,7 @@ fn ibminvalid_p56ibm56i12xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i12.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -584,7 +584,7 @@ fn ibminvalid_p56ibm56i13xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i13.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -605,7 +605,7 @@ fn ibminvalid_p56ibm56i14xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i14.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -626,7 +626,7 @@ fn ibminvalid_p56ibm56i15xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i15.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -647,7 +647,7 @@ fn ibminvalid_p56ibm56i16xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i16.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -669,7 +669,7 @@ fn ibminvalid_p56ibm56i17xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i17.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -691,7 +691,7 @@ fn ibminvalid_p56ibm56i18xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i18.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -713,7 +713,7 @@ fn ibminvalid_p58ibm58i01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P58/ibm58i01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -735,7 +735,7 @@ fn ibminvalid_p58ibm58i02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P58/ibm58i02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -757,7 +757,7 @@ fn ibminvalid_p59ibm59i01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P59/ibm59i01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -779,7 +779,7 @@ fn ibminvalid_p60ibm60i01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P60/ibm60i01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -801,7 +801,7 @@ fn ibminvalid_p60ibm60i02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P60/ibm60i02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -823,7 +823,7 @@ fn ibminvalid_p60ibm60i03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P60/ibm60i03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -845,7 +845,7 @@ fn ibminvalid_p60ibm60i04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P60/ibm60i04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -866,7 +866,7 @@ fn ibminvalid_p76ibm76i01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P76/ibm76i01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
