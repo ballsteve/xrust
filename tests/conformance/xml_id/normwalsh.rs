@@ -1,3 +1,4 @@
+use qualname::{NamespaceMap, NamespacePrefix};
 use std::fs;
 use xrust::item::{Node, NodeType};
 use xrust::parser::{ParseError, xml};
@@ -19,12 +20,16 @@ fn normal_001() {
         Expected:xml:id on para is an ID (te st)
     */
     let testxml = RNode::new_document();
+    let nm = NamespaceMap::new();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml_id/normwalsh/001_normalize.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        Some(|p: &NamespacePrefix| {
+            nm.namespace_uri(&Some(p.clone()))
+                .ok_or(ParseError::MissingNameSpace)
+        }),
     );
 
     assert!(parseresult.is_ok());
@@ -50,12 +55,16 @@ fn undecl_001() {
         Expected:xml:id on para is an ID (test)
     */
     let testxml = RNode::new_document();
+    let nm = NamespaceMap::new();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml_id/normwalsh/002_undecl.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        Some(|p: &NamespacePrefix| {
+            nm.namespace_uri(&Some(p.clone()))
+                .ok_or(ParseError::MissingNameSpace)
+        }),
     );
 
     assert!(parseresult.is_ok());
@@ -81,12 +90,16 @@ fn declar_001() {
         Expected:xml:id on para is an ID (id)
     */
     let testxml = RNode::new_document();
+    let nm = NamespaceMap::new();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml_id/normwalsh/003_dtd.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        Some(|p: &NamespacePrefix| {
+            nm.namespace_uri(&Some(p.clone()))
+                .ok_or(ParseError::MissingNameSpace)
+        }),
     );
 
     assert!(parseresult.is_ok());
@@ -112,12 +125,16 @@ fn declar_002() {
         Expected:xml:id on para is an ID (id)
     */
     let testxml = RNode::new_document();
+    let nm = NamespaceMap::new();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml_id/normwalsh/004_schema.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        Some(|p: &NamespacePrefix| {
+            nm.namespace_uri(&Some(p.clone()))
+                .ok_or(ParseError::MissingNameSpace)
+        }),
     );
 
     assert!(parseresult.is_ok());
@@ -143,12 +160,16 @@ fn baddcl_001() {
         Expected:Must generate invalid declared type error.
     */
     let testxml = RNode::new_document();
+    let nm = NamespaceMap::new();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml_id/normwalsh/005_errdtdbad.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        Some(|p: &NamespacePrefix| {
+            nm.namespace_uri(&Some(p.clone()))
+                .ok_or(ParseError::MissingNameSpace)
+        }),
     );
 
     assert!(parseresult.is_err());
@@ -163,12 +184,16 @@ fn dupdup_001() {
         Expected:Should generate duplicate ID error; may report both elements.
     */
     let testxml = RNode::new_document();
+    let nm = NamespaceMap::new();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml_id/normwalsh/005_errdup.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        Some(|p: &NamespacePrefix| {
+            nm.namespace_uri(&Some(p.clone()))
+                .ok_or(ParseError::MissingNameSpace)
+        }),
     );
 
     assert!(parseresult.is_err());
@@ -187,12 +212,16 @@ fn baddcl_002() {
     /* We need to support XSD to properly test this */
 
     let testxml = RNode::new_document();
+    let nm = NamespaceMap::new();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml_id/normwalsh/006_errschemabad.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        Some(|p: &NamespacePrefix| {
+            nm.namespace_uri(&Some(p.clone()))
+                .ok_or(ParseError::MissingNameSpace)
+        }),
     );
 
     assert!(parseresult.is_err());
@@ -207,12 +236,16 @@ fn dupdup_002() {
         Expected:Should generate duplicate ID error; may report both elements.
     */
     let testxml = RNode::new_document();
+    let nm = NamespaceMap::new();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml_id/normwalsh/007_errdup.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        Some(|p: &NamespacePrefix| {
+            nm.namespace_uri(&Some(p.clone()))
+                .ok_or(ParseError::MissingNameSpace)
+        }),
     );
 
     assert!(parseresult.is_err());
@@ -227,12 +260,16 @@ fn okchar_001() {
         Expected:xml:id on p is an ID (anid)
     */
     let testxml = RNode::new_document();
+    let nm = NamespaceMap::new();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml_id/normwalsh/008_ok10.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        Some(|p: &NamespacePrefix| {
+            nm.namespace_uri(&Some(p.clone()))
+                .ok_or(ParseError::MissingNameSpace)
+        }),
     );
 
     assert!(parseresult.is_ok());
@@ -259,12 +296,16 @@ fn okchar_002() {
         Note: Will fail if an XML 1.0 processor is used.
     */
     let testxml = RNode::new_document();
+    let nm = NamespaceMap::new();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml_id/normwalsh/009_ok11.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        Some(|p: &NamespacePrefix| {
+            nm.namespace_uri(&Some(p.clone()))
+                .ok_or(ParseError::MissingNameSpace)
+        }),
     );
 
     assert!(parseresult.is_ok());
@@ -290,12 +331,16 @@ fn xref_001() {
         Expected:id on para is an ID (id1) xml:id on para is an ID (id2)
     */
     let testxml = RNode::new_document();
+    let nm = NamespaceMap::new();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml_id/normwalsh/010_okxref.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        Some(|p: &NamespacePrefix| {
+            nm.namespace_uri(&Some(p.clone()))
+                .ok_or(ParseError::MissingNameSpace)
+        }),
     );
 
     assert!(parseresult.is_ok());
@@ -310,12 +355,16 @@ fn normal_002() {
         Expected:xml:id on p is an ID (anid)
     */
     let testxml = RNode::new_document();
+    let nm = NamespaceMap::new();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml_id/normwalsh/011_oknormalize.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        Some(|p: &NamespacePrefix| {
+            nm.namespace_uri(&Some(p.clone()))
+                .ok_or(ParseError::MissingNameSpace)
+        }),
     );
 
     assert!(parseresult.is_ok());
@@ -342,12 +391,16 @@ fn normal_003() {
         Expected:xml:id on para is an ID (&#x0D; p2)
     */
     let testxml = RNode::new_document();
+    let nm = NamespaceMap::new();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml_id/normwalsh/012_value.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        Some(|p: &NamespacePrefix| {
+            nm.namespace_uri(&Some(p.clone()))
+                .ok_or(ParseError::MissingNameSpace)
+        }),
     );
 
     assert!(parseresult.is_ok());
