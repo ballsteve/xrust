@@ -10,7 +10,7 @@ Pronounced "crust".
 
 ## Git Repository
 
-The canonical Git repository for xrust is now on Gitlab under the World / Rust group - [Gitlab repo](https://gitlab.gnome.org/World/Rust/markup-rs/xrust]).
+The canonical Git repository for xrust is now on Gitlab under the World / Rust group - [Gitlab repo](https://gitlab.gnome.org/World/Rust/markup-rs/xrust).
 
 It is planned to mirror this Github repo with the Gitlab repo, but that hasn't happened yet. Until mirroring is setup, we'll keep an eye on issues in Github and transfer them to Gitlab as required.
 
