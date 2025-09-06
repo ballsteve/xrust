@@ -8,6 +8,14 @@ XPath, XQuery, and XSLT for Rust
 
 Pronounced "crust".
 
+## Git Repository
+
+The canonical Git repository for xrust is now on Gitlab under the World / Rust group - [Gitlab repo](https://gitlab.gnome.org/World/Rust/markup-rs/xrust]).
+
+It is planned to mirror this Github repo with the Gitlab repo, but that hasn't happened yet. Until mirroring is setup, we'll keep an eye on issues in Github and transfer them to Gitlab as required.
+
+## Project Goals
+
 The goal of this project is to implement [XPath 3.1](https://www.w3.org/TR/xpath-31/), [XQuery 3.1](https://www.w3.org/TR/xquery-31/) and [XSLT 3.0](http://www.w3.org/TR/xslt-30/) in Rust.
 Also included is an XML parser, using a parser combinator inspired by Nom.
 
@@ -15,12 +23,6 @@ Currently, the project has achieved the functional equivalent of XPath v1.0 and 
 However, it is not *compliant* with v1.0. This is because it implements the v3.0 data model.
 
 In addition to the (rudimentary) implementation of the [XQuery and XPath Data Model 3.1](https://www.w3.org/TR/xpath-datamodel-31/) data model, a few other features of XPath and XSLT v2.0/v3.0 have been implemented, such as FLWR expressions, grouping (i.e. xsl:for-each-group), and user-defined functions.
-
-## Git Repository
-
-The canonical Git repository for xrust is now Gitlab - [Gitlab repo](https://gitlab.gnome.org/balls/xrust]). It is planned to mirror this Github repo with the Gitlab repo, but that hasn't happened yet.
-
-Until mirroring is setup, we'll keep an eye on issues in Github and transfer them to Gitlab as required.
 
 ## Design
 
