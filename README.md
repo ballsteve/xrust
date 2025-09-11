@@ -84,6 +84,7 @@ Status of [standards implementation](https://github.com/ballsteve/xrust/blob/mai
 
 | Releases      | Notes                                                                                    |
 |---------------|------------------------------------------------------------------------------------------|
+| Version 1.2.5 | Fixed disable-output-escaping. |
 | Version 1.2.4 | Improved performance of DTD validation. Bug fixes for ANT declaration and white space handling. |
 | Version 1.2.3 | Fixed handling of '<' character in attribute value.                                      |
 | Version 1.2.2 | Fixed node() kind test. Fixed union in Pattern. Fixed relative path in Pattern.          |

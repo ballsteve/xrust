@@ -4,9 +4,10 @@ use crate::parser::combinators::many::many0nsreset;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::tag;
-use crate::parser::combinators::tuple::{tuple10, tuple2, tuple5};
+use crate::parser::combinators::tuple::{tuple2, tuple5, tuple10};
 use crate::parser::combinators::wellformed::wellformed;
 use crate::parser::combinators::whitespace::whitespace0;
+use crate::parser::common::is_ncnamechar;
 use crate::parser::xml::attribute::attributes;
 use crate::parser::xml::chardata::chardata;
 use crate::parser::xml::misc::{comment, processing_instruction};
@@ -14,10 +15,10 @@ use crate::parser::xml::qname::qualname;
 use crate::parser::xml::reference::reference;
 use crate::parser::{ParseError, ParseInput};
 use crate::qname::QualifiedName;
+use crate::value::{ID, IDREF, Value};
+use crate::xdmerror::{Error, ErrorKind};
 use crate::xmldecl::{AttType, DefaultDecl};
-use crate::{Error, ErrorKind, Value};
 use std::rc::Rc;
-use crate::parser::common::is_ncnamechar;
 
 // Element ::= EmptyElemTag | STag content ETag
 pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), ParseError>
@@ -108,13 +109,17 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                             && attname.localname_to_string() == "id"
                         {
                             av = attval.trim().replace("  ", " ");
-                            a = d
-                                .new_attribute(Rc::new(attname), Rc::new(Value::ID(av)))
-                                .expect("unable to create attribute");
+                            if let Ok(avr) = ID::try_from(av) {
+                                a = d
+                                    .new_attribute(Rc::new(attname), Rc::new(Value::from(avr)))
+                                    .expect("unable to create attribute");
+                            } else {
+                                return Err(ParseError::IDError("not an ID".to_string()));
+                            }
                         } else {
                             av = attval;
                             a = d
-                                .new_attribute(Rc::new(attname), state1.get_value(av))
+                                .new_attribute(Rc::new(attname), state1.get_value(&av))
                                 .expect("unable to create attribute");
                         };
 
@@ -152,7 +157,7 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                                         _ => s.trim().replace("  ", " "),
                                     };
                                     let a = d
-                                        .new_attribute(Rc::new(at), state1.get_value(attval))
+                                        .new_attribute(Rc::new(at), state1.get_value(&attval))
                                         .expect("unable to create attribute");
                                     e.add_attribute(a).expect("unable to add attribute")
                                 }
@@ -178,7 +183,7 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                                     attval
                                 };
                                 let a = d
-                                    .new_attribute(Rc::new(attname), state1.get_value(av))
+                                    .new_attribute(Rc::new(attname), state1.get_value(&av))
                                     .expect("unable to create attribute");
                                 e.add_attribute(a).expect("unable to add attribute")
                             }
@@ -190,15 +195,43 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                                 };
                                 //Assign IDs only if we are tracking.
                                 let v = match (atttype, state1.id_tracking) {
-                                    (AttType::ID, true) => Rc::new(Value::ID(av.clone())),
-                                    (AttType::IDREF, true) => Rc::new(Value::IDREF(av.clone())),
-                                    (AttType::IDREFS, true) => Rc::new(Value::IDREFS(
-                                        av.clone().split(' ').map(|s| s.to_string()).collect(),
-                                    )),
-                                    (_, _) => state1.get_value(av.clone()),
+                                    (AttType::ID, true) => {
+                                        if let Ok(avr) = ID::try_from(av.clone()) {
+                                            Rc::new(Value::from(avr))
+                                        } else {
+                                            return Err(ParseError::IDError(
+                                                "not an ID".to_string(),
+                                            ));
+                                        }
+                                    }
+                                    (AttType::IDREF, true) => {
+                                        if let Ok(avr) = IDREF::try_from(av.clone()) {
+                                            Rc::new(Value::from(avr))
+                                        } else {
+                                            return Err(ParseError::IDError(
+                                                "not an IDREF".to_string(),
+                                            ));
+                                        }
+                                    }
+                                    (AttType::IDREFS, true) => {
+                                        let mut result = vec![];
+                                        for i in av.split(' ') {
+                                            if let Ok(avr) = IDREF::try_from(i) {
+                                                result.push(avr);
+                                            } else {
+                                                return Err(ParseError::IDError(
+                                                    "not an IDREF".to_string(),
+                                                ));
+                                            }
+                                        }
+                                        Rc::new(Value::from(result))
+                                    }
+                                    (_, _) => state1.get_value(&av),
                                 };
-                                if atttype == &AttType::NMTOKENS && av.is_empty(){
-                                    return Err(ParseError::NotWellFormed("NMTOKENs must not be empty".to_string()))
+                                if atttype == &AttType::NMTOKENS && av.is_empty() {
+                                    return Err(ParseError::NotWellFormed(
+                                        "NMTOKENs must not be empty".to_string(),
+                                    ));
                                 } else if atttype == &AttType::NMTOKENS {
                                     let names = av.split(' ');
                                     for name in names {
@@ -206,9 +239,7 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                                         for cha in ch {
                                             if !(is_ncnamechar(&cha) || cha == ':') {
                                                 return Err(ParseError::NotWellFormed(
-                                                    String::from(
-                                                        "Invalid NMTOKEN",
-                                                    ),
+                                                    String::from("Invalid NMTOKEN"),
                                                 ));
                                             }
                                         }
@@ -246,7 +277,7 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                         have completely parsed the document.
                         */
                         if attribute.value().to_string().split_whitespace().count() == 0 {
-                            return Err(ParseError::IDError("IDREFs cannot be empty".to_string()))
+                            return Err(ParseError::IDError("IDREFs cannot be empty".to_string()));
                         } else {
                             for idref in attribute.value().to_string().split_whitespace() {
                                 match state1.ids_read.get(idref) {
@@ -274,8 +305,8 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
 }
 
 // content ::= CharData? ((element | Reference | CDSect | PI | Comment) CharData?)*
-pub(crate) fn content<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<N>), ParseError> {
+pub(crate) fn content<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<N>), ParseError> {
     move |(input, state)| match tuple2(
         opt(chardata()),
         many0nsreset(tuple2(
@@ -307,7 +338,7 @@ pub(crate) fn content<N: Node>(
                                             .doc
                                             .clone()
                                             .unwrap()
-                                            .new_text(Rc::new(Value::String(notex.concat())))
+                                            .new_text(Rc::new(Value::from(notex.concat())))
                                             .expect("unable to create text node"),
                                     );
                                     notex.clear();
@@ -327,7 +358,7 @@ pub(crate) fn content<N: Node>(
                         .doc
                         .clone()
                         .unwrap()
-                        .new_text(Rc::new(Value::String(notex.concat())))
+                        .new_text(Rc::new(Value::from(notex.concat())))
                         .expect("unable to create text node"),
                 );
             }

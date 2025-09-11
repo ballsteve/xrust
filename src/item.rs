@@ -285,11 +285,11 @@ impl<N: Node> Item<N> {
         match self {
             Item::Value(v) => match other {
                 Item::Value(w) => v.compare(w, op),
-                Item::Node(..) => v.compare(&Value::String(other.to_string()), op),
+                Item::Node(..) => v.compare(&Value::from(other.to_string()), op),
                 _ => Result::Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
             },
             Item::Node(..) => {
-                other.compare(&Item::Value(Rc::new(Value::String(self.to_string()))), op)
+                other.compare(&Item::Value(Rc::new(Value::from(self.to_string()))), op)
             }
             _ => Result::Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
         }

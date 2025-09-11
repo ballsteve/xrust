@@ -44,12 +44,12 @@ assert_eq!(doc.to_xml(), "<Top-Level>content of the element</Top-Level>")
 */
 
 use crate::item::{Node as ItemNode, NodeType};
-use crate::output::OutputDefinition;
+use crate::output::{OutputDefinition, OutputSpec};
 use crate::qname;
 use crate::qname::QualifiedName;
 use crate::trees::smite;
 use crate::validators::{Schema, ValidationError};
-use crate::value::Value;
+use crate::value::{Value, ValueData};
 use crate::xdmerror::*;
 use crate::xmldecl::{XMLDecl, XMLDeclBuilder, DTD};
 use regex::Regex;
@@ -721,8 +721,8 @@ impl ItemNode for RNode {
             NodeInner::ProcessingInstruction(_, qn, v) => {
                 let d = self.owner_document();
                 let mut w = v.clone();
-                if let Value::String(s) = (*v.clone()).clone() {
-                    w = Rc::new(Value::String(
+                if let ValueData::String(s) = v.value.clone() {
+                    w = Rc::new(Value::from(
                         s.replace("&", "&amp;")
                             .replace("<", "&lt;")
                             .replace(">", "&gt;")
@@ -738,8 +738,8 @@ impl ItemNode for RNode {
             NodeInner::Text(_, v) => {
                 let d = self.owner_document();
                 let mut w = v.clone();
-                if let Value::String(s) = (*v.clone()).clone() {
-                    w = Rc::new(Value::String(
+                if let ValueData::String(s) = v.value.clone() {
+                    w = Rc::new(Value::from(
                         s.replace("&", "&amp;")
                             .replace("<", "&lt;")
                             .replace(">", "&gt;")
@@ -754,7 +754,7 @@ impl ItemNode for RNode {
                 let w = v.to_string();
                 Ok(d.new_attribute(
                     qn.clone(),
-                    Rc::new(Value::String(
+                    Rc::new(Value::from(
                         w.replace("&", "&amp;")
                             .replace("<", "&lt;")
                             .replace("\"", "&quot;")
@@ -774,7 +774,7 @@ impl ItemNode for RNode {
                     result.add_attribute(
                         d.new_attribute(
                             a.name(),
-                            Rc::new(Value::String(
+                            Rc::new(Value::from(
                                 re.replace_all(a.clone().value().to_string().trim(), " ")
                                     .to_string(),
                             )),
@@ -821,8 +821,8 @@ impl ItemNode for RNode {
     fn is_id(&self) -> bool {
         match &self.0 {
             //TODO Add Element XML ID support
-            NodeInner::Attribute(_, _, v) => match v.as_ref() {
-                Value::ID(_) => true,
+            NodeInner::Attribute(_, _, v) => match v.as_ref().value {
+                ValueData::ID(_) => true,
                 _ => false,
             },
             _ => false,
@@ -832,9 +832,9 @@ impl ItemNode for RNode {
     fn is_idrefs(&self) -> bool {
         match &self.0 {
             //TODO Add Element XML ID REF support
-            NodeInner::Attribute(_, _, v) => match v.as_ref() {
-                Value::IDREF(_) => true,
-                Value::IDREFS(_) => true,
+            NodeInner::Attribute(_, _, v) => match v.as_ref().value {
+                ValueData::IDREF(_) => true,
+                ValueData::IDREFS(_) => true,
                 _ => false,
             },
             _ => false,
@@ -1076,7 +1076,12 @@ fn to_xml_int(node: &RNode, od: &OutputDefinition, indent: usize) -> String {
             // Attributes
             node.attribute_iter().for_each(|a| {
                 result.push_str(
-                    format!(" {}='{}'", a.name().to_string().as_str(), a.value()).as_str(),
+                    format!(
+                        " {}='{}'",
+                        a.name().to_string().as_str(),
+                        serialise(&a.value())
+                    )
+                    .as_str(),
                 )
             });
             result.push('>');
@@ -1111,7 +1116,7 @@ fn to_xml_int(node: &RNode, od: &OutputDefinition, indent: usize) -> String {
             result.push('>');
             result
         }
-        NodeInner::Text(_, v) => v.to_string(),
+        NodeInner::Text(_, v) => serialise(&v),
         NodeInner::Comment(_, v) => {
             let mut result = String::from("<!--");
             result.push_str(v.to_string().as_str());
@@ -1127,6 +1132,21 @@ fn to_xml_int(node: &RNode, od: &OutputDefinition, indent: usize) -> String {
             result
         }
         _ => String::new(),
+    }
+}
+
+// Serialise a [Value]. If necessary, perform output escaping
+fn serialise(v: &Rc<Value>) -> String {
+    if v.output == OutputSpec::NoEscape {
+        v.to_string()
+    } else {
+        // Escape special characters
+        v.to_string()
+            .replace("&", "&amp;")
+            .replace("'", "&apos;")
+            .replace('"', "&quot;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
     }
 }
 

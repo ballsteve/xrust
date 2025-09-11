@@ -16,7 +16,7 @@ use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::rc::Rc;
 
-pub(crate) mod avt;
+pub mod avt;
 pub mod combinators;
 pub(crate) mod common;
 pub mod xml;
@@ -213,15 +213,17 @@ impl<N: Node> ParserState<N> {
             Some(e) => e(locdir, uri),
         }
     }
-    pub fn get_value(&self, s: String) -> Rc<Value> {
+    pub fn get_value(&self, s: &String) -> Rc<Value> {
         {
-            if let Some(u) = self.interned_values.borrow().get(&s) {
+            if let Some(u) = self.interned_values.borrow().get(s) {
                 return u.clone();
             }
         }
         // Otherwise this is a new entry
         let v = Rc::new(Value::from(s.clone()));
-        self.interned_values.borrow_mut().insert(s, v.clone());
+        self.interned_values
+            .borrow_mut()
+            .insert(s.clone(), v.clone());
         v
     }
     /// Find a QualifiedName. If the name exists in the interned names. then return a reference to the interned name.
