@@ -16,7 +16,7 @@ use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::rc::Rc;
 
-pub(crate) mod avt;
+pub mod avt;
 pub mod combinators;
 pub(crate) mod common;
 pub mod xml;
