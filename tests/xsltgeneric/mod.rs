@@ -368,7 +368,9 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_xml() == "<HEAD><h1>a</h1><h1>b</h1><h1>c</h1><h1>d</h1></HEAD><BODY><p>a</p><p>b</p><p>c</p><p>d</p></BODY>" {
+    if result.to_xml()
+        == "<HEAD><h1>a</h1><h1>b</h1><h1>c</h1><h1>d</h1></HEAD><BODY><p>a</p><p>b</p><p>c</p><p>d</p></BODY>"
+    {
         Ok(())
     } else {
         Err(Error::new(
@@ -440,11 +442,18 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_xml() == "one<!-- this is a level 1 element -->two<!-- this is a level 1 element -->three<!-- this is a level 1 element -->four<!-- this is a level 1 element -->" {
+    if result.to_xml()
+        == "one<!-- this is a level 1 element -->two<!-- this is a level 1 element -->three<!-- this is a level 1 element -->four<!-- this is a level 1 element -->"
+    {
         Ok(())
     } else {
-        Err(Error::new(ErrorKind::Unknown,
-                       format!("got result \"{}\", expected \"one<!-- this is a level 1 element -->two<!-- this is a level 1 element -->three<!-- this is a level 1 element -->four<!-- this is a level 1 element -->\"", result.to_string())))
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!(
+                "got result \"{}\", expected \"one<!-- this is a level 1 element -->two<!-- this is a level 1 element -->three<!-- this is a level 1 element -->four<!-- this is a level 1 element -->\"",
+                result.to_string()
+            ),
+        ))
     }
 }
 
@@ -470,11 +479,18 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_xml() == "one<?piL1 this is a level 1 element?>two<?piL1 this is a level 1 element?>three<?piL1 this is a level 1 element?>four<?piL1 this is a level 1 element?>" {
+    if result.to_xml()
+        == "one<?piL1 this is a level 1 element?>two<?piL1 this is a level 1 element?>three<?piL1 this is a level 1 element?>four<?piL1 this is a level 1 element?>"
+    {
         Ok(())
     } else {
-        Err(Error::new(ErrorKind::Unknown,
-                       format!("got result \"{}\", expected \"one<?piL1 this is a level 1 element?>two<?piL1 this is a level 1 element?>three<?piL1 this is a level 1 element?>four<?piL1 this is a level 1 element?>\"", result.to_string())))
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!(
+                "got result \"{}\", expected \"one<?piL1 this is a level 1 element?>two<?piL1 this is a level 1 element?>three<?piL1 this is a level 1 element?>four<?piL1 this is a level 1 element?>\"",
+                result.to_string()
+            ),
+        ))
     }
 }
 
@@ -865,7 +881,13 @@ where
     {
         Ok(())
     } else {
-        Err(Error::new(ErrorKind::Unknown, format!("got result \"{}\", expected \"onefound Level1 elementtwofound Level2 elementthreefound Level3 elementfour\"", result.to_string())))
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!(
+                "got result \"{}\", expected \"onefound Level1 elementtwofound Level2 elementthreefound Level3 elementfour\"",
+                result.to_string()
+            ),
+        ))
     }
 }
 
@@ -904,7 +926,13 @@ where
     if result.to_string() == "found internal element|found external element" {
         Ok(())
     } else {
-        Err(Error::new(ErrorKind::Unknown, format!("got result \"{}\", expected \"onefound Level1 elementtwofound Level2 elementthreefound Level3 elementfour\"", result.to_string())))
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!(
+                "got result \"{}\", expected \"onefound Level1 elementtwofound Level2 elementthreefound Level3 elementfour\"",
+                result.to_string()
+            ),
+        ))
     }
 }
 
@@ -990,7 +1018,10 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    assert_eq!(result.to_xml(), "<MyElement bar='from set foo'>one</MyElement><MyElement bar='from set foo'>two</MyElement>");
+    assert_eq!(
+        result.to_xml(),
+        "<MyElement bar='from set foo'>one</MyElement><MyElement bar='from set foo'>two</MyElement>"
+    );
     Ok(())
 }
 
@@ -1019,6 +1050,45 @@ where
     assert_eq!(
         result.to_xml(),
         "<Element bar='from set foo'>one</Element><Element bar='from set foo'>two</Element>"
+    );
+    Ok(())
+}
+
+pub fn feg_starting_with_1<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+{
+    let result = test_rig(
+        "<Test><a>one</a><b>two</b><c>three</c><a>four</a><b>five</b><c>six</c><a>seven</a><b>eight</b><c>nine</c></Test>",
+        r#"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='Test'>
+    <result>
+      <xsl:for-each-group select='*' group-starting-with='a'>
+        <group>
+          <xsl:apply-templates select='current-group()'/>
+        </group>
+      </xsl:for-each-group>
+    </result>
+  </xsl:template>
+  <xsl:template match='*'>
+    <xsl:copy>
+      <xsl:apply-templates/>
+    </xsl:copy>
+  </xsl:template>
+</xsl:stylesheet>"#,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    )?;
+    assert_eq!(
+        result.to_xml(),
+        "<result><group><a>one</a><b>two</b><c>three</c></group><group><a>four</a><b>five</b><c>six</c></group><group><a>seven</a><b>eight</b><c>nine</c></group></result>"
     );
     Ok(())
 }

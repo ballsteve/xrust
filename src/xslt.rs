@@ -1002,6 +1002,18 @@ fn to_transform<N: Node>(
                                 )?)),
                                 ord,
                             )),
+                            ("", "", start, "") => Ok(Transform::ForEach(
+                                Some(Grouping::StartingWith(Box::new(Pattern::try_from(start)?))),
+                                Box::new(parse::<N>(&s.to_string(), Some(n.clone()))?),
+                                Box::new(Transform::SequenceItems(n.child_iter().try_fold(
+                                    vec![],
+                                    |mut body, e| {
+                                        body.push(to_transform(e, attr_sets)?);
+                                        Ok(body)
+                                    },
+                                )?)),
+                                ord,
+                            )),
                             // TODO: group-starting-with and group-ending-with
                             _ => Result::Err(Error::new(
                                 ErrorKind::NotImplemented,
