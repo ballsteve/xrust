@@ -15,8 +15,9 @@ use crate::output::OutputDefinition;
 #[allow(unused_imports)]
 use crate::pattern::Pattern;
 use crate::qname::QualifiedName;
+use crate::transform::Transform;
 use crate::transform::booleans::*;
-use crate::transform::callable::{invoke, Callable};
+use crate::transform::callable::{Callable, invoke};
 use crate::transform::construct::*;
 use crate::transform::controlflow::*;
 use crate::transform::datetime::*;
@@ -28,9 +29,8 @@ use crate::transform::misc::*;
 use crate::transform::navigate::*;
 use crate::transform::numbers::*;
 use crate::transform::strings::*;
-use crate::transform::template::{apply_imports, apply_templates, next_match, Template};
+use crate::transform::template::{Template, apply_imports, apply_templates, next_match};
 use crate::transform::variables::{declare_variable, reference_variable};
-use crate::transform::Transform;
 use crate::xdmerror::Error;
 use crate::{ErrorKind, Item, SequenceTrait, Value};
 use std::cmp::Ordering;
@@ -312,7 +312,7 @@ impl<N: Node> Context<N> {
         stctxt: &mut StaticContext<N, F, G, H>,
     ) -> Result<Sequence<N>, Error> {
         // Define initial (stylesheet) variables by evaluating their transformation with the root node as the context
-        if self.cur.is_empty() {
+        if self.context.is_empty() {
             // There is no context item
             return Ok(Sequence::new());
         } else {
@@ -320,7 +320,7 @@ impl<N: Node> Context<N> {
             // If the context item is a node then set the new context to the root node
             // otherwise there is no context
             ctxt.context(
-                self.cur.get(self.i).map_or_else(
+                self.context.get(self.i).map_or_else(
                     || vec![],
                     |i| {
                         if let Item::Node(n) = i {
