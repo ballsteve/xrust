@@ -239,6 +239,15 @@ fn xslt_attr_set_3() {
     .expect("test failed")
 }
 #[test]
+fn xslt_feg_starting_with_1() {
+    xsltgeneric::feg_starting_with_1(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_sd_cooked,
+    )
+    .expect("test failed")
+}
+#[test]
 fn xslt_issue_96_abs() {
     xsltgeneric::issue_96_abs(
         smite::make_from_str,
