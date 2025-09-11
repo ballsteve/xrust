@@ -6,8 +6,8 @@ use unicode_segmentation::UnicodeSegmentation;
 use url::Url;
 
 use crate::item::{Item, Node, Sequence, SequenceTrait};
-use crate::transform::context::{Context, StaticContext};
 use crate::transform::Transform;
+use crate::transform::context::{Context, StaticContext};
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 
@@ -29,7 +29,7 @@ pub fn local_name<
         || {
             // Get the name of the context item
             match ctxt.context_item.as_ref().unwrap() {
-                Item::Node(ref m) => Ok(vec![Item::Value(m.name().localname().clone())]),
+                Item::Node(m) => Ok(vec![Item::Value(m.name().localname().clone())]),
                 _ => Err(Error::new(
                     ErrorKind::TypeError,
                     String::from("type error: not a node"),
@@ -75,7 +75,7 @@ pub fn name<
         || {
             // Get the name of the context item
             match ctxt.context_item.as_ref().unwrap() {
-                Item::Node(ref m) => Ok(vec![Item::Value(Rc::new(Value::from(m.name().clone())))]),
+                Item::Node(m) => Ok(vec![Item::Value(Rc::new(Value::from(m.name().clone())))]),
                 _ => Err(Error::new(
                     ErrorKind::TypeError,
                     String::from("type error: not a node"),
