@@ -59,6 +59,7 @@ use crate::item::Sequence;
 use crate::item::{Item, Node, NodeType, SequenceTrait};
 use crate::namespace::NamespaceMap;
 use crate::output::OutputSpec;
+use crate::pattern::Pattern;
 use crate::qname::QualifiedName;
 use crate::transform::callable::ActualParameters;
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
@@ -461,8 +462,8 @@ pub(crate) fn do_sort<
 #[derive(Clone, Debug)]
 pub enum Grouping<N: Node> {
     By(Vec<Transform<N>>),
-    StartingWith(Vec<Transform<N>>),
-    EndingWith(Vec<Transform<N>>),
+    StartingWith(Box<Pattern<N>>),
+    EndingWith(Box<Pattern<N>>),
     Adjacent(Vec<Transform<N>>),
 }
 
