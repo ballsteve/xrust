@@ -3264,6 +3264,51 @@ where
     Ok(())
 }
 
+pub fn generic_tr_group_starting_with_1<N: Node, G, H>(make_empty_doc: G, _: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    // xsl:for-each-group select="(a, a, b, c, c, c)" group-adjacent="." body == xsl:text "group current-grouping-key size count(current-group)"
+    let x = Transform::ForEach(
+        Some(Grouping::StartingWith(Box::new(
+            Pattern::try_from(".[. eq 'a']").expect("unable to parse pattern"),
+        ))),
+        Box::new(Transform::SequenceItems(vec![
+            Transform::Literal(Item::<N>::Value(Rc::new(Value::from("a")))),
+            Transform::Literal(Item::<N>::Value(Rc::new(Value::from("b")))),
+            Transform::Literal(Item::<N>::Value(Rc::new(Value::from("c")))),
+            Transform::Literal(Item::<N>::Value(Rc::new(Value::from("a")))),
+            Transform::Literal(Item::<N>::Value(Rc::new(Value::from("b")))),
+            Transform::Literal(Item::<N>::Value(Rc::new(Value::from("c")))),
+        ])),
+        Box::new(Transform::LiteralElement(
+            Rc::new(QualifiedName::new(None, None, String::from("group"))),
+            Box::new(Transform::SequenceItems(vec![
+                Transform::Literal(Item::Value(Rc::new(Value::from(" #members ")))),
+                Transform::Count(Box::new(Transform::CurrentGroup)),
+            ])),
+        )),
+        vec![],
+    );
+
+    let resdoc = make_empty_doc();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+    let seq = ContextBuilder::new()
+        .result_document(resdoc)
+        .build()
+        .dispatch(&mut stctxt, &x)
+        .expect("evaluation failed");
+    assert_eq!(seq.len(), 2);
+    Ok(())
+    // the groups are not ordered, so it is difficult to test all of the groups are correct
+    //assert_eq!(seq[0].to_string(), "key 0 #members 10")
+}
+
 pub fn generic_tr_apply_templates_builtins<N: Node, G, H>(
     make_empty_doc: G,
     _: H,
