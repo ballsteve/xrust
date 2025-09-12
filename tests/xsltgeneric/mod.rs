@@ -1093,6 +1093,50 @@ where
     Ok(())
 }
 
+pub fn feg_starting_with_2<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+{
+    let result = test_rig(
+        "<Test><a>one</a><b>two</b><c>three</c><a>four</a><b>five</b><c>six</c><a>seven</a><b>eight</b><c>nine</c></Test>",
+        r#"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='Test'>
+    <result>
+      <xsl:for-each-group select='*' group-starting-with='a'>
+        <group>
+          <first>
+            <xsl:apply-templates select='current-group()[position() eq 1]'/>
+          </first>
+          <rest>
+            <xsl:apply-templates select='current-group()[position() ne 1]'/>
+          </rest>
+        </group>
+      </xsl:for-each-group>
+    </result>
+  </xsl:template>
+  <xsl:template match='*'>
+    <xsl:copy>
+      <xsl:apply-templates/>
+    </xsl:copy>
+  </xsl:template>
+</xsl:stylesheet>"#,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    )?;
+    assert_eq!(
+        result.to_xml(),
+        "<result><group><first><a>one</a></first><rest><b>two</b><c>three</c></rest></group><group><first><a>four</a></first><rest><b>five</b><c>six</c></rest></group><group><first><a>seven</a></first><rest><b>eight</b><c>nine</c></rest></group></result>"
+    );
+    Ok(())
+}
+
 pub fn issue_96_abs<N: Node, G, H, J>(
     parse_from_str: G,
     parse_from_str_with_ns: J,
