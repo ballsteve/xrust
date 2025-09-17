@@ -3,8 +3,8 @@
 //! The [NamespaceMap] object represents a static mapping of prefix to namespace URI. Since namespaces don't change once they are declared, this object is usually Rc-shared.
 
 use crate::value::Value;
-use std::collections::hash_map::Iter;
 use std::collections::HashMap;
+use std::collections::hash_map::Iter;
 use std::rc::Rc;
 
 /// In some circumstances, a transformation must resolve a qualified name.
@@ -33,7 +33,7 @@ impl NamespaceMap {
         self.0.get(prefix).cloned()
     }
     /// Iterate over mappings. Each item is a (prefix,namespace URI) pair.
-    pub fn iter(&self) -> Iter<Option<Rc<Value>>, Rc<Value>> {
+    pub fn iter(&self) -> Iter<'_, Option<Rc<Value>>, Rc<Value>> {
         self.0.iter()
     }
 }

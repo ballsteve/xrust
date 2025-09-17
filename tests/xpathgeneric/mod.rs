@@ -1352,30 +1352,38 @@ where
 {
     let e: Transform<N> =
         parse("test:my_func(123)", None).expect("failed to parse expression \"test:my_func(123)\"");
-    match e {
-        Transform::Invoke(qn, ap, _) => {
-            assert_eq!(
-                qn,
-                Rc::new(QualifiedName::new(
-                    None,
-                    Some("test".to_string()),
-                    "my_func".to_string()
-                ))
-            );
-            match ap {
-                ActualParameters::Positional(v) => {
-                    assert_eq!(v.len(), 1);
-                    match &v[0] {
-                        Transform::Literal(Item::Value(u)) => {
-                            assert_eq!(u.to_int().expect("not an integer"), 123)
+    if let Transform::Compose(f) = e {
+        match &f[0] {
+            Transform::Invoke(qn, ap, _) => {
+                assert_eq!(
+                    *qn,
+                    Rc::new(QualifiedName::new(
+                        None,
+                        Some("test".to_string()),
+                        "my_func".to_string()
+                    ))
+                );
+                match ap {
+                    ActualParameters::Positional(v) => {
+                        assert_eq!(v.len(), 1);
+                        if let Transform::Compose(w) = &v[0] {
+                            match &w[0] {
+                                Transform::Literal(Item::Value(u)) => {
+                                    assert_eq!(u.to_int().expect("not an integer"), 123)
+                                }
+                                _ => panic!("not a literal integer"),
+                            }
+                        } else {
+                            panic!("argument list transform should be compose")
                         }
-                        _ => panic!("not a literal integer"),
                     }
+                    _ => panic!("Not positional parameters"),
                 }
-                _ => panic!("Not positional parameters"),
             }
+            _ => panic!("Not an invocation"),
         }
-        _ => panic!("Not an invocation"),
+    } else {
+        panic!("top-level transform should be compose")
     }
     Ok(())
 }
