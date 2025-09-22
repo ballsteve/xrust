@@ -85,6 +85,11 @@ fn xpath_navigate_predicate_1() {
         .expect("test failed")
 }
 #[test]
+fn xpath_predicate_1() {
+    xpathgeneric::generic_predicate_1::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
+#[test]
 fn xpath_generate_id() {
     xpathgeneric::generic_generate_id::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
         .expect("test failed")

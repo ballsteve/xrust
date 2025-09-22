@@ -1352,30 +1352,38 @@ where
 {
     let e: Transform<N> =
         parse("test:my_func(123)", None).expect("failed to parse expression \"test:my_func(123)\"");
-    match e {
-        Transform::Invoke(qn, ap, _) => {
-            assert_eq!(
-                qn,
-                Rc::new(QualifiedName::new(
-                    None,
-                    Some("test".to_string()),
-                    "my_func".to_string()
-                ))
-            );
-            match ap {
-                ActualParameters::Positional(v) => {
-                    assert_eq!(v.len(), 1);
-                    match &v[0] {
-                        Transform::Literal(Item::Value(u)) => {
-                            assert_eq!(u.to_int().expect("not an integer"), 123)
+    if let Transform::Compose(f) = e {
+        match &f[0] {
+            Transform::Invoke(qn, ap, _) => {
+                assert_eq!(
+                    *qn,
+                    Rc::new(QualifiedName::new(
+                        None,
+                        Some("test".to_string()),
+                        "my_func".to_string()
+                    ))
+                );
+                match ap {
+                    ActualParameters::Positional(v) => {
+                        assert_eq!(v.len(), 1);
+                        if let Transform::Compose(w) = &v[0] {
+                            match &w[0] {
+                                Transform::Literal(Item::Value(u)) => {
+                                    assert_eq!(u.to_int().expect("not an integer"), 123)
+                                }
+                                _ => panic!("not a literal integer"),
+                            }
+                        } else {
+                            panic!("argument list transform should be compose")
                         }
-                        _ => panic!("not a literal integer"),
                     }
+                    _ => panic!("Not positional parameters"),
                 }
-                _ => panic!("Not positional parameters"),
             }
+            _ => panic!("Not an invocation"),
         }
-        _ => panic!("Not an invocation"),
+    } else {
+        panic!("top-level transform should be compose")
     }
     Ok(())
 }
@@ -1502,9 +1510,49 @@ where
             .build()
             .dispatch(&mut stctxt, &xform)
             .expect("transform failed");
-        s.iter().for_each(|x| eprintln!("got item {:?}", x));
         assert_eq!(s.len(), 1);
         assert_eq!(s[0].name().to_string(), "b");
+        Ok(())
+    } else {
+        panic!("unable to unpack node")
+    }
+}
+
+pub fn generic_predicate_1<N: Node, G, H>(make_empty_doc: G, make_doc: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    let rd = make_empty_doc();
+    let sd = make_doc();
+    if let Item::Node(d) = sd.clone() {
+        let xform = parse("$v[position() eq 1]", None).expect("parsing failed");
+        let mut stctxt = StaticContextBuilder::new()
+            .message(|_| Ok(()))
+            .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+            .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+            .build();
+        let mut ctxt = ContextBuilder::new()
+            .context(vec![sd])
+            .result_document(rd)
+            .build();
+        let a = d.first_child().unwrap();
+        let bs = a.child_iter().map(|c| Item::Node(c)).collect();
+        ctxt.var_push(String::from("v"), bs);
+        let s = ctxt
+            .dispatch(&mut stctxt, &xform)
+            .expect("transform failed");
+        assert_eq!(s.len(), 1);
+        assert_eq!(s[0].name().to_string(), "b");
+        if let Item::Node(r) = &s[0] {
+            assert_eq!(
+                r.get_attribute(&QualifiedName::new(None, None, "id"))
+                    .to_string(),
+                "b1"
+            );
+        } else {
+            panic!("result is not a node")
+        }
         Ok(())
     } else {
         panic!("unable to unpack node")
