@@ -3,7 +3,6 @@
 use crate::item::Node;
 use crate::parser::combinators::alt::{alt2, alt5};
 use crate::parser::combinators::map::map;
-use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::pair::pair;
 use crate::parser::{ParseError, ParseInput};
 //use crate::parser::combinators::debug::inspect;
