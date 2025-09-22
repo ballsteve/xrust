@@ -4,7 +4,7 @@ use crate::qname::QualifiedName;
 use crate::validators::{Schema, ValidationError};
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
-use crate::xmldecl::{XMLDecl, XMLDeclBuilder, DTD};
+use crate::xmldecl::{DTD, XMLDecl, XMLDeclBuilder};
 /// A null tree implementation
 ///
 /// This tree implementation implements nothing.
@@ -49,6 +49,9 @@ impl Node for Nullo {
         String::new()
     }
     fn is_same(&self, _: &Self) -> bool {
+        false
+    }
+    fn is_attached(&self) -> bool {
         false
     }
     fn document_order(&self) -> Vec<usize> {

@@ -337,7 +337,26 @@ impl<N: Node> Context<N> {
             for (name, x) in &self.pre_vars {
                 ctxt.var_push(name.clone(), ctxt.dispatch(stctxt, &x)?);
             }
-            ctxt.evaluate_internal(stctxt)
+            let result = ctxt.evaluate_internal(stctxt);
+            // If the returned items are nodes
+            // then if they are in the unattached list of the result doc
+            // then attached them
+            if ctxt.rd.is_some() {
+                if let Ok(r) = result.clone() {
+                    r.iter().for_each(|i| {
+                        if let Item::Node(n) = i {
+                            if !n.is_attached() {
+                                ctxt.rd
+                                    .clone()
+                                    .unwrap()
+                                    .push(n.clone())
+                                    .expect("unable to attach node to result document");
+                            }
+                        }
+                    });
+                }
+            }
+            result
         }
     }
 

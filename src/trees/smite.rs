@@ -51,12 +51,12 @@ use crate::trees::smite;
 use crate::validators::{Schema, ValidationError};
 use crate::value::{Value, ValueData};
 use crate::xdmerror::*;
-use crate::xmldecl::{XMLDecl, XMLDeclBuilder, DTD};
+use crate::xmldecl::{DTD, XMLDecl, XMLDeclBuilder};
 use regex::Regex;
 use std::cell::RefCell;
 use std::cmp::Ordering;
-use std::collections::btree_map::IntoIter;
 use std::collections::BTreeMap;
+use std::collections::btree_map::IntoIter;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
 use std::rc::{Rc, Weak};
@@ -186,11 +186,7 @@ impl PartialEq for Node {
             }
             (NodeInner::Text(_, v), NodeInner::Text(_, u)) => v == u,
             (NodeInner::Attribute(_, name, v), NodeInner::Attribute(_, o_name, o_v)) => {
-                if name == o_name {
-                    v == o_v
-                } else {
-                    false
-                }
+                if name == o_name { v == o_v } else { false }
             }
             (
                 NodeInner::ProcessingInstruction(_, name, v),
@@ -269,6 +265,23 @@ impl ItemNode for RNode {
     }
     fn is_same(&self, other: &Self) -> bool {
         Rc::ptr_eq(self, other)
+    }
+    fn is_attached(&self) -> bool {
+        match &self.0 {
+            NodeInner::Document(_, _, _, _) => false,
+            NodeInner::Namespace(_, _, _) => false,
+            _ => {
+                if let NodeInner::Document(_, _, u, _) = &self.owner_document().0 {
+                    u.borrow()
+                        .iter()
+                        .find(|p| self.is_same(p))
+                        .map_or(true, |_| false)
+                } else {
+                    // shouldn't get here
+                    false
+                }
+            }
+        }
     }
     fn document_order(&self) -> Vec<usize> {
         doc_order(self)
@@ -416,6 +429,7 @@ impl ItemNode for RNode {
 
         let mut m = n.clone();
         m.pop()?;
+        detach(m);
         push_node(self, n)?;
         Ok(())
     }
@@ -427,7 +441,7 @@ impl ItemNode for RNode {
                 return Err(Error::new(
                     ErrorKind::TypeError,
                     String::from("cannot remove document node"),
-                ))
+                ));
             }
             NodeInner::Attribute(parent, qn, _) => {
                 // Remove this node from the attribute hashmap
@@ -448,7 +462,7 @@ impl ItemNode for RNode {
                                 return Err(Error::new(
                                     ErrorKind::TypeError,
                                     String::from("parent is not an element"),
-                                ))
+                                ));
                             }
                         }
                     }
@@ -456,7 +470,7 @@ impl ItemNode for RNode {
                         return Err(Error::new(
                             ErrorKind::Unknown,
                             String::from("unable to find parent"),
-                        ))
+                        ));
                     }
                 }
             }
@@ -481,7 +495,7 @@ impl ItemNode for RNode {
                                 return Err(Error::new(
                                     ErrorKind::TypeError,
                                     String::from("parent is not an element"),
-                                ))
+                                ));
                             }
                         }
                     }
@@ -489,7 +503,7 @@ impl ItemNode for RNode {
                         return Err(Error::new(
                             ErrorKind::Unknown,
                             String::from("unable to find parent"),
-                        ))
+                        ));
                     }
                 }
             }
@@ -518,7 +532,7 @@ impl ItemNode for RNode {
                         return Err(Error::new(
                             ErrorKind::TypeError,
                             String::from("parent is not an element"),
-                        ))
+                        ));
                     }
                 }
             }
@@ -625,7 +639,7 @@ impl ItemNode for RNode {
                         return Err(Error::new(
                             ErrorKind::TypeError,
                             String::from("parent is not an element"),
-                        ))
+                        ));
                     }
                 }
             }
@@ -633,7 +647,7 @@ impl ItemNode for RNode {
                 return Err(Error::new(
                     ErrorKind::TypeError,
                     String::from("unable to find parent"),
-                ))
+                ));
             }
         }
         Ok(())
@@ -917,7 +931,7 @@ fn unattached(d: &RNode, n: RNode) {
                 return;
             }
             u.borrow_mut().push(n.clone());
-            make_parent(n, d.clone())
+            make_parent(n.clone(), d.clone());
         }
         NodeInner::Element(_, _, _, _, _) => {
             let doc = d.owner_document();
@@ -926,7 +940,7 @@ fn unattached(d: &RNode, n: RNode) {
                     return;
                 }
                 u.borrow_mut().push(n.clone());
-                make_parent(n, doc.clone())
+                make_parent(n.clone(), doc.clone());
             } else {
                 panic!("cannot find document node")
             }
@@ -934,7 +948,7 @@ fn unattached(d: &RNode, n: RNode) {
         _ => panic!("not a document node"),
     }
 }
-// Make the parent of the node be the given new parent
+// Make the parent of the node be the given new parent.
 fn make_parent(n: RNode, b: RNode) {
     match &n.0 {
         NodeInner::Element(p, _, _, _, _)
@@ -989,7 +1003,7 @@ fn push_node(parent: &RNode, child: RNode) -> Result<(), Error> {
             return Err(Error::new(
                 ErrorKind::TypeError,
                 String::from("unable to add child node"),
-            ))
+            ));
         }
     }
     make_parent(child, parent.clone());
@@ -1041,7 +1055,7 @@ fn find_index(parent: &RNode, child: &RNode) -> Result<usize, Error> {
             return Err(Error::new(
                 ErrorKind::TypeError,
                 String::from("parent is not an element"),
-            ))
+            ));
         }
     };
     idx.ok_or(Error::new(
@@ -1279,7 +1293,7 @@ impl Iterator for Siblings {
             } else {
                 self.1 + self.2 as usize
             };
-            if let NodeInner::Element(_, _, _, children, _) = &self.0 .0 {
+            if let NodeInner::Element(_, _, _, children, _) = &self.0.0 {
                 match children.borrow().get(newidx) {
                     Some(n) => {
                         self.1 = newidx;
@@ -1514,5 +1528,17 @@ mod tests {
             .expect("unable to create child element");
         child1.push(child2.clone()).expect("unable to add node");
         assert_ne!(child1.get_id(), child2.get_id())
+    }
+
+    #[test]
+    fn smite_attached_1() {
+        let mut root = Rc::new(Node::new());
+        let child1 = root
+            .new_element(Rc::new(QualifiedName::new(None, None, "Test")))
+            .expect("unable to create element node");
+        assert_eq!(child1.is_attached(), false);
+        root.push(child1.clone()).expect("unable to add node");
+        assert_eq!(child1.is_attached(), true);
+        assert_eq!(root.child_iter().count(), 1)
     }
 }
