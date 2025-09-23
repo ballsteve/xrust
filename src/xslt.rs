@@ -363,7 +363,7 @@ where
         })
         .try_for_each(|c| {
             let m = c.get_attribute(&QualifiedName::new(None, None, "match"));
-            let pat = Pattern::try_from(m.to_string()).map_err(|e| {
+            let pat = Pattern::try_from((m.to_string(), c.clone())).map_err(|e| {
                 Error::new(
                     e.kind,
                     format!(
@@ -447,6 +447,7 @@ where
                             .expect("unable to resolve qualified name"),
                     )
                 }), // TODO: don't panic
+                m.to_string(),
             ));
             Ok::<(), Error>(())
         })?;
@@ -489,6 +490,7 @@ where
             vec![0],
             None,
             None,
+            String::from("/"),
         ))
         // This matches "*" and applies templates to all children
         .template(Template::new(
@@ -505,6 +507,7 @@ where
             vec![0],
             None,
             None,
+            String::from("child::*"),
         ))
         // This matches "text()" and copies content
         .template(Template::new(
@@ -514,6 +517,7 @@ where
             vec![0],
             None,
             None,
+            String::from("child::text()"),
         ))
         .template_all(templates)
         .output_definition(od)

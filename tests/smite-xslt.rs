@@ -310,3 +310,12 @@ fn xslt_issue_137_2() {
     )
     .expect("test failed")
 }
+#[test]
+fn xslt_dbk_1() {
+    xsltgeneric::dbk_1(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_empty_doc_cooked,
+    )
+    .expect("test failed")
+}
