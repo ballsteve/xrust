@@ -44,11 +44,11 @@ assert_eq!(doc.to_xml(), "<Top-Level>content of the element</Top-Level>")
 */
 
 use crate::item::{Node as ItemNode, NodeType};
-use crate::output::OutputDefinition;
+use crate::output::{OutputDefinition, OutputSpec};
 use crate::parser::xml::qname::qualname_to_qname;
 use crate::parser::{ParseError, ParserStateBuilder, StaticStateBuilder};
 use crate::validators::{Schema, ValidationError};
-use crate::value::Value;
+use crate::value::{Value, ValueData};
 use crate::xdmerror::*;
 use crate::xmldecl::{DTD, XMLDecl, XMLDeclBuilder};
 use qualname::{NamespacePrefix, NamespaceUri, NcName, QName};
@@ -341,13 +341,30 @@ impl ItemNode for RNode {
         }
     }
     fn to_xml(&self) -> String {
-        to_xml_int(self, &OutputDefinition::new(), 0)
+        to_xml_int(self, &OutputDefinition::new(), 0, vec![])
     }
     fn to_xml_with_options(&self, od: &OutputDefinition) -> std::string::String {
-        to_xml_int(self, od, 0)
+        to_xml_int(self, od, 0, vec![])
     }
     fn is_same(&self, other: &Self) -> bool {
         Rc::ptr_eq(self, other)
+    }
+    fn is_attached(&self) -> bool {
+        match &self.0 {
+            NodeInner::Document(_, _, _, _) => false,
+            NodeInner::Namespace(_, _, _) => false,
+            _ => {
+                if let NodeInner::Document(_, _, u, _) = &self.owner_document().0 {
+                    u.borrow()
+                        .iter()
+                        .find(|p| self.is_same(p))
+                        .map_or(true, |_| false)
+                } else {
+                    // shouldn't get here
+                    false
+                }
+            }
+        }
     }
     fn document_order(&self) -> Vec<usize> {
         doc_order(self)
@@ -495,6 +512,7 @@ impl ItemNode for RNode {
 
         let mut m = n.clone();
         m.pop()?;
+        detach(m);
         push_node(self, n)?;
         Ok(())
     }
@@ -800,8 +818,8 @@ impl ItemNode for RNode {
             NodeInner::ProcessingInstruction(_, qn, v) => {
                 let d = self.owner_document();
                 let mut w = v.clone();
-                if let Value::String(s) = (*v.clone()).clone() {
-                    w = Rc::new(Value::String(
+                if let ValueData::String(s) = v.value.clone() {
+                    w = Rc::new(Value::from(
                         s.replace("&", "&amp;")
                             .replace("<", "&lt;")
                             .replace(">", "&gt;")
@@ -817,8 +835,8 @@ impl ItemNode for RNode {
             NodeInner::Text(_, v) => {
                 let d = self.owner_document();
                 let mut w = v.clone();
-                if let Value::String(s) = (*v.clone()).clone() {
-                    w = Rc::new(Value::String(
+                if let ValueData::String(s) = v.value.clone() {
+                    w = Rc::new(Value::from(
                         s.replace("&", "&amp;")
                             .replace("<", "&lt;")
                             .replace(">", "&gt;")
@@ -833,7 +851,7 @@ impl ItemNode for RNode {
                 let w = v.to_string();
                 Ok(d.new_attribute(
                     qn.clone(),
-                    Rc::new(Value::String(
+                    Rc::new(Value::from(
                         w.replace("&", "&amp;")
                             .replace("<", "&lt;")
                             .replace("\"", "&quot;")
@@ -900,8 +918,8 @@ impl ItemNode for RNode {
     fn is_id(&self) -> bool {
         match &self.0 {
             //TODO Add Element XML ID support
-            NodeInner::Attribute(_, _, v) => match v.as_ref() {
-                Value::ID(_) => true,
+            NodeInner::Attribute(_, _, v) => match v.as_ref().value {
+                ValueData::ID(_) => true,
                 _ => false,
             },
             _ => false,
@@ -911,9 +929,9 @@ impl ItemNode for RNode {
     fn is_idrefs(&self) -> bool {
         match &self.0 {
             //TODO Add Element XML ID REF support
-            NodeInner::Attribute(_, _, v) => match v.as_ref() {
-                Value::IDREF(_) => true,
-                Value::IDREFS(_) => true,
+            NodeInner::Attribute(_, _, v) => match v.as_ref().value {
+                ValueData::IDREF(_) => true,
+                ValueData::IDREFS(_) => true,
                 _ => false,
             },
             _ => false,
@@ -1059,7 +1077,7 @@ fn unattached(d: &RNode, n: RNode) {
                 return;
             }
             u.borrow_mut().push(n.clone());
-            make_parent(n, d.clone())
+            make_parent(n.clone(), d.clone());
         }
         NodeInner::Element(_, _, _, _, _) => {
             let doc = d.owner_document();
@@ -1068,7 +1086,7 @@ fn unattached(d: &RNode, n: RNode) {
                     return;
                 }
                 u.borrow_mut().push(n.clone());
-                make_parent(n, doc.clone())
+                make_parent(n.clone(), doc.clone());
             } else {
                 panic!("cannot find document node")
             }
@@ -1076,7 +1094,7 @@ fn unattached(d: &RNode, n: RNode) {
         _ => panic!("not a document node"),
     }
 }
-// Make the parent of the node be the given new parent
+// Make the parent of the node be the given new parent.
 fn make_parent(n: RNode, b: RNode) {
     match &n.0 {
         NodeInner::Element(p, _, _, _, _)
@@ -1224,36 +1242,46 @@ fn to_prefixed_name(n: &RNode) -> String {
 
 // This handles the XML serialisation of the document.
 // "indent" is the current level of indentation.
-fn to_xml_int(node: &RNode, od: &OutputDefinition, indent: usize) -> String {
+fn to_xml_int(
+    node: &RNode,
+    od: &OutputDefinition,
+    indent: usize,
+    ns_in_scope: Vec<Rc<Value>>,
+) -> String {
     match &node.0 {
         NodeInner::Document(_, _, _, _) => {
             node.child_iter().fold(String::new(), |mut result, c| {
-                result.push_str(to_xml_int(&c, od, indent + 2).as_str());
+                result.push_str(to_xml_int(&c, od, indent + 2, ns_in_scope.clone()).as_str());
                 result
             })
         }
-        NodeInner::Element(_, _qn, _, _, ns) => {
+        NodeInner::Element(_, qn, _, _, ns) => {
+            let mut new_in_scope = ns_in_scope.clone();
             let mut result = String::from("<");
             result.push_str(to_prefixed_name(node).as_str());
 
             // Namespace declarations
             ns.borrow().iter().for_each(|(_, nsd)| {
-                let decl = nsd.as_namespace_prefix().unwrap().map_or_else(
-                    || format!(" xmlns='{}'", nsd.as_namespace_uri().unwrap().to_string()),
-                    |p| {
-                        format!(
-                            " xmlns:{}='{}'",
-                            p.to_string(),
-                            nsd.as_namespace_uri().unwrap().to_string()
-                        )
-                    },
-                );
-                result.push_str(decl.as_str());
+                if ns_in_scope
+                    .iter()
+                    .find(|insns| insns.to_string() == nsd.as_namespace_uri().unwrap())
+                    .is_none()
+                {
+                    let nsd_nsuri = nsd.as_namespace_uri().unwrap().to_string();
+                    new_in_scope.push(nsd_nsuri.clone());
+                    let decl = nsd.as_namespace_prefix().unwrap().map_or_else(
+                        || format!(" xmlns='{}'", nsd_nsuri),
+                        |p| format!(" xmlns:{}='{}'", p.to_string(), nsd_nsuri),
+                    );
+                    result.push_str(decl.as_str());
+                }
             });
 
             // Attributes
             node.attribute_iter().for_each(|a| {
-                result.push_str(format!(" {}='{}'", to_prefixed_name(&a), a.value()).as_str())
+                result.push_str(
+                    format!(" {}='{}'", to_prefixed_name(&a), serialise(&a.value())).as_str(),
+                )
             });
             result.push('>');
 
@@ -1276,7 +1304,7 @@ fn to_xml_int(node: &RNode, od: &OutputDefinition, indent: usize) -> String {
                     result.push('\n');
                     (0..indent).for_each(|_| result.push(' '))
                 }
-                result.push_str(to_xml_int(&c, od, indent + 2).as_str())
+                result.push_str(to_xml_int(&c, od, indent + 2, new_in_scope.clone()).as_str())
             });
             if do_indent && indent > 1 {
                 result.push('\n');
@@ -1287,7 +1315,7 @@ fn to_xml_int(node: &RNode, od: &OutputDefinition, indent: usize) -> String {
             result.push('>');
             result
         }
-        NodeInner::Text(_, v) => v.to_string(),
+        NodeInner::Text(_, v) => serialise(&v),
         NodeInner::Comment(_, v) => {
             let mut result = String::from("<!--");
             result.push_str(v.to_string().as_str());
@@ -1303,6 +1331,21 @@ fn to_xml_int(node: &RNode, od: &OutputDefinition, indent: usize) -> String {
             result
         }
         _ => String::new(),
+    }
+}
+
+// Serialise a [Value]. If necessary, perform output escaping
+fn serialise(v: &Rc<Value>) -> String {
+    if v.output == OutputSpec::NoEscape {
+        v.to_string()
+    } else {
+        // Escape special characters
+        v.to_string()
+            .replace("&", "&amp;")
+            .replace("'", "&apos;")
+            .replace('"', "&quot;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
     }
 }
 
@@ -1638,5 +1681,17 @@ mod tests {
             .expect("unable to create child element");
         child1.push(child2.clone()).expect("unable to add node");
         assert_ne!(child1.get_id(), child2.get_id())
+    }
+
+    #[test]
+    fn smite_attached_1() {
+        let mut root = Rc::new(Node::new());
+        let child1 = root
+            .new_element(Rc::new(QualifiedName::new(None, None, "Test")))
+            .expect("unable to create element node");
+        assert_eq!(child1.is_attached(), false);
+        root.push(child1.clone()).expect("unable to add node");
+        assert_eq!(child1.is_attached(), true);
+        assert_eq!(root.child_iter().count(), 1)
     }
 }

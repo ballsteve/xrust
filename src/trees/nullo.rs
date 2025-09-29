@@ -69,6 +69,9 @@ impl Node for Nullo {
     fn is_same(&self, _: &Self) -> bool {
         false
     }
+    fn is_attached(&self) -> bool {
+        false
+    }
     fn document_order(&self) -> Vec<usize> {
         vec![]
     }

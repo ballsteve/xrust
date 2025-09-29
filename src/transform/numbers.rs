@@ -181,11 +181,11 @@ pub fn number<
         1 => {
             // First try converting to an integer
             match n[0].to_int() {
-                Ok(i) => Ok(vec![Item::Value(Rc::new(Value::Integer(i)))]),
+                Ok(i) => Ok(vec![Item::Value(Rc::new(Value::from(i)))]),
                 _ => {
                     // Otherwise convert to double.
                     // NB. This can't fail. At worst it returns NaN.
-                    Ok(vec![Item::Value(Rc::new(Value::Double(n[0].to_double())))])
+                    Ok(vec![Item::Value(Rc::new(Value::from(n[0].to_double())))])
                 }
             }
         }
@@ -207,7 +207,7 @@ pub fn sum<
     stctxt: &mut StaticContext<N, F, G, H>,
     s: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
-    Ok(vec![Item::Value(Rc::new(Value::Double(
+    Ok(vec![Item::Value(Rc::new(Value::from(
         ctxt.dispatch(stctxt, s)?.iter().fold(0.0, |mut acc, i| {
             acc += i.to_double();
             acc
@@ -236,7 +236,7 @@ pub fn avg<
         acc += i.to_double();
         acc
     });
-    Ok(vec![Item::Value(Rc::new(Value::Double(
+    Ok(vec![Item::Value(Rc::new(Value::from(
         sum / (seq.len() as f64),
     )))])
 }
@@ -257,7 +257,7 @@ pub fn min<
     if seq.is_empty() {
         Ok(seq)
     } else {
-        Ok(vec![Item::Value(Rc::new(Value::Double(
+        Ok(vec![Item::Value(Rc::new(Value::from(
             seq.iter().skip(1).fold(seq[0].to_double(), |acc, i| {
                 if acc > i.to_double() {
                     i.to_double()
@@ -285,7 +285,7 @@ pub fn max<
     if seq.is_empty() {
         Ok(seq)
     } else {
-        Ok(vec![Item::Value(Rc::new(Value::Double(
+        Ok(vec![Item::Value(Rc::new(Value::from(
             seq.iter().skip(1).fold(seq[0].to_double(), |acc, i| {
                 if acc < i.to_double() {
                     i.to_double()
@@ -310,7 +310,7 @@ pub fn floor<
 ) -> Result<Sequence<N>, Error> {
     let n = ctxt.dispatch(stctxt, f)?;
     match n.len() {
-        1 => Ok(vec![Item::Value(Rc::new(Value::Double(
+        1 => Ok(vec![Item::Value(Rc::new(Value::from(
             n[0].to_double().floor(),
         )))]),
         _ => Err(Error::new(
@@ -333,7 +333,7 @@ pub fn ceiling<
 ) -> Result<Sequence<N>, Error> {
     let n = ctxt.dispatch(stctxt, c)?;
     match n.len() {
-        1 => Ok(vec![Item::Value(Rc::new(Value::Double(
+        1 => Ok(vec![Item::Value(Rc::new(Value::from(
             n[0].to_double().ceil(),
         )))]),
         _ => Err(Error::new(
@@ -360,7 +360,7 @@ pub fn round<
             let n = ctxt.dispatch(stctxt, r)?;
             let m = ctxt.dispatch(stctxt, p)?;
             match (n.len(), m.len()) {
-                (1, 1) => Ok(vec![Item::Value(Rc::new(Value::Double(
+                (1, 1) => Ok(vec![Item::Value(Rc::new(Value::from(
                     ((n[0].to_double() * (10.0_f64).powi(m[0].to_int().unwrap() as i32)).round())
                         * (10.0_f64).powi(-m[0].to_int().unwrap() as i32),
                 )))]),
@@ -374,7 +374,7 @@ pub fn round<
             // precision is 0, i.e. round to nearest whole number
             let n = ctxt.dispatch(stctxt, r)?;
             match n.len() {
-                1 => Ok(vec![Item::Value(Rc::new(Value::Double(
+                1 => Ok(vec![Item::Value(Rc::new(Value::from(
                     n[0].to_double().round(),
                 )))]),
                 _ => Err(Error::new(
@@ -417,7 +417,7 @@ pub(crate) fn tr_range<
         Ok(vec![])
     } else if i == j {
         let mut seq = Sequence::new();
-        seq.push_value(&Rc::new(Value::Integer(i)));
+        seq.push_value(&Rc::new(Value::from(i)));
         Ok(seq)
     } else {
         let mut result = Sequence::new();
@@ -489,13 +489,13 @@ pub fn format_number<
         1 => {
             // First try converting to an integer
             match n[0].to_int() {
-                Ok(i) => Ok(vec![Item::Value(Rc::new(Value::String(
+                Ok(i) => Ok(vec![Item::Value(Rc::new(Value::from(
                     i.formato(p.as_str()),
                 )))]),
                 _ => {
                     // Otherwise convert to double.
                     // NB. This can't fail. At worst it returns NaN.
-                    Ok(vec![Item::Value(Rc::new(Value::String(
+                    Ok(vec![Item::Value(Rc::new(Value::from(
                         n[0].to_double().formato(p.as_str()),
                     )))])
                 }

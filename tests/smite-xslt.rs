@@ -239,6 +239,24 @@ fn xslt_attr_set_3() {
     .expect("test failed")
 }
 #[test]
+fn xslt_feg_starting_with_1() {
+    xsltgeneric::feg_starting_with_1(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_sd_cooked,
+    )
+    .expect("test failed")
+}
+#[test]
+fn xslt_feg_starting_with_2() {
+    xsltgeneric::feg_starting_with_2(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_sd_cooked,
+    )
+    .expect("test failed")
+}
+#[test]
 fn xslt_issue_96_abs() {
     xsltgeneric::issue_96_abs(
         smite::make_from_str,
@@ -286,6 +304,24 @@ fn xslt_issue_137_1() {
 #[test]
 fn xslt_issue_137_2() {
     xsltgeneric::issue_137_2(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_empty_doc_cooked,
+    )
+    .expect("test failed")
+}
+#[test]
+fn xslt_dbk_1() {
+    xsltgeneric::dbk_1(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_empty_doc_cooked,
+    )
+    .expect("test failed")
+}
+#[test]
+fn xslt_md_1() {
+    xsltgeneric::md_1(
         smite::make_from_str,
         smite::make_from_str_with_ns,
         smite::make_empty_doc_cooked,

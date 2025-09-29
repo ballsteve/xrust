@@ -57,6 +57,8 @@ pub(crate) mod variables;
 #[allow(unused_imports)]
 use crate::item::Sequence;
 use crate::item::{Item, Node, NodeType, SequenceTrait};
+use crate::output::OutputSpec;
+use crate::pattern::Pattern;
 use crate::transform::callable::ActualParameters;
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::numbers::Numbering;
@@ -101,8 +103,8 @@ pub enum Transform<N: Node> {
     LiteralElement(QName, Box<Transform<N>>),
     /// A constructed element. Consists of the name and content.
     Element(Box<Transform<N>>, Box<Transform<N>>),
-    /// A literal text node. Consists of the value of the node. Second argument gives whether to disable output escaping.
-    LiteralText(Box<Transform<N>>, bool),
+    /// A literal text node. Consists of the value of the node. Second argument gives an output hint.
+    LiteralText(Box<Transform<N>>, OutputSpec),
     /// A literal attribute. Consists of the attribute name and value.
     /// NB. The value may be produced by an Attribute Value Template, so must be dynamic.
     LiteralAttribute(QName, Box<Transform<N>>),
@@ -314,7 +316,7 @@ impl<N: Node> Debug for Transform<N> {
             Transform::Literal(_) => write!(f, "literal value"),
             Transform::LiteralElement(qn, _) => write!(f, "literal element named \"{}\"", qn),
             Transform::Element(_, _) => write!(f, "constructed element"),
-            Transform::LiteralText(_, b) => write!(f, "literal text (disable escaping {})", b),
+            Transform::LiteralText(_, b) => write!(f, "literal text (disable escaping {:?})", b),
             Transform::LiteralAttribute(qn, _) => write!(f, "literal attribute named \"{}\"", qn),
             Transform::LiteralComment(_) => write!(f, "literal comment"),
             Transform::LiteralProcessingInstruction(_, _) => {
@@ -337,7 +339,13 @@ impl<N: Node> Debug for Transform<N> {
             Transform::Loop(_, _) => write!(f, "loop"),
             Transform::Switch(c, _) => write!(f, "switch {} clauses", c.len()),
             Transform::ForEach(_g, _, _, o) => write!(f, "for-each ({} sort keys)", o.len()),
-            Transform::Union(v) => write!(f, "union of {} operands", v.len()),
+            Transform::Union(v) => {
+                write!(f, "union of {} operands", v.len()).ok();
+                v.iter().for_each(|o| {
+                    write!(f, "\noperand: {:?}", o).ok();
+                });
+                Ok(())
+            }
             Transform::ApplyTemplates(_, m, o) => {
                 write!(f, "Apply templates (mode {:?}, {} sort keys)", m, o.len())
             }
@@ -467,8 +475,8 @@ pub(crate) fn do_sort<
 #[derive(Clone, Debug)]
 pub enum Grouping<N: Node> {
     By(Vec<Transform<N>>),
-    StartingWith(Vec<Transform<N>>),
-    EndingWith(Vec<Transform<N>>),
+    StartingWith(Box<Pattern<N>>),
+    EndingWith(Box<Pattern<N>>),
     Adjacent(Vec<Transform<N>>),
 }
 

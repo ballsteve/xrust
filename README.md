@@ -71,19 +71,27 @@ Although the eventual desire is to implement all of XSLT v3.0 functionality, som
 
 See the [XSLT module](https://docs.rs/xrust/latest/xrust/xslt/index.html) for an example of how to evaluate an XSL stylesheet.
 
+## Canonical Repository
+
+Development of χrust takes place on [Gitlab](https://gitlab.gnome.org/World/Rust/markup-rs/xrust).
+
+χrust is part of the [markup-rs](https://gitlab.gnome.org/World/Rust/markup-rs) family of projects providing support for the XML tech stack in Rust.
+
 ## Examples
 
-* [Integration](https://github.com/ballsteve/xrust/blob/main/examples/ixml.rs) with [Invisible XML](https://www.w3.org/community/ixml/2021/03/19/welcome-to-ixml/).
-* [An example](https://github.com/ballsteve/xrust/blob/main/examples/issue-30.rs) using XPath, but not XSLT.
+* [Integration](https://gitlab.gnome.org/World/Rust/markup-rs/xrust/-/blob/main/examples/ixml.rs) with [Invisible XML](https://www.w3.org/community/ixml/2021/03/19/welcome-to-ixml/).
+* [An example](https://gitlab.gnome.org/World/Rust/markup-rs/xrust/-/blob/main/examples/issue-30.rs) using XPath, but not XSLT.
 
 ## Compliance
 
-Status of [standards implementation](https://github.com/ballsteve/xrust/blob/main/docs/compliance.md) for XDM, XPath, XQuery, and XSLT.
+Status of [standards implementation](https://gitlab.gnome.org/World/Rust/markup-rs/xrust/-/blob/main/docs/compliance.md) for XDM, XPath, XQuery, and XSLT.
 
 ## Release Notes
 
 | Releases      | Notes                                                                                    |
 |---------------|------------------------------------------------------------------------------------------|
+| Version 1.3.0 | Implement xsl:for-each-group/@group-starting-with. |
+| Version 1.2.5 | Fixed disable-output-escaping. |
 | Version 1.2.4 | Improved performance of DTD validation. Bug fixes for ANT declaration and white space handling. |
 | Version 1.2.3 | Fixed handling of '<' character in attribute value.                                      |
 | Version 1.2.2 | Fixed node() kind test. Fixed union in Pattern. Fixed relative path in Pattern.          |

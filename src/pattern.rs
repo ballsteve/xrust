@@ -260,6 +260,16 @@ fn is_match<N: Node>(a: &Axis, nt: &NodeTest, i: &Item<N>) -> bool {
         Axis::SelfAxis => {
             // Select item if it is an element-type node
             nt.matches(i)
+            /*            match i {
+                Item::Node(n) => {
+                    if n.node_type() == NodeType::Element {
+                        nt.matches(i)
+                    } else {
+                        false
+                    }
+                }
+                _ => false,
+            }*/
         }
         Axis::Parent => {
             // Select the parent node
@@ -268,6 +278,16 @@ fn is_match<N: Node>(a: &Axis, nt: &NodeTest, i: &Item<N>) -> bool {
                 _ => false,
             }
         }
+        Axis::SelfAttribute => match i {
+            Item::Node(n) => {
+                if n.node_type() == NodeType::Attribute {
+                    nt.matches(i)
+                } else {
+                    false
+                }
+            }
+            _ => false,
+        },
         _ => false, // todo
     }
 }

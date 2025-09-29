@@ -14,7 +14,7 @@ use crate::parser::xml::misc::{comment, processing_instruction};
 use crate::parser::xml::qname::qualname_to_parts;
 use crate::parser::xml::reference::reference;
 use crate::parser::{ParseError, ParseInput, StaticState};
-use crate::value::Value;
+use crate::value::{ID, IDREF, Value, ValueBuilder, ValueData};
 use crate::xmldecl::{AttType, DefaultDecl};
 use qualname::{NamespacePrefix, NamespaceUri, NcName, QName};
 use std::rc::Rc;
@@ -133,13 +133,17 @@ where
                             && attname.localname_to_string() == "id"
                         {
                             av = attval.trim().replace("  ", " ");
-                            a = d
-                                .new_attribute(Rc::new(attname), Rc::new(Value::ID(av)))
-                                .expect("unable to create attribute");
+                            if let Ok(avr) = ID::try_from(av) {
+                                a = d
+                                    .new_attribute(Rc::new(attname), Rc::new(Value::from(avr)))
+                                    .expect("unable to create attribute");
+                            } else {
+                                return Err(ParseError::IDError("not an ID".to_string()));
+                            }
                         } else {
                             av = attval;
                             a = d
-                                .new_attribute(Rc::new(attname), state1.get_value(av))
+                                .new_attribute(Rc::new(attname), state1.get_value(&av))
                                 .expect("unable to create attribute");
                         };
 
@@ -212,11 +216,25 @@ where
                                 };
                                 //Assign IDs only if we are tracking.
                                 let v = match (atttype, state1.id_tracking) {
-                                    (AttType::ID, true) => Rc::new(Value::ID(av.clone())),
-                                    (AttType::IDREF, true) => Rc::new(Value::IDREF(av.clone())),
-                                    (AttType::IDREFS, true) => Rc::new(Value::IDREFS(
-                                        av.clone().split(' ').map(|s| s.to_string()).collect(),
-                                    )),
+                                    (AttType::ID, true) => {
+                                        Rc::new(Value::from(ID::try_from(av.clone())?))
+                                    }
+                                    (AttType::IDREF, true) => {
+                                        Rc::new(Value::from(IDREF::try_from(av.clone())?))
+                                    }
+                                    (AttType::IDREFS, true) => Rc::new(
+                                        ValueBuilder::new()
+                                            .value(ValueData::IDREFS(
+                                                av.clone().split(' ').try_fold(
+                                                    vec![],
+                                                    |mut acc, s| {
+                                                        acc.push(IDREF::try_from(s.to_string())?);
+                                                        Ok(acc)
+                                                    },
+                                                )?,
+                                            ))
+                                            .build(),
+                                    ),
                                     (_, _) => Rc::new(Value::from(av.clone())),
                                 };
                                 if atttype == &AttType::NMTOKENS && av.is_empty() {
@@ -332,7 +350,7 @@ where
                                             .doc
                                             .clone()
                                             .unwrap()
-                                            .new_text(Rc::new(Value::String(notex.concat())))
+                                            .new_text(Rc::new(Value::from(notex.concat())))
                                             .expect("unable to create text node"),
                                     );
                                     notex.clear();
@@ -352,7 +370,7 @@ where
                         .doc
                         .clone()
                         .unwrap()
-                        .new_text(Rc::new(Value::String(notex.concat())))
+                        .new_text(Rc::new(Value::from(notex.concat())))
                         .expect("unable to create text node"),
                 );
             }

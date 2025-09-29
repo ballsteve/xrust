@@ -865,3 +865,41 @@ where
     );
     Ok(())
 }
+
+pub fn pattern_attr_1<N: Node, G>(make_empty_doc: G) -> Result<(), Error>
+where
+    G: Fn() -> N,
+{
+    let p: Pattern<N> =
+        Pattern::try_from("attribute::*").expect("unable to parse \"attribute::*\"");
+
+    // Setup a source document
+    let mut sd = make_empty_doc();
+    let t = sd
+        .new_element(Rc::new(QualifiedName::new(
+            None,
+            None,
+            String::from("Test"),
+        )))
+        .expect("unable to create element");
+    sd.push(t.clone()).expect("unable to append child");
+    let a = sd
+        .new_attribute(
+            Rc::new(QualifiedName::new(None, None, String::from("a"))),
+            Rc::new(Value::from("attr value")),
+        )
+        .expect("unable to create attribute");
+    t.add_attribute(a.clone()).expect("unable to add attribute");
+
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+
+    assert_eq!(
+        p.matches(&Context::new(), &mut stctxt, &Rc::new(Item::Node(a))),
+        true
+    );
+    Ok(())
+}

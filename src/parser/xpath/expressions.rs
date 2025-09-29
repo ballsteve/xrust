@@ -6,17 +6,19 @@ use crate::parser::combinators::map::map;
 use crate::parser::{ParseError, ParseInput, StaticState};
 //use crate::parser::combinators::debug::inspect;
 use crate::parser::combinators::delimited::delimited;
+use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::tag::tag;
 use crate::parser::xpath::context::context_item;
 use crate::parser::xpath::expr_wrapper;
 use crate::parser::xpath::functions::function_call;
 use crate::parser::xpath::literals::literal;
+use crate::parser::xpath::predicates::predicate_list;
 use crate::parser::xpath::variables::variable_reference;
 use crate::transform::Transform;
 use qualname::{NamespacePrefix, NamespaceUri};
 
 // PostfixExpr ::= PrimaryExpr (Predicate | ArgumentList | Lookup)*
-// TODO: predicates, arg list, lookup
+// TODO: arg list, lookup
 pub(crate) fn postfix_expr<'a, N: Node + 'a, L>() -> Box<
     dyn Fn(
             ParseInput<'a, N>,
@@ -27,7 +29,10 @@ pub(crate) fn postfix_expr<'a, N: Node + 'a, L>() -> Box<
 where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError> + 'a,
 {
-    Box::new(primary_expr::<N, L>())
+    Box::new(map(
+        pair(primary_expr::<N, L>(), predicate_list()),
+        |(pr, pl)| Transform::Compose(vec![pr, pl]),
+    ))
 }
 
 // PrimaryExpr ::= Literal | VarRef | ParenthesizedExpr | ContextItemExpr | FunctionCall | FunctionItemExpr | MapConstructor | ArrayConstructor | UnaryLookup

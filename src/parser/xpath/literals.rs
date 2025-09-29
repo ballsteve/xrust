@@ -64,7 +64,7 @@ where
 {
     Box::new(map(digit1(), |s: String| {
         let n = s.parse::<i64>().unwrap();
-        Transform::Literal(Item::Value(Rc::new(Value::Integer(n))))
+        Transform::Literal(Item::Value(Rc::new(Value::from(n))))
     }))
 }
 // DecimalLiteral ::= ('.' Digits) | (Digits '.' [0-9]*)
@@ -98,10 +98,10 @@ where
         f.insert(0, '.');
         let n = f.parse::<f64>();
         let i = match n {
-            Ok(m) => Value::Double(m),
+            Ok(m) => Value::from(m),
             Err(_) => {
                 f.insert_str(0, "0");
-                Value::Decimal(Decimal::from_str(&f).unwrap())
+                Value::from(Decimal::from_str(&f).unwrap())
             }
         };
         Transform::Literal(Item::Value(Rc::new(i)))
@@ -121,8 +121,8 @@ where
         let s = format!("{}.{}", w, f);
         let n = s.parse::<f64>();
         let i = match n {
-            Ok(m) => Value::Double(m),
-            Err(_) => Value::Decimal(Decimal::from_str(&s).unwrap()),
+            Ok(m) => Value::from(m),
+            Err(_) => Value::from(Decimal::from_str(&s).unwrap()),
         };
         Transform::Literal(Item::Value(Rc::new(i)))
     }))
@@ -166,7 +166,7 @@ where
         |((_, f), _, s, e)| {
             let n = format!("0.{}e{}{}", f, s.unwrap_or(""), e).parse::<f64>();
             let i = match n {
-                Ok(m) => Value::Double(m),
+                Ok(m) => Value::from(m),
                 Err(_) => panic!("unable to convert to double"),
             };
             Transform::Literal(Item::Value(Rc::new(i)))
@@ -193,7 +193,7 @@ where
         |((c, _, f), _, s, e)| {
             let n = format!("{}.{}e{}{}", c, f, s.unwrap_or(""), e).parse::<f64>();
             let i = match n {
-                Ok(m) => Value::Double(m),
+                Ok(m) => Value::from(m),
                 Err(_) => panic!("unable to convert to double"),
             };
             Transform::Literal(Item::Value(Rc::new(i)))

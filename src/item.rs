@@ -286,11 +286,11 @@ impl<N: Node> Item<N> {
         match self {
             Item::Value(v) => match other {
                 Item::Value(w) => v.compare(w, op),
-                Item::Node(..) => v.compare(&Value::String(other.to_string()), op),
+                Item::Node(..) => v.compare(&Value::from(other.to_string()), op),
                 _ => Result::Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
             },
             Item::Node(..) => {
-                other.compare(&Item::Value(Rc::new(Value::String(self.to_string()))), op)
+                other.compare(&Item::Value(Rc::new(Value::from(self.to_string()))), op)
             }
             _ => Result::Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
         }
@@ -442,6 +442,9 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
 
     /// Check if two Nodes are the same Node
     fn is_same(&self, other: &Self) -> bool;
+
+    // Check if the node is attached to the tree
+    fn is_attached(&self) -> bool;
 
     /// Get the document order of the node. The value returned is relative to the document containing the node.
     /// Depending on the implementation, this value may be volatile;

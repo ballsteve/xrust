@@ -13,7 +13,7 @@ use xrust::transform::{
     ArithmeticOperand, ArithmeticOperator, Axis, Grouping, KindTest, NameTest, NodeMatch, NodeTest,
     Order, Transform, WildcardOrName,
 };
-use xrust::value::{Operator, Value};
+use xrust::value::{Operator, Value, ValueData};
 use xrust::xdmerror::{Error, ErrorKind};
 
 pub fn generic_tr_empty<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
@@ -136,7 +136,7 @@ where
         Box::new(Transform::Literal(Item::<N>::Value(Rc::new(Value::from(
             "special character: < less than",
         ))))),
-        false,
+        OutputSpec::Normal,
     );
     let mydoc = make_empty_doc();
     let mut stctxt = StaticContextBuilder::new()
@@ -159,7 +159,7 @@ where
         Box::new(Transform::Literal(Item::<N>::Value(Rc::new(Value::from(
             "special character: < less than",
         ))))),
-        true,
+        OutputSpec::NoEscape,
     );
     let mydoc = make_empty_doc();
     let mut stctxt = StaticContextBuilder::new()
@@ -606,7 +606,7 @@ where
     let ctxt = ContextBuilder::new()
         .result_document(mydoc)
         .context(vec![Item::Node(n.clone())])
-        .previous_context(Some(Item::Node(n.clone())))
+        .context_item(Some(Item::Node(n.clone())))
         .build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
 
@@ -2881,6 +2881,51 @@ where
     Ok(())
 }
 
+pub fn generic_tr_group_starting_with_1<N: Node, G, H>(make_empty_doc: G, _: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    // xsl:for-each-group select="(a, a, b, c, c, c)" group-adjacent="." body == xsl:text "group current-grouping-key size count(current-group)"
+    let x = Transform::ForEach(
+        Some(Grouping::StartingWith(Box::new(
+            Pattern::try_from(".[. eq 'a']").expect("unable to parse pattern"),
+        ))),
+        Box::new(Transform::SequenceItems(vec![
+            Transform::Literal(Item::<N>::Value(Rc::new(Value::from("a")))),
+            Transform::Literal(Item::<N>::Value(Rc::new(Value::from("b")))),
+            Transform::Literal(Item::<N>::Value(Rc::new(Value::from("c")))),
+            Transform::Literal(Item::<N>::Value(Rc::new(Value::from("a")))),
+            Transform::Literal(Item::<N>::Value(Rc::new(Value::from("b")))),
+            Transform::Literal(Item::<N>::Value(Rc::new(Value::from("c")))),
+        ])),
+        Box::new(Transform::LiteralElement(
+            Rc::new(QualifiedName::new(None, None, String::from("group"))),
+            Box::new(Transform::SequenceItems(vec![
+                Transform::Literal(Item::Value(Rc::new(Value::from(" #members ")))),
+                Transform::Count(Box::new(Transform::CurrentGroup)),
+            ])),
+        )),
+        vec![],
+    );
+
+    let resdoc = make_empty_doc();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+    let seq = ContextBuilder::new()
+        .result_document(resdoc)
+        .build()
+        .dispatch(&mut stctxt, &x)
+        .expect("evaluation failed");
+    assert_eq!(seq.len(), 2);
+    Ok(())
+    // the groups are not ordered, so it is difficult to test all of the groups are correct
+    //assert_eq!(seq[0].to_string(), "key 0 #members 10")
+}
+
 pub fn generic_tr_apply_templates_builtins<N: Node, G, H>(
     make_empty_doc: G,
     _: H,
@@ -2914,6 +2959,7 @@ where
             vec![0], // import
             None,    // document order
             None,    // mode
+            String::from("/"),
         ))
         .template(Template::new(
             // pattern child::text()
@@ -2924,6 +2970,7 @@ where
             vec![0],
             None,
             None,
+            String::from("child::text()"),
         ))
         .context(vec![Item::Node(sd)])
         .build();
@@ -2978,6 +3025,7 @@ where
             vec![0],   // import
             Some(1),   // document order
             None,      // mode
+            String::from("child::Test"),
         ))
         .template(Template::new(
             // pattern "/",
@@ -2994,6 +3042,7 @@ where
             vec![0], // import
             None,    // document order
             None,    // mode
+            String::from("/"),
         ))
         .template(Template::new(
             // pattern child::text()
@@ -3004,6 +3053,7 @@ where
             vec![0],                // import
             None,                   // document order
             None,                   // mode
+            String::from("child::text()"),
         ))
         .context(vec![Item::Node(sd)])
         .build();
@@ -3050,6 +3100,7 @@ where
             vec![0],   // import
             Some(1),   // document order
             None,      // mode
+            String::from("child::Test"),
         ))
         .template(Template::new(
             // pattern "*"
@@ -3061,6 +3112,7 @@ where
             vec![0],   // import
             Some(2),   // document order
             None,      // mode
+            String::from("child::*"),
         ))
         .template(Template::new(
             // pattern "/",
@@ -3077,6 +3129,7 @@ where
             vec![0], // import
             None,    // document order
             None,    // mode
+            String::from("/"),
         ))
         .template(Template::new(
             // pattern child::text()
@@ -3087,6 +3140,7 @@ where
             vec![0],                // import
             None,                   // document order
             None,                   // mode
+            String::from("child::text()"),
         ))
         .context(vec![Item::Node(sd)])
         .build();
@@ -3164,6 +3218,7 @@ where
             vec![0],   // import
             Some(1),   // document order
             None,      // mode
+            String::from("child::Test"),
         ))
         .template(Template::new(
             // pattern "/",
@@ -3180,6 +3235,7 @@ where
             vec![0], // import
             None,    // document order
             None,    // mode
+            String::from("/"),
         ))
         .template(Template::new(
             // pattern child::text()
@@ -3190,6 +3246,7 @@ where
             vec![0],                // import
             None,                   // document order
             None,                   // mode
+            String::from("child::text()"),
         ))
         .template(Template::new(
             // pattern child::node()
@@ -3206,6 +3263,7 @@ where
             vec![0],                                                          // import
             None,                                                             // document order
             Some(QName::from_local_name(NcName::try_from("first").unwrap())), // mode
+            String::from("child::*"),
         ))
         .template(Template::new(
             // pattern child::node()
@@ -3222,6 +3280,7 @@ where
             vec![0],                                                           // import
             None,                                                              // document order
             Some(QName::from_local_name(NcName::try_from("second").unwrap())), // mode
+            String::from("child::*"),
         ))
         .template(Template::new(
             // pattern child::text()
@@ -3232,6 +3291,7 @@ where
             vec![0],                // import
             None,                   // document order
             Some(QName::from_local_name(NcName::try_from("first").unwrap())), // mode
+            String::from("child::text()"),
         ))
         .template(Template::new(
             // pattern child::text()
@@ -3242,6 +3302,7 @@ where
             vec![0],                // import
             None,                   // document order
             Some(QName::from_local_name(NcName::try_from("second").unwrap())), // mode
+            String::from("child::text()"),
         ))
         .context(vec![Item::Node(sd)])
         .build();
@@ -3294,6 +3355,7 @@ where
             vec![0, 1], // import
             Some(1),    // document order
             None,       // mode
+            String::from("child::Test"),
         ))
         .template(Template::new(
             // pattern "Test"
@@ -3305,6 +3367,7 @@ where
             vec![0],   // import
             Some(2),   // document order
             None,      // mode
+            String::from("child::Test"),
         ))
         .template(Template::new(
             // pattern "*"
@@ -3321,6 +3384,7 @@ where
             vec![0], // import
             None,    // document order
             None,    // mode
+            String::from("child::*"),
         ))
         .template(Template::new(
             // pattern "/",
@@ -3337,6 +3401,7 @@ where
             vec![0], // import
             None,    // document order
             None,    // mode
+            String::from("/"),
         ))
         .template(Template::new(
             // pattern child::text()
@@ -3347,6 +3412,7 @@ where
             vec![0],                // import
             None,                   // document order
             None,                   // mode
+            String::from("child::text()"),
         ))
         .context(vec![Item::Node(sd)])
         .build();
@@ -3398,6 +3464,7 @@ where
             vec![0],   // import
             Some(1),   // document order
             None,      // mode
+            String::from("child::Test"),
         ))
         .template(Template::new(
             // pattern "Test"
@@ -3409,6 +3476,7 @@ where
             vec![0],   // import
             Some(2),   // document order
             None,      // mode
+            String::from("child::Test"),
         ))
         .template(Template::new(
             // pattern "*"
@@ -3425,6 +3493,7 @@ where
             vec![0], // import
             None,    // document order
             None,    // mode
+            String::from("child::*"),
         ))
         .template(Template::new(
             // pattern "/",
@@ -3441,6 +3510,7 @@ where
             vec![0], // import
             None,    // document order
             None,    // mode
+            String::from("/"),
         ))
         .template(Template::new(
             // pattern child::text()
@@ -3451,6 +3521,7 @@ where
             vec![0],                // import
             None,                   // document order
             None,                   // mode
+            String::from("child::text()"),
         ))
         .context(vec![Item::Node(sd)])
         .build();
@@ -3496,6 +3567,7 @@ where
             vec![0],   // import
             Some(1),   // document order
             None,      // mode
+            String::from("child::Test"),
         ))
         .template(Template::new(
             // pattern "Test"
@@ -3509,6 +3581,7 @@ where
             Some(QName::from_local_name(
                 NcName::try_from("modetest").unwrap(),
             )), // mode
+            String::from("child::Test"),
         ))
         .template(Template::new(
             // pattern "*"
@@ -3525,6 +3598,7 @@ where
             vec![0], // import
             None,    // document order
             None,    // mode
+            String::from("child::*"),
         ))
         .template(Template::new(
             // pattern "/",
@@ -3553,6 +3627,7 @@ where
             vec![0],   // import
             None,      // document order
             None,      // mode
+            String::from("/"),
         ))
         .template(Template::new(
             // pattern child::text()
@@ -3563,6 +3638,7 @@ where
             vec![0],                // import
             None,                   // document order
             None,                   // mode
+            String::from("child::text()"),
         ))
         .context(vec![Item::Node(sd)])
         .build();
@@ -3636,6 +3712,7 @@ where
             vec![0],   // import
             Some(1),   // document order
             None,      // mode
+            String::from("child::Test"),
         ))
         .template(Template::new(
             // pattern "*"
@@ -3652,6 +3729,7 @@ where
             vec![0], // import
             None,    // document order
             None,    // mode
+            String::from("child::*"),
         ))
         .template(Template::new(
             // pattern "/",
@@ -3668,6 +3746,7 @@ where
             vec![0],   // import
             None,      // document order
             None,      // mode
+            String::from("/"),
         ))
         .template(Template::new(
             // pattern child::text()
@@ -3678,6 +3757,7 @@ where
             vec![0],                // import
             None,                   // document order
             None,                   // mode
+            String::from("child::text()"),
         ))
         .context(vec![Item::Node(sd)])
         .build();
@@ -4695,8 +4775,8 @@ where
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     match &seq[0] {
-        Item::Value(v) => match **v {
-            Value::DateTime(dt) => {
+        Item::Value(v) => match v.value {
+            ValueData::DateTime(dt) => {
                 assert_eq!(dt.year(), Local::now().year());
                 assert_eq!(dt.month(), Local::now().month());
                 assert_eq!(dt.day(), Local::now().day());
@@ -4728,8 +4808,8 @@ where
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     match &seq[0] {
-        Item::Value(v) => match **v {
-            Value::Date(dt) => {
+        Item::Value(v) => match v.value {
+            ValueData::Date(dt) => {
                 assert_eq!(dt.year(), Local::now().year());
                 assert_eq!(dt.month(), Local::now().month());
                 assert_eq!(dt.day(), Local::now().day());
@@ -4758,8 +4838,8 @@ where
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     match &seq[0] {
-        Item::Value(v) => match **v {
-            Value::Time(dt) => {
+        Item::Value(v) => match v.value {
+            ValueData::Time(dt) => {
                 assert_eq!(dt.hour(), Local::now().hour());
                 assert_eq!(dt.minute(), Local::now().minute());
                 assert_eq!(dt.second(), Local::now().second()); // It is possible for this to fail if the elapsed time to execute the function call and the test falls across a second quantum
@@ -5161,7 +5241,7 @@ where
 {
     let x = Transform::FormatInteger(
         Box::new(Transform::SequenceItems(vec![Transform::Literal(
-            Item::Value(Rc::new(Value::Integer(42))),
+            Item::Value(Rc::new(Value::from(42))),
         )])),
         Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("1"))))),
     );
@@ -5189,7 +5269,7 @@ where
 {
     let x = Transform::FormatInteger(
         Box::new(Transform::SequenceItems(vec![Transform::Literal(
-            Item::Value(Rc::new(Value::Integer(42))),
+            Item::Value(Rc::new(Value::from(42))),
         )])),
         Box::new(Transform::Literal(Item::Value(Rc::new(Value::from(
             "0001",
@@ -5219,7 +5299,7 @@ where
 {
     let x = Transform::FormatInteger(
         Box::new(Transform::SequenceItems(vec![Transform::Literal(
-            Item::Value(Rc::new(Value::Integer(42))),
+            Item::Value(Rc::new(Value::from(42))),
         )])),
         Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("W"))))),
     );
@@ -5247,7 +5327,7 @@ where
 {
     let x = Transform::FormatInteger(
         Box::new(Transform::SequenceItems(vec![Transform::Literal(
-            Item::Value(Rc::new(Value::Integer(42))),
+            Item::Value(Rc::new(Value::from(42))),
         )])),
         Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("w"))))),
     );
@@ -5275,7 +5355,7 @@ where
 {
     let x = Transform::FormatInteger(
         Box::new(Transform::SequenceItems(vec![Transform::Literal(
-            Item::Value(Rc::new(Value::Integer(42))),
+            Item::Value(Rc::new(Value::from(42))),
         )])),
         Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("Ww"))))),
     );
@@ -5303,7 +5383,7 @@ where
 {
     let x = Transform::FormatInteger(
         Box::new(Transform::SequenceItems(vec![Transform::Literal(
-            Item::Value(Rc::new(Value::Integer(42))),
+            Item::Value(Rc::new(Value::from(42))),
         )])),
         Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("i"))))),
     );
@@ -5331,7 +5411,7 @@ where
 {
     let x = Transform::FormatInteger(
         Box::new(Transform::SequenceItems(vec![Transform::Literal(
-            Item::Value(Rc::new(Value::Integer(42))),
+            Item::Value(Rc::new(Value::from(42))),
         )])),
         Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("I"))))),
     );

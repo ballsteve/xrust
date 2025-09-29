@@ -72,7 +72,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::item::{Item, Node, NodeType, Sequence};
-use crate::output::*;
+use crate::output::{OutputDefinition, OutputSpec};
 use crate::parser::avt::parse as parse_avt;
 use crate::parser::xpath::parse;
 use crate::pattern::{Branch, Pattern};
@@ -84,7 +84,7 @@ use crate::transform::{
     Axis, Grouping, KindTest, NameTest, NodeMatch, NodeTest, Order, Transform, WildcardOrName,
     WildcardOrNamespaceUri, in_scope_namespaces,
 };
-use crate::value::*;
+use crate::value::{Value, ValueBuilder, ValueData};
 use crate::xdmerror::*;
 use qualname::{NamespaceUri, NcName, QName};
 use std::convert::TryFrom;
@@ -481,7 +481,7 @@ where
         .filter(|c| c.get_attribute_node(&*ATTRMATCH).is_some())
         .try_for_each(|c| {
             let m = c.get_attribute(&*ATTRMATCH);
-            let pat = Pattern::try_from(m.to_string()).map_err(|e| {
+            let pat = Pattern::try_from((m.to_string(), c.clone())).map_err(|e| {
                 Error::new(
                     e.kind,
                     format!(
@@ -559,6 +559,7 @@ where
                     n.to_qname(n.to_string())
                         .expect("unable to resolve qualified name")
                 }), // TODO: don't panic
+                m.to_string(),
             ));
             Ok::<(), Error>(())
         })?;
@@ -601,6 +602,7 @@ where
             vec![0],
             None,
             None,
+            String::from("/"),
         ))
         // This matches "*" and applies templates to all children
         .template(Template::new(
@@ -617,6 +619,7 @@ where
             vec![0],
             None,
             None,
+            String::from("child::*"),
         ))
         // This matches "text()" and copies content
         .template(Template::new(
@@ -626,6 +629,7 @@ where
             vec![0],
             None,
             None,
+            String::from("child::text()"),
         ))
         .template_all(templates)
         .output_definition(od)
@@ -807,7 +811,7 @@ fn to_transform<N: Node>(
     //let ns = in_scope_namespaces(Some(n.clone()));
 
     match n.node_type() {
-        NodeType::Text => Ok(Transform::Literal(Item::Value(Rc::new(Value::String(
+        NodeType::Text => Ok(Transform::Literal(Item::Value(Rc::new(Value::from(
             n.to_string(),
         ))))),
         NodeType::Element => {
@@ -1075,7 +1079,19 @@ fn to_transform<N: Node>(
                             )?)),
                             ord,
                         )),
-                        // TODO: group-starting-with and group-ending-with
+                        ("", "", start, "") => Ok(Transform::ForEach(
+                            Some(Grouping::StartingWith(Box::new(Pattern::try_from(start)?))),
+                            Box::new(parse::<N>(&s.to_string(), Some(n.clone()), None)?),
+                            Box::new(Transform::SequenceItems(n.child_iter().try_fold(
+                                vec![],
+                                |mut body, e| {
+                                    body.push(to_transform(e, attr_sets)?);
+                                    Ok(body)
+                                },
+                            )?)),
+                            ord,
+                        )),
+                        // TODO: group-ending-with
                         _ => Result::Err(Error::new(
                             ErrorKind::NotImplemented,
                             "invalid grouping attribute(s) specified".to_string(),
