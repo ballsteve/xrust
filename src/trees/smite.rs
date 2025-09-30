@@ -815,51 +815,18 @@ impl ItemNode for RNode {
                 }
                 Ok(result)
             }
-            NodeInner::ProcessingInstruction(_, qn, v) => {
-                let d = self.owner_document();
-                let mut w = v.clone();
-                if let ValueData::String(s) = v.value.clone() {
-                    w = Rc::new(Value::from(
-                        s.replace("&", "&amp;")
-                            .replace("<", "&lt;")
-                            .replace(">", "&gt;")
-                            .replace("\r", "&#D;"),
-                    ))
-                }
-                Ok(d.new_processing_instruction(qn.clone(), w)?)
+            NodeInner::ProcessingInstruction(_, _, _) => {
+                self.shallow_copy()
             }
             NodeInner::Comment(_, _) | NodeInner::Namespace(_, _, _) => Err(Error::new(
                 ErrorKind::TypeError,
                 "invalid node type".to_string(),
             )),
-            NodeInner::Text(_, v) => {
-                let d = self.owner_document();
-                let mut w = v.clone();
-                if let ValueData::String(s) = v.value.clone() {
-                    w = Rc::new(Value::from(
-                        s.replace("&", "&amp;")
-                            .replace("<", "&lt;")
-                            .replace(">", "&gt;")
-                            .replace("\r", "&#xD;"),
-                    ))
-                }
-                Ok(d.new_text(w)?)
+            NodeInner::Text(_, _) => {
+                self.shallow_copy()
             }
-            NodeInner::Attribute(_, qn, v) => {
-                //self.shallow_copy()
-                let d = self.owner_document();
-                let w = v.to_string();
-                Ok(d.new_attribute(
-                    qn.clone(),
-                    Rc::new(Value::from(
-                        w.replace("&", "&amp;")
-                            .replace("<", "&lt;")
-                            .replace("\"", "&quot;")
-                            .replace("\r", "&#xD;")
-                            .replace("\t", "&#x9;")
-                            .replace("\n", "&#xA;"),
-                    )),
-                )?)
+            NodeInner::Attribute(_, _, _) => {
+                self.shallow_copy()
             }
             NodeInner::Element(_, _, _, _, _) => {
                 let mut result = self.shallow_copy()?;
