@@ -11,10 +11,10 @@ Pronounced "crust".
 The goal of this project is to implement [XPath 3.1](https://www.w3.org/TR/xpath-31/), [XQuery 3.1](https://www.w3.org/TR/xquery-31/) and [XSLT 3.0](http://www.w3.org/TR/xslt-30/) in Rust.
 Also included is an XML parser, using a parser combinator inspired by Nom.
 
-Currently, the project has achieved the functional equivalent of XPath v1.0 and XSLT 1.0. That is, all of the elements and functions in v1.0 XPath and XSLT have been implemented.
-However, it is not *compliant* with v1.0. This is because it implements the v3.0 data model.
+Currently, the project has achieved the functional equivalent of XPath 1.0 and XSLT 1.0. That is, all of the elements and functions in v1.0 XPath and XSLT have been implemented.
+However, it is not *compliant* with XPath/XSLT v1.0. This is because it implements the v3.0 data model.
 
-In addition to the (rudimentary) implementation of the [XQuery and XPath Data Model 3.1](https://www.w3.org/TR/xpath-datamodel-31/) data model, a few other features of XPath and XSLT v2.0/v3.0 have been implemented, such as FLWR expressions, grouping (i.e. xsl:for-each-group), and user-defined functions.
+In addition to the (rudimentary) implementation of the [XQuery and XPath Data Model 3.1](https://www.w3.org/TR/xpath-datamodel-31/) data model, a few other features of XPath and XSLT 2.0/3.0 have been implemented, such as FLWR expressions, grouping (i.e. xsl:for-each-group), and user-defined functions.
 
 ## Design
 
@@ -90,7 +90,7 @@ Status of [standards implementation](https://gitlab.gnome.org/World/Rust/markup-
 
 | Releases      | Notes                                                                                    |
 |---------------|------------------------------------------------------------------------------------------|
-| Version 1.3.0 | Implement xsl:for-each-group/@group-starting-with. |
+| Version 1.3.0 | Implement xsl:for-each-group/@group-starting-with. Improved serialisation of XML, including canonical format. Fix bug in adding attribute node to result tree. Support predicates for postfix expressions. |
 | Version 1.2.5 | Fixed disable-output-escaping. |
 | Version 1.2.4 | Improved performance of DTD validation. Bug fixes for ANT declaration and white space handling. |
 | Version 1.2.3 | Fixed handling of '<' character in attribute value.                                      |

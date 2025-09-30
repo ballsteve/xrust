@@ -253,7 +253,7 @@ Version 1.0 functions. Version 2.0 - 3.1 all not supported (yet).
 | xsl:element/@name                            | yes     |                                                               |
 | xsl:element/@namespace                       | no      |                                                               |
 | xsl:element/@inherit-namespaces              | no      |                                                               |
-| xsl:element/@use-attribute-sets              | no      |                                                               |
+| xsl:element/@use-attribute-sets              | yes     |                                                               |
 | xsl:element/@type                            | no      |                                                               |
 | xsl:element/@validation                      | no      |                                                               |
 | xsl:evaluate                                 | no      |                                                               |
@@ -275,7 +275,7 @@ Version 1.0 functions. Version 2.0 - 3.1 all not supported (yet).
 | xsl:for-each-group/@select                   | yes     |                                                               |
 | xsl:for-each-group/@group-by                 | yes     |                                                               |
 | xsl:for-each-group/@group-adjacent           | yes     |                                                               |
-| xsl:for-each-group/@group-starting-with      | no      |                                                               |
+| xsl:for-each-group/@group-starting-with      | yes     |                                                               |
 | xsl:for-each-group/@group-ending-with        | no      |                                                               |
 | xsl:for-each-group/@composite                | no      |                                                               |
 | xsl:for-each-group/@collation                | no      |                                                               |
