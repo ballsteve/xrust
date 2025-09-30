@@ -287,7 +287,7 @@ where
                     let newnode = mc.deep_copy()?;
                     let newat = styledoc.new_attribute(
                         Rc::new(QualifiedName::new(
-                            Some(String::from("http://github.com/ballsteve/xrust")),
+                            Some(String::from("https://gitlab.gnome.org/World/Rust/markup-rs/xrust/")),
                             None,
                             String::from("import"),
                         )),
@@ -428,7 +428,7 @@ where
             // Set the import precedence
             let mut import: usize = 0;
             let im = c.get_attribute(&QualifiedName::new(
-                Some(String::from("http://github.com/ballsteve/xrust")),
+                Some(String::from("https://gitlab.gnome.org/World/Rust/markup-rs/xrust/")),
                 None,
                 String::from("import"),
             ));

@@ -106,7 +106,7 @@ pub fn system_property<
                 "Steve Ball, Daniel Murphy",
             )))]),
             (Some(XSLTNS), "vendor-url") => Ok(vec![Item::Value(Rc::new(Value::from(
-                "https://github.com/ballsteve/xrust",
+                "https://gitlab.gnome.org/World/Rust/markup-rs/xrust/",
             )))]),
             (Some(XSLTNS), "product-name") => {
                 Ok(vec![Item::Value(Rc::new(Value::from("\u{03A7}rust")))])
