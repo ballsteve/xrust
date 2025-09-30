@@ -35,8 +35,8 @@ pub(crate) enum Occurances {
     ZeroOrOne,
 }
 
-pub(crate) fn doctypedecl<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn doctypedecl<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     move |input| match tuple8(
         tag("<!DOCTYPE"),
         whitespace1(),

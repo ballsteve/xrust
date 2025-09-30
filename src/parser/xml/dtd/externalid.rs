@@ -1,3 +1,4 @@
+use crate::Node;
 use crate::parser::combinators::alt::alt2;
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::map::map;
@@ -10,10 +11,9 @@ use crate::parser::common::{is_pubid_char, is_pubid_charwithapos};
 use crate::parser::xml::dtd::extsubset::extsubset;
 use crate::parser::xml::dtd::textdecl::textdecl;
 use crate::parser::{ParseError, ParseInput};
-use crate::Node;
 
-pub(crate) fn externalid<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn externalid<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     move |(input, state)| {
         match alt2(
             map(
@@ -68,8 +68,8 @@ pub(crate) fn externalid<N: Node>(
     }
 }
 
-pub(crate) fn textexternalid<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn textexternalid<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     move |(input, state)| {
         match alt2(
             map(

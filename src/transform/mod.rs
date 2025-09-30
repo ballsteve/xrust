@@ -59,6 +59,7 @@ use crate::item::Sequence;
 use crate::item::{Item, Node, NodeType, SequenceTrait};
 use crate::namespace::NamespaceMap;
 use crate::output::OutputSpec;
+use crate::pattern::Pattern;
 use crate::qname::QualifiedName;
 use crate::transform::callable::ActualParameters;
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
@@ -340,7 +341,13 @@ impl<N: Node> Debug for Transform<N> {
             Transform::Loop(_, _) => write!(f, "loop"),
             Transform::Switch(c, _) => write!(f, "switch {} clauses", c.len()),
             Transform::ForEach(_g, _, _, o) => write!(f, "for-each ({} sort keys)", o.len()),
-            Transform::Union(v) => write!(f, "union of {} operands", v.len()),
+            Transform::Union(v) => {
+                write!(f, "union of {} operands", v.len()).ok();
+                v.iter().for_each(|o| {
+                    write!(f, "\noperand: {:?}", o).ok();
+                });
+                Ok(())
+            }
             Transform::ApplyTemplates(_, m, o) => {
                 write!(f, "Apply templates (mode {:?}, {} sort keys)", m, o.len())
             }
@@ -461,8 +468,8 @@ pub(crate) fn do_sort<
 #[derive(Clone, Debug)]
 pub enum Grouping<N: Node> {
     By(Vec<Transform<N>>),
-    StartingWith(Vec<Transform<N>>),
-    EndingWith(Vec<Transform<N>>),
+    StartingWith(Box<Pattern<N>>),
+    EndingWith(Box<Pattern<N>>),
     Adjacent(Vec<Transform<N>>),
 }
 

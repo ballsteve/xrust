@@ -15,7 +15,7 @@ pub(crate) fn get_nt_localname(nt: &NodeTest) -> String {
     }
 }
 
-pub(crate) fn noop<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> {
+pub(crate) fn noop<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> {
     move |_| Err(ParseError::Combinator)
 }

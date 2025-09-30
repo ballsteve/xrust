@@ -13,8 +13,8 @@ use crate::transform::Transform;
 use crate::value::Operator;
 
 // ComparisonExpr ::= StringConcatExpr ( (ValueComp | GeneralComp | NodeComp) StringConcatExpr)?
-pub(crate) fn comparison_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+pub(crate) fn comparison_expr<'a, N: Node + 'a>()
+-> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
         pair(
             stringconcat_expr::<N>(),

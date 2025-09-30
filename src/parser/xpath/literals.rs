@@ -20,14 +20,14 @@ use crate::value::Value;
 use rust_decimal::Decimal;
 
 // Literal ::= NumericLiteral | StringLiteral
-pub(crate) fn literal<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+pub(crate) fn literal<'a, N: Node + 'a>()
+-> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(alt2(numeric_literal::<N>(), string_literal::<N>()))
 }
 
 // NumericLiteral ::= IntegerLiteral | DecimalLiteral | DoubleLiteral
-fn numeric_literal<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn numeric_literal<'a, N: Node + 'a>()
+-> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(alt3(
         double_literal::<N>(),
         decimal_literal::<N>(),
@@ -35,8 +35,8 @@ fn numeric_literal<'a, N: Node + 'a>(
     ))
 }
 // IntegerLiteral ::= Digits
-fn integer_literal<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn integer_literal<'a, N: Node + 'a>()
+-> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(digit1(), |s: String| {
         let n = s.parse::<i64>().unwrap();
         Transform::Literal(Item::Value(Rc::new(Value::from(n))))
@@ -44,15 +44,15 @@ fn integer_literal<'a, N: Node + 'a>(
 }
 // DecimalLiteral ::= ('.' Digits) | (Digits '.' [0-9]*)
 // Construct a double, but if that fails fall back to decimal
-fn decimal_literal<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn decimal_literal<'a, N: Node + 'a>()
+-> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(alt2(
         decimal_literal_frac::<N>(),
         decimal_literal_comp::<N>(),
     ))
 }
-fn decimal_literal_frac<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn decimal_literal_frac<'a, N: Node + 'a>()
+-> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(pair(tag("."), digit1()), |(_, mut f)| {
         f.insert(0, '.');
         let n = f.parse::<f64>();
@@ -66,8 +66,8 @@ fn decimal_literal_frac<'a, N: Node + 'a>(
         Transform::Literal(Item::Value(Rc::new(i)))
     }))
 }
-fn decimal_literal_comp<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn decimal_literal_comp<'a, N: Node + 'a>()
+-> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(tuple3(digit1(), tag("."), digit0()), |(w, _, f)| {
         let s = format!("{}.{}", w, f);
         let n = s.parse::<f64>();
@@ -81,13 +81,13 @@ fn decimal_literal_comp<'a, N: Node + 'a>(
 
 // DoubleLiteral ::= (('.' Digits) | (Digits ('.' [0-9]*)?)) [eE] [+-]? Digits
 // Construct a double
-fn double_literal<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn double_literal<'a, N: Node + 'a>()
+-> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(alt2(double_literal_frac::<N>(), double_literal_comp::<N>()))
 }
 
-fn double_literal_frac<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn double_literal_frac<'a, N: Node + 'a>()
+-> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
         tuple4(
             pair(tag("."), digit1()),
@@ -105,8 +105,8 @@ fn double_literal_frac<'a, N: Node + 'a>(
         },
     ))
 }
-fn double_literal_comp<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn double_literal_comp<'a, N: Node + 'a>()
+-> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
         tuple4(
             tuple3(digit1(), tag("."), digit1()),
@@ -126,8 +126,8 @@ fn double_literal_comp<'a, N: Node + 'a>(
 }
 
 // StringLiteral ::= double- or single-quote delimited with double-delimiter escape
-fn string_literal_double<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn string_literal_double<'a, N: Node + 'a>()
+-> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
         delimited(
             anychar('"'),
@@ -139,8 +139,8 @@ fn string_literal_double<'a, N: Node + 'a>(
         |s| Transform::Literal(Item::Value(Rc::new(Value::from(s)))),
     ))
 }
-fn string_literal_single<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn string_literal_single<'a, N: Node + 'a>()
+-> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
         delimited(
             anychar('\''),
@@ -152,8 +152,8 @@ fn string_literal_single<'a, N: Node + 'a>(
         |s| Transform::Literal(Item::Value(Rc::new(Value::from(s)))),
     ))
 }
-fn string_literal<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn string_literal<'a, N: Node + 'a>()
+-> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(alt2(
         string_literal_double::<N>(),
         string_literal_single::<N>(),

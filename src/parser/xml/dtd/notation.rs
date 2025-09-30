@@ -14,8 +14,8 @@ use crate::parser::{ParseError, ParseInput};
 use crate::xmldecl::{AttType, DTDDecl};
 
 //NotationType ::= 'NOTATION' S '(' S? Name (S? '|' S? Name)* S? ')'
-pub(crate) fn notationtype<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, AttType), ParseError> {
+pub(crate) fn notationtype<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, AttType), ParseError> {
     map(
         tuple8(
             tag("NOTATION"),
@@ -37,8 +37,8 @@ pub(crate) fn notationtype<N: Node>(
     )
 }
 
-pub(crate) fn notationpublicid<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn notationpublicid<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     alt3(
         map(
             tuple3(
@@ -89,8 +89,8 @@ pub(crate) fn notationpublicid<N: Node>(
     )
 }
 
-pub(crate) fn notation_decl<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn notation_decl<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     move |input| match tuple7(
         tag("<!NOTATION"),
         whitespace1(),
@@ -114,8 +114,8 @@ pub(crate) fn notation_decl<N: Node>(
 }
 
 #[allow(dead_code)]
-pub(crate) fn ndatadecl<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn ndatadecl<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     map(
         tuple4(whitespace1(), tag("NDATA"), whitespace1(), name()),
         |(_, _, _, notation)| notation,

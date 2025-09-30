@@ -12,14 +12,14 @@ use crate::transform::Transform;
 use crate::parser::xpath::expr_wrapper;
 
 // PredicateList ::= Predicate*
-pub(crate) fn predicate_list<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+pub(crate) fn predicate_list<'a, N: Node + 'a>()
+-> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(many0(predicate::<N>()), |v| Transform::Compose(v)))
 }
 
 // Predicate ::= "[" expr "]"
-fn predicate<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn predicate<'a, N: Node + 'a>()
+-> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
         tuple3(
             map(tuple3(xpwhitespace(), tag("["), xpwhitespace()), |_| ()),

@@ -7,8 +7,8 @@ use crate::parser::xml::qname::qualname;
 use crate::parser::{ParseError, ParseInput};
 
 //elementdecl	   ::=   	'<!ELEMENT' S Name S contentspec S? '>'
-pub(crate) fn elementdecl<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn elementdecl<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     move |input| match tuple7(
         tag("<!ELEMENT"),
         whitespace1(),

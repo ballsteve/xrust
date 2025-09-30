@@ -8,8 +8,8 @@ use url::Url;
 
 use crate::item::{Item, Node, Sequence, SequenceTrait};
 use crate::parser::datetime::parse as picture_parse;
-use crate::transform::context::{Context, StaticContext};
 use crate::transform::Transform;
+use crate::transform::context::{Context, StaticContext};
 use crate::value::{Value, ValueData};
 use crate::xdmerror::{Error, ErrorKind};
 

@@ -7,9 +7,9 @@ use xrust::{Error, ErrorKind};
 mod xml;
 mod xml_id;
 
+use encoding_rs::UTF_8;
 use encoding_rs::UTF_16BE;
 use encoding_rs::UTF_16LE;
-use encoding_rs::UTF_8;
 use encoding_rs::WINDOWS_1252;
 use encoding_rs_io::DecodeReaderBytesBuilder;
 

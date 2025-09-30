@@ -5,8 +5,8 @@ use crate::parser::combinators::take::take_until;
 use crate::parser::xml::dtd::extsubset::extsubsetdecl;
 use crate::parser::{ParseError, ParseInput};
 
-pub(crate) fn pereference<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn pereference<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     move |(input, state)| {
         let e = delimited(tag("%"), take_until(";"), tag(";"))((input, state));
         match e {
@@ -54,8 +54,8 @@ pub(crate) fn pereference<N: Node>(
     }
 }
 
-pub(crate) fn petextreference<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn petextreference<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     move |(input, state)| {
         let e = delimited(tag("%"), take_until(";"), tag(";"))((input, state));
         match e {

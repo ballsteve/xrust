@@ -483,6 +483,14 @@ fn tr_group_adjacent_sort_1() {
     .expect("test failed")
 }
 #[test]
+fn tr_group_starting_with_1() {
+    transformgeneric::generic_tr_group_starting_with_1::<RNode, _, _>(
+        smite::make_empty_doc,
+        smite::make_sd,
+    )
+    .expect("test failed")
+}
+#[test]
 fn tr_apply_templates_builtins() {
     transformgeneric::generic_tr_apply_templates_builtins::<RNode, _, _>(
         smite::make_empty_doc,

@@ -15,8 +15,9 @@ use crate::output::OutputDefinition;
 #[allow(unused_imports)]
 use crate::pattern::Pattern;
 use crate::qname::QualifiedName;
+use crate::transform::Transform;
 use crate::transform::booleans::*;
-use crate::transform::callable::{invoke, Callable};
+use crate::transform::callable::{Callable, invoke};
 use crate::transform::construct::*;
 use crate::transform::controlflow::*;
 use crate::transform::datetime::*;
@@ -28,9 +29,8 @@ use crate::transform::misc::*;
 use crate::transform::navigate::*;
 use crate::transform::numbers::*;
 use crate::transform::strings::*;
-use crate::transform::template::{apply_imports, apply_templates, next_match, Template};
+use crate::transform::template::{Template, apply_imports, apply_templates, next_match};
 use crate::transform::variables::{declare_variable, reference_variable};
-use crate::transform::Transform;
 use crate::xdmerror::Error;
 use crate::{ErrorKind, Item, SequenceTrait, Value};
 use std::cmp::Ordering;
@@ -46,11 +46,13 @@ use url::Url;
 /// Although it is optional, it would be very unusual not to set a result document in a context since nodes cannot be created in the result without one.
 #[derive(Clone, Debug)]
 pub struct Context<N: Node> {
-    pub(crate) cur: Sequence<N>,                  // The current context
-    pub(crate) i: usize, // The index to the item that is the current context item
-    pub(crate) previous_context: Option<Item<N>>, // The "current" XPath item, which is really the context item for the invoking context. See XSLT 20.4.1.
-    pub(crate) depth: usize,                      // Depth of evaluation
-    pub(crate) rd: Option<N>,                     // Result document
+    pub(crate) context: Sequence<N>,          // The (outer) context
+    pub(crate) i: usize,                      // The index to the item that is the context item
+    pub(crate) context_item: Option<Item<N>>, // The context item, which is usually context[i]. Sometimes the inner focus is different to the context, e.g. when evaluating predicates
+    pub(crate) current: Sequence<N>,
+    pub(crate) current_item: Option<Item<N>>, // The "current" XPath item, which is really the context item for the invoking context. See XSLT 20.4.1.
+    pub(crate) depth: usize,                  // Depth of evaluation
+    pub(crate) rd: Option<N>,                 // Result document
     // There is no distinction between built-in and user-defined templates
     // Built-in templates have no priority and no document order
     pub(crate) templates: Vec<Rc<Template<N>>>,
@@ -82,9 +84,11 @@ pub struct Context<N: Node> {
 impl<N: Node> Context<N> {
     pub fn new() -> Self {
         Context {
-            cur: Sequence::new(),
+            context: Sequence::new(),
+            current: Sequence::new(),
             i: 0,
-            previous_context: None,
+            context_item: None,
+            current_item: None,
             depth: 0,
             rd: None,
             templates: vec![],
@@ -100,14 +104,23 @@ impl<N: Node> Context<N> {
             base_url: None,
         }
     }
-    /// Sets the context item.
+    /// Sets the outer context and the context item.
     pub fn context(&mut self, s: Sequence<N>, i: usize) {
-        self.cur = s;
+        self.context_item = Some(s[i].clone());
+        self.context = s;
         self.i = i;
     }
+    /// Sets the context item (which must be a member of the context) without changing the outer context.
+    pub fn context_item(&mut self, i: Option<Item<N>>) {
+        self.context_item = i;
+    }
     /// Sets the "current" item.
-    pub fn previous_context(&mut self, i: Item<N>) {
-        self.previous_context = Some(i);
+    pub fn current_item(&mut self, i: Item<N>) {
+        self.current_item = Some(i);
+    }
+    /// Sets the current context
+    pub fn current(&mut self, s: Sequence<N>) {
+        self.current = s;
     }
     /// Sets the result document. Any nodes created by the transformation are owned by this document.
     pub fn result_document(&mut self, rd: N) {
@@ -204,21 +217,21 @@ impl<N: Node> Context<N> {
         &self,
         stctxt: &mut StaticContext<N, F, G, H>,
     ) -> Result<Sequence<N>, Error> {
-        if self.cur.is_empty() {
+        if self.context.is_empty() {
             Ok(Sequence::new())
         } else {
-            self.cur.get(self.i).map_or_else(
+            self.context_item.as_ref().map_or_else(
                 || {
                     Err(Error::new(
                         ErrorKind::DynamicAbsent,
-                        String::from("bad index into current sequence"),
+                        String::from("no context item"),
                     ))
                 },
                 |i| {
                     // There may be 0, 1, or more matching templates.
                     // If there are more than one with the same priority and import level,
                     // then take the one with the higher document order.
-                    let templates = self.find_templates(stctxt, i, &None)?;
+                    let templates = self.find_templates(stctxt, &i, &None)?;
                     match templates.len() {
                         0 => Err(Error::new(
                             ErrorKind::DynamicAbsent,
@@ -299,7 +312,7 @@ impl<N: Node> Context<N> {
         stctxt: &mut StaticContext<N, F, G, H>,
     ) -> Result<Sequence<N>, Error> {
         // Define initial (stylesheet) variables by evaluating their transformation with the root node as the context
-        if self.cur.is_empty() {
+        if self.context.is_empty() {
             // There is no context item
             return Ok(Sequence::new());
         } else {
@@ -307,7 +320,7 @@ impl<N: Node> Context<N> {
             // If the context item is a node then set the new context to the root node
             // otherwise there is no context
             ctxt.context(
-                self.cur.get(self.i).map_or_else(
+                self.context.get(self.i).map_or_else(
                     || vec![],
                     |i| {
                         if let Item::Node(n) = i {
@@ -324,7 +337,26 @@ impl<N: Node> Context<N> {
             for (name, x) in &self.pre_vars {
                 ctxt.var_push(name.clone(), ctxt.dispatch(stctxt, &x)?);
             }
-            ctxt.evaluate_internal(stctxt)
+            let result = ctxt.evaluate_internal(stctxt);
+            // If the returned items are nodes
+            // then if they are in the unattached list of the result doc
+            // then attached them
+            if ctxt.rd.is_some() {
+                if let Ok(r) = result.clone() {
+                    r.iter().for_each(|i| {
+                        if let Item::Node(n) = i {
+                            if !n.is_attached() {
+                                ctxt.rd
+                                    .clone()
+                                    .unwrap()
+                                    .push(n.clone())
+                                    .expect("unable to attach node to result document");
+                            }
+                        }
+                    });
+                }
+            }
+            result
         }
     }
 
@@ -504,10 +536,17 @@ impl<N: Node> Context<N> {
 
 impl<N: Node> From<Sequence<N>> for Context<N> {
     fn from(value: Sequence<N>) -> Self {
+        let ci = if value.is_empty() {
+            None
+        } else {
+            Some(value[0].clone())
+        };
         Context {
-            cur: value,
+            context_item: ci,
+            context: value,
             i: 0,
-            previous_context: None,
+            current_item: None,
+            current: Sequence::new(),
             depth: 0,
             rd: None,
             templates: vec![],
@@ -532,16 +571,33 @@ impl<N: Node> ContextBuilder<N> {
     pub fn new() -> Self {
         ContextBuilder(Context::new())
     }
+    /// Set the context sequence. The first item is the context item.
     pub fn context(mut self, s: Sequence<N>) -> Self {
-        self.0.cur = s;
+        if !s.is_empty() {
+            self.0.context_item = Some(s[0].clone());
+        }
+        self.0.context = s;
+        self.0.i = 0;
         self
     }
+    /// Set which item is the context item.
+    /// Does not check for validity.
+    /// Does not set the context item (see context_item()).
     pub fn index(mut self, i: usize) -> Self {
         self.0.i = i;
         self
     }
-    pub fn previous_context(mut self, i: Option<Item<N>>) -> Self {
-        self.0.previous_context = i;
+    /// Sets the context item. This is usually context[index], but not always so this is not checked.
+    pub fn context_item(mut self, c: Option<Item<N>>) -> Self {
+        self.0.context_item = c;
+        self
+    }
+    pub fn current_item(mut self, i: Option<Item<N>>) -> Self {
+        self.0.current_item = i;
+        self
+    }
+    pub fn current(mut self, s: Sequence<N>) -> Self {
+        self.0.current = s;
         self
     }
     pub fn depth(mut self, d: usize) -> Self {
@@ -599,14 +655,17 @@ impl<N: Node> ContextBuilder<N> {
     }
 }
 
-/// Derive a new [Context] from an old [Context]. The context item in the old context becomes the "current" item in the new context.
+/// Derive a new [Context] from an old [Context]. The context sequence and item in the old context becomes the "current" sequence and item in the new context.
 impl<N: Node> From<&Context<N>> for ContextBuilder<N> {
     fn from(c: &Context<N>) -> Self {
-        if c.cur.len() > c.i {
-            ContextBuilder(c.clone()).previous_context(Some(c.cur[c.i].clone()))
-        } else {
-            ContextBuilder(c.clone()).previous_context(None)
-        }
+        c.context_item.as_ref().map_or_else(
+            || ContextBuilder(c.clone()).current(vec![]).current_item(None),
+            |i| {
+                ContextBuilder(c.clone())
+                    .current(c.context.clone())
+                    .current_item(Some(i.clone()))
+            },
+        )
     }
 }
 

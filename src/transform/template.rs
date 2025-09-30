@@ -7,7 +7,7 @@ use url::Url;
 
 use crate::qname::QualifiedName;
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
-use crate::transform::{do_sort, Order, Transform};
+use crate::transform::{Order, Transform, do_sort};
 use crate::xdmerror::Error;
 use crate::{Node, Pattern, Sequence};
 
@@ -19,6 +19,7 @@ pub struct Template<N: Node> {
     pub(crate) import: Vec<usize>,
     pub(crate) document_order: Option<usize>,
     pub(crate) mode: Option<Rc<QualifiedName>>,
+    pub(crate) mtch: String, // used for debugging
 }
 
 impl<N: Node> Template<N> {
@@ -29,6 +30,7 @@ impl<N: Node> Template<N> {
         import: Vec<usize>,
         document_order: Option<usize>,
         mode: Option<Rc<QualifiedName>>,
+        mtch: String,
     ) -> Self {
         Template {
             pattern,
@@ -37,6 +39,7 @@ impl<N: Node> Template<N> {
             import,
             document_order,
             mode,
+            mtch,
         }
     }
 }
@@ -82,8 +85,8 @@ impl<N: Node> Debug for Template<N> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "template match \"{:?}\" priority {:?} mode {:?}",
-            self.pattern, self.priority, self.mode
+            "template match \"{:?}\" ({:?}) priority {:?} mode {:?}",
+            self.mtch, self.pattern, self.priority, self.mode
         )
     }
 }
@@ -135,7 +138,7 @@ pub(crate) fn apply_templates<
         // Create a new context using the current templates, then evaluate the highest priority and highest import precedence
         let mut u = ContextBuilder::from(ctxt)
             .context(vec![i.clone()])
-            .previous_context(Some(i.clone()))
+            .context_item(Some(i.clone()))
             .current_templates(templates)
             .build()
             .dispatch(stctxt, &matching.body)?;

@@ -1,8 +1,8 @@
 use crate::item::Node;
 use crate::parser::{ParseError, ParseInput};
 
-pub(crate) fn take_one<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, char), ParseError> {
+pub(crate) fn take_one<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, char), ParseError> {
     move |(input, state)| {
         let c = input.chars().next();
         match c {
@@ -77,8 +77,8 @@ pub(crate) fn take_until_either_or_min1<N: Node>(
     }
 }
 
-pub(crate) fn take_until_end<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn take_until_end<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     move |(input, state)| Ok((("", state), input.to_string()))
 }
 

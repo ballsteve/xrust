@@ -1,8 +1,8 @@
 //! Support for variables.
 
 use crate::item::{Node, Sequence};
-use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::Transform;
+use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::xdmerror::{Error, ErrorKind};
 use url::Url;
 

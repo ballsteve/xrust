@@ -4,13 +4,13 @@ use pkg_version::*;
 use std::rc::Rc;
 use url::Url;
 
+use crate::SequenceTrait;
 use crate::item::{Item, Node, Sequence};
 use crate::qname::QualifiedName;
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::{NamespaceMap, Transform};
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
-use crate::SequenceTrait;
 
 /// XPath position function.
 pub fn position<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
@@ -20,7 +20,7 @@ pub fn position<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
 /// XPath last function.
 pub fn last<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
     Ok(vec![Item::Value(Rc::new(Value::from(
-        ctxt.cur.len() as i64
+        ctxt.context.len() as i64
     )))])
 }
 
@@ -51,8 +51,14 @@ pub fn generate_id<
     stctxt: &mut StaticContext<N, F, G, H>,
     s: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
+    if s.is_none() && ctxt.context_item.is_none() {
+        return Err(Error::new(
+            ErrorKind::DynamicAbsent,
+            String::from("no context"),
+        ));
+    }
     let i = match s {
-        None => ctxt.cur[ctxt.i].clone(),
+        None => ctxt.context_item.as_ref().unwrap().clone(),
         Some(t) => {
             let seq = ctxt.dispatch(stctxt, t)?;
             match seq.len() {
@@ -62,7 +68,7 @@ pub fn generate_id<
                     return Err(Error::new(
                         ErrorKind::TypeError,
                         String::from("not a singleton sequence"),
-                    ))
+                    ));
                 }
             }
         }
@@ -100,7 +106,7 @@ pub fn system_property<
                 "Steve Ball, Daniel Murphy",
             )))]),
             (Some(XSLTNS), "vendor-url") => Ok(vec![Item::Value(Rc::new(Value::from(
-                "https://github.com/ballsteve/xrust",
+                "https://gitlab.gnome.org/World/Rust/markup-rs/xrust/",
             )))]),
             (Some(XSLTNS), "product-name") => {
                 Ok(vec![Item::Value(Rc::new(Value::from("\u{03A7}rust")))])

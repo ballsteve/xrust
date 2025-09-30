@@ -14,17 +14,17 @@ use crate::parser::xml::dtd::pedecl::pedecl;
 use crate::parser::xml::dtd::pereference::pereference;
 use crate::parser::xml::dtd::textdecl::textdecl;
 use crate::parser::xml::misc::{comment, processing_instruction};
-use crate::parser::{ParseError, ParseInput};
 use crate::parser::xml::utf8bom;
+use crate::parser::{ParseError, ParseInput};
 
-pub(crate) fn extsubset<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn extsubset<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     move |(input, mut state)| {
         if state.standalone {
             Ok(((input, state), ()))
         } else {
             state.currentlyexternal = true;
-            match tuple3(opt(utf8bom()),opt(textdecl()), extsubsetdecl())((input, state)) {
+            match tuple3(opt(utf8bom()), opt(textdecl()), extsubsetdecl())((input, state)) {
                 Ok(((input2, mut state2), (_, _, _))) => {
                     if !input2.is_empty() {
                         Err(ParseError::NotWellFormed(input2.to_string()))
@@ -39,8 +39,8 @@ pub(crate) fn extsubset<N: Node>(
     }
 }
 
-pub(crate) fn extsubsetdecl<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<()>), ParseError> {
+pub(crate) fn extsubsetdecl<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<()>), ParseError> {
     many0(alt10(
         conditionalsect(),
         elementdecl(),

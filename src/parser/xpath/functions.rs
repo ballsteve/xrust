@@ -19,12 +19,12 @@ use crate::parser::xpath::numbers::unary_expr;
 use crate::parser::{ParseError, ParseInput};
 use crate::qname::QualifiedName;
 use crate::transform::callable::ActualParameters;
-use crate::transform::{in_scope_namespaces, NameTest, NodeTest, Transform, WildcardOrName};
+use crate::transform::{NameTest, NodeTest, Transform, WildcardOrName, in_scope_namespaces};
 use crate::xdmerror::ErrorKind;
 
 // ArrowExpr ::= UnaryExpr ( '=>' ArrowFunctionSpecifier ArgumentList)*
-pub(crate) fn arrow_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+pub(crate) fn arrow_expr<'a, N: Node + 'a>()
+-> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
         pair(
             unary_expr::<N>(),
@@ -49,8 +49,8 @@ pub(crate) fn arrow_expr<'a, N: Node + 'a>(
 
 // ArrowFunctionSpecifier ::= EQName | VarRef | ParenthesizedExpr
 // TODO: finish this parser with EQName and VarRef
-fn arrowfunctionspecifier<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn arrowfunctionspecifier<'a, N: Node + 'a>()
+-> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
         alt2(
             map(qualname(), |_| ()),
@@ -61,8 +61,8 @@ fn arrowfunctionspecifier<'a, N: Node + 'a>(
 }
 
 // FunctionCall ::= EQName ArgumentList
-pub(crate) fn function_call<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+pub(crate) fn function_call<'a, N: Node + 'a>()
+-> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map_with_state(
         pair(qualname_test(), argumentlist::<N>()),
         |(qn, mut a), state| match qn {
@@ -548,8 +548,8 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
 
 // ArgumentList ::= '(' (Argument (',' Argument)*)? ')'
 // TODO: finish this parser with actual arguments
-fn argumentlist<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<Transform<N>>), ParseError> + 'a> {
+fn argumentlist<'a, N: Node + 'a>()
+-> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<Transform<N>>), ParseError> + 'a> {
     Box::new(map(
         tuple3(
             tag("("),
@@ -565,7 +565,7 @@ fn argumentlist<'a, N: Node + 'a>(
 
 // Argument ::= ExprSingle | ArgumentPlaceHolder
 // TODO: ArgumentPlaceHolder
-fn argument<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn argument<'a, N: Node + 'a>()
+-> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(expr_single_wrapper::<N>(true))
 }

@@ -11,10 +11,10 @@ Pronounced "crust".
 The goal of this project is to implement [XPath 3.1](https://www.w3.org/TR/xpath-31/), [XQuery 3.1](https://www.w3.org/TR/xquery-31/) and [XSLT 3.0](http://www.w3.org/TR/xslt-30/) in Rust.
 Also included is an XML parser, using a parser combinator inspired by Nom.
 
-Currently, the project has achieved the functional equivalent of XPath v1.0 and XSLT 1.0. That is, all of the elements and functions in v1.0 XPath and XSLT have been implemented.
-However, it is not *compliant* with v1.0. This is because it implements the v3.0 data model.
+Currently, the project has achieved the functional equivalent of XPath 1.0 and XSLT 1.0. That is, all of the elements and functions in v1.0 XPath and XSLT have been implemented.
+However, it is not *compliant* with XPath/XSLT v1.0. This is because it implements the v3.0 data model.
 
-In addition to the (rudimentary) implementation of the [XQuery and XPath Data Model 3.1](https://www.w3.org/TR/xpath-datamodel-31/) data model, a few other features of XPath and XSLT v2.0/v3.0 have been implemented, such as FLWR expressions, grouping (i.e. xsl:for-each-group), and user-defined functions.
+In addition to the (rudimentary) implementation of the [XQuery and XPath Data Model 3.1](https://www.w3.org/TR/xpath-datamodel-31/) data model, a few other features of XPath and XSLT 2.0/3.0 have been implemented, such as FLWR expressions, grouping (i.e. xsl:for-each-group), and user-defined functions.
 
 ## Design
 
@@ -71,19 +71,26 @@ Although the eventual desire is to implement all of XSLT v3.0 functionality, som
 
 See the [XSLT module](https://docs.rs/xrust/latest/xrust/xslt/index.html) for an example of how to evaluate an XSL stylesheet.
 
+## Canonical Repository
+
+Development of χrust takes place on [Gitlab](https://gitlab.gnome.org/World/Rust/markup-rs/xrust).
+
+χrust is part of the [markup-rs](https://gitlab.gnome.org/World/Rust/markup-rs) family of projects providing support for the XML tech stack in Rust.
+
 ## Examples
 
-* [Integration](https://github.com/ballsteve/xrust/blob/main/examples/ixml.rs) with [Invisible XML](https://www.w3.org/community/ixml/2021/03/19/welcome-to-ixml/).
-* [An example](https://github.com/ballsteve/xrust/blob/main/examples/issue-30.rs) using XPath, but not XSLT.
+* [Integration](https://gitlab.gnome.org/World/Rust/markup-rs/xrust/-/blob/main/examples/ixml.rs) with [Invisible XML](https://www.w3.org/community/ixml/2021/03/19/welcome-to-ixml/).
+* [An example](https://gitlab.gnome.org/World/Rust/markup-rs/xrust/-/blob/main/examples/issue-30.rs) using XPath, but not XSLT.
 
 ## Compliance
 
-Status of [standards implementation](https://github.com/ballsteve/xrust/blob/main/docs/compliance.md) for XDM, XPath, XQuery, and XSLT.
+Status of [standards implementation](https://gitlab.gnome.org/World/Rust/markup-rs/xrust/-/blob/main/docs/compliance.md) for XDM, XPath, XQuery, and XSLT.
 
 ## Release Notes
 
 | Releases      | Notes                                                                                    |
 |---------------|------------------------------------------------------------------------------------------|
+| Version 1.3.0 | Implement xsl:for-each-group/@group-starting-with. Improved serialisation of XML, including canonical format. Fix bug in adding attribute node to result tree. Support predicates for postfix expressions. |
 | Version 1.2.5 | Fixed disable-output-escaping. |
 | Version 1.2.4 | Improved performance of DTD validation. Bug fixes for ANT declaration and white space handling. |
 | Version 1.2.3 | Fixed handling of '<' character in attribute value.                                      |

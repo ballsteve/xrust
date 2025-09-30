@@ -51,12 +51,12 @@ use crate::trees::smite;
 use crate::validators::{Schema, ValidationError};
 use crate::value::{Value, ValueData};
 use crate::xdmerror::*;
-use crate::xmldecl::{XMLDecl, XMLDeclBuilder, DTD};
+use crate::xmldecl::{DTD, XMLDecl, XMLDeclBuilder};
 use regex::Regex;
 use std::cell::RefCell;
 use std::cmp::Ordering;
-use std::collections::btree_map::IntoIter;
 use std::collections::BTreeMap;
+use std::collections::btree_map::IntoIter;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
 use std::rc::{Rc, Weak};
@@ -186,11 +186,7 @@ impl PartialEq for Node {
             }
             (NodeInner::Text(_, v), NodeInner::Text(_, u)) => v == u,
             (NodeInner::Attribute(_, name, v), NodeInner::Attribute(_, o_name, o_v)) => {
-                if name == o_name {
-                    v == o_v
-                } else {
-                    false
-                }
+                if name == o_name { v == o_v } else { false }
             }
             (
                 NodeInner::ProcessingInstruction(_, name, v),
@@ -262,13 +258,30 @@ impl ItemNode for RNode {
         }
     }
     fn to_xml(&self) -> String {
-        to_xml_int(self, &OutputDefinition::new(), 0)
+        to_xml_int(self, &OutputDefinition::new(), 0, vec![])
     }
     fn to_xml_with_options(&self, od: &OutputDefinition) -> std::string::String {
-        to_xml_int(self, od, 0)
+        to_xml_int(self, od, 0, vec![])
     }
     fn is_same(&self, other: &Self) -> bool {
         Rc::ptr_eq(self, other)
+    }
+    fn is_attached(&self) -> bool {
+        match &self.0 {
+            NodeInner::Document(_, _, _, _) => false,
+            NodeInner::Namespace(_, _, _) => false,
+            _ => {
+                if let NodeInner::Document(_, _, u, _) = &self.owner_document().0 {
+                    u.borrow()
+                        .iter()
+                        .find(|p| self.is_same(p))
+                        .map_or(true, |_| false)
+                } else {
+                    // shouldn't get here
+                    false
+                }
+            }
+        }
     }
     fn document_order(&self) -> Vec<usize> {
         doc_order(self)
@@ -416,6 +429,7 @@ impl ItemNode for RNode {
 
         let mut m = n.clone();
         m.pop()?;
+        detach(m);
         push_node(self, n)?;
         Ok(())
     }
@@ -427,7 +441,7 @@ impl ItemNode for RNode {
                 return Err(Error::new(
                     ErrorKind::TypeError,
                     String::from("cannot remove document node"),
-                ))
+                ));
             }
             NodeInner::Attribute(parent, qn, _) => {
                 // Remove this node from the attribute hashmap
@@ -448,7 +462,7 @@ impl ItemNode for RNode {
                                 return Err(Error::new(
                                     ErrorKind::TypeError,
                                     String::from("parent is not an element"),
-                                ))
+                                ));
                             }
                         }
                     }
@@ -456,7 +470,7 @@ impl ItemNode for RNode {
                         return Err(Error::new(
                             ErrorKind::Unknown,
                             String::from("unable to find parent"),
-                        ))
+                        ));
                     }
                 }
             }
@@ -481,7 +495,7 @@ impl ItemNode for RNode {
                                 return Err(Error::new(
                                     ErrorKind::TypeError,
                                     String::from("parent is not an element"),
-                                ))
+                                ));
                             }
                         }
                     }
@@ -489,7 +503,7 @@ impl ItemNode for RNode {
                         return Err(Error::new(
                             ErrorKind::Unknown,
                             String::from("unable to find parent"),
-                        ))
+                        ));
                     }
                 }
             }
@@ -518,7 +532,7 @@ impl ItemNode for RNode {
                         return Err(Error::new(
                             ErrorKind::TypeError,
                             String::from("parent is not an element"),
-                        ))
+                        ));
                     }
                 }
             }
@@ -625,7 +639,7 @@ impl ItemNode for RNode {
                         return Err(Error::new(
                             ErrorKind::TypeError,
                             String::from("parent is not an element"),
-                        ))
+                        ));
                     }
                 }
             }
@@ -633,7 +647,7 @@ impl ItemNode for RNode {
                 return Err(Error::new(
                     ErrorKind::TypeError,
                     String::from("unable to find parent"),
-                ))
+                ));
             }
         }
         Ok(())
@@ -718,52 +732,13 @@ impl ItemNode for RNode {
                 }
                 Ok(result)
             }
-            NodeInner::ProcessingInstruction(_, qn, v) => {
-                let d = self.owner_document();
-                let mut w = v.clone();
-                if let ValueData::String(s) = v.value.clone() {
-                    w = Rc::new(Value::from(
-                        s.replace("&", "&amp;")
-                            .replace("<", "&lt;")
-                            .replace(">", "&gt;")
-                            .replace("\r", "&#D;"),
-                    ))
-                }
-                Ok(d.new_processing_instruction(qn.clone(), w)?)
-            }
+            NodeInner::ProcessingInstruction(_, _, _) => self.shallow_copy(),
             NodeInner::Comment(_, _) | NodeInner::Namespace(_, _, _) => Err(Error::new(
                 ErrorKind::TypeError,
                 "invalid node type".to_string(),
             )),
-            NodeInner::Text(_, v) => {
-                let d = self.owner_document();
-                let mut w = v.clone();
-                if let ValueData::String(s) = v.value.clone() {
-                    w = Rc::new(Value::from(
-                        s.replace("&", "&amp;")
-                            .replace("<", "&lt;")
-                            .replace(">", "&gt;")
-                            .replace("\r", "&#xD;"),
-                    ))
-                }
-                Ok(d.new_text(w)?)
-            }
-            NodeInner::Attribute(_, qn, v) => {
-                //self.shallow_copy()
-                let d = self.owner_document();
-                let w = v.to_string();
-                Ok(d.new_attribute(
-                    qn.clone(),
-                    Rc::new(Value::from(
-                        w.replace("&", "&amp;")
-                            .replace("<", "&lt;")
-                            .replace("\"", "&quot;")
-                            .replace("\r", "&#xD;")
-                            .replace("\t", "&#x9;")
-                            .replace("\n", "&#xA;"),
-                    )),
-                )?)
-            }
+            NodeInner::Text(_, _) => self.shallow_copy(),
+            NodeInner::Attribute(_, _, _) => self.shallow_copy(),
             NodeInner::Element(_, _, _, _, _) => {
                 let mut result = self.shallow_copy()?;
 
@@ -917,7 +892,7 @@ fn unattached(d: &RNode, n: RNode) {
                 return;
             }
             u.borrow_mut().push(n.clone());
-            make_parent(n, d.clone())
+            make_parent(n.clone(), d.clone());
         }
         NodeInner::Element(_, _, _, _, _) => {
             let doc = d.owner_document();
@@ -926,7 +901,7 @@ fn unattached(d: &RNode, n: RNode) {
                     return;
                 }
                 u.borrow_mut().push(n.clone());
-                make_parent(n, doc.clone())
+                make_parent(n.clone(), doc.clone());
             } else {
                 panic!("cannot find document node")
             }
@@ -934,7 +909,7 @@ fn unattached(d: &RNode, n: RNode) {
         _ => panic!("not a document node"),
     }
 }
-// Make the parent of the node be the given new parent
+// Make the parent of the node be the given new parent.
 fn make_parent(n: RNode, b: RNode) {
     match &n.0 {
         NodeInner::Element(p, _, _, _, _)
@@ -989,7 +964,7 @@ fn push_node(parent: &RNode, child: RNode) -> Result<(), Error> {
             return Err(Error::new(
                 ErrorKind::TypeError,
                 String::from("unable to add child node"),
-            ))
+            ));
         }
     }
     make_parent(child, parent.clone());
@@ -1041,7 +1016,7 @@ fn find_index(parent: &RNode, child: &RNode) -> Result<usize, Error> {
             return Err(Error::new(
                 ErrorKind::TypeError,
                 String::from("parent is not an element"),
-            ))
+            ));
         }
     };
     idx.ok_or(Error::new(
@@ -1052,25 +1027,38 @@ fn find_index(parent: &RNode, child: &RNode) -> Result<usize, Error> {
 
 // This handles the XML serialisation of the document.
 // "indent" is the current level of indentation.
-fn to_xml_int(node: &RNode, od: &OutputDefinition, indent: usize) -> String {
+fn to_xml_int(
+    node: &RNode,
+    od: &OutputDefinition,
+    indent: usize,
+    ns_in_scope: Vec<Rc<Value>>,
+) -> String {
     match &node.0 {
         NodeInner::Document(_, _, _, _) => {
             node.child_iter().fold(String::new(), |mut result, c| {
-                result.push_str(to_xml_int(&c, od, indent + 2).as_str());
+                result.push_str(to_xml_int(&c, od, indent + 2, ns_in_scope.clone()).as_str());
                 result
             })
         }
         NodeInner::Element(_, qn, _, _, ns) => {
+            let mut new_in_scope = ns_in_scope.clone();
             let mut result = String::from("<");
             result.push_str(qn.to_string().as_str());
 
             // Namespace declarations
             ns.borrow().iter().for_each(|(pre, nsuri)| {
-                let pre_str = pre.as_ref().map_or_else(
-                    || format!(" xmlns='{}'", nsuri.to_string()),
-                    |p| format!(" xmlns:{}='{}'", p, nsuri.to_string()),
-                );
-                result.push_str(pre_str.as_str());
+                if ns_in_scope
+                    .iter()
+                    .find(|insns| insns.to_string() == nsuri.value().to_string())
+                    .is_none()
+                {
+                    let pre_str = pre.as_ref().map_or_else(
+                        || format!(" xmlns='{}'", nsuri.to_string()),
+                        |p| format!(" xmlns:{}='{}'", p, nsuri.to_string()),
+                    );
+                    new_in_scope.push(nsuri.value());
+                    result.push_str(pre_str.as_str());
+                }
             });
 
             // Attributes
@@ -1105,7 +1093,7 @@ fn to_xml_int(node: &RNode, od: &OutputDefinition, indent: usize) -> String {
                     result.push('\n');
                     (0..indent).for_each(|_| result.push(' '))
                 }
-                result.push_str(to_xml_int(&c, od, indent + 2).as_str())
+                result.push_str(to_xml_int(&c, od, indent + 2, new_in_scope.clone()).as_str())
             });
             if do_indent && indent > 1 {
                 result.push('\n');
@@ -1279,7 +1267,7 @@ impl Iterator for Siblings {
             } else {
                 self.1 + self.2 as usize
             };
-            if let NodeInner::Element(_, _, _, children, _) = &self.0 .0 {
+            if let NodeInner::Element(_, _, _, children, _) = &self.0.0 {
                 match children.borrow().get(newidx) {
                     Some(n) => {
                         self.1 = newidx;
@@ -1514,5 +1502,17 @@ mod tests {
             .expect("unable to create child element");
         child1.push(child2.clone()).expect("unable to add node");
         assert_ne!(child1.get_id(), child2.get_id())
+    }
+
+    #[test]
+    fn smite_attached_1() {
+        let mut root = Rc::new(Node::new());
+        let child1 = root
+            .new_element(Rc::new(QualifiedName::new(None, None, "Test")))
+            .expect("unable to create element node");
+        assert_eq!(child1.is_attached(), false);
+        root.push(child1.clone()).expect("unable to add node");
+        assert_eq!(child1.is_attached(), true);
+        assert_eq!(root.child_iter().count(), 1)
     }
 }

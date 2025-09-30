@@ -3,7 +3,7 @@
 use std::rc::Rc;
 use url::Url;
 
-use english_numbers::{convert, Formatting};
+use english_numbers::{Formatting, convert};
 use formato::Formato;
 use italian_numbers::roman_converter;
 
@@ -88,7 +88,7 @@ pub fn generate_integers<
                             return Err(Error::new(
                                 ErrorKind::TypeError,
                                 "cannot match this type of node",
-                            ))
+                            ));
                         }
                     },
                 )));

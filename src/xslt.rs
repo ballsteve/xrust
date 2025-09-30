@@ -287,7 +287,7 @@ where
                     let newnode = mc.deep_copy()?;
                     let newat = styledoc.new_attribute(
                         Rc::new(QualifiedName::new(
-                            Some(String::from("http://github.com/ballsteve/xrust")),
+                            Some(String::from("https://gitlab.gnome.org/World/Rust/markup-rs/xrust/")),
                             None,
                             String::from("import"),
                         )),
@@ -363,7 +363,7 @@ where
         })
         .try_for_each(|c| {
             let m = c.get_attribute(&QualifiedName::new(None, None, "match"));
-            let pat = Pattern::try_from(m.to_string()).map_err(|e| {
+            let pat = Pattern::try_from((m.to_string(), c.clone())).map_err(|e| {
                 Error::new(
                     e.kind,
                     format!(
@@ -428,7 +428,7 @@ where
             // Set the import precedence
             let mut import: usize = 0;
             let im = c.get_attribute(&QualifiedName::new(
-                Some(String::from("http://github.com/ballsteve/xrust")),
+                Some(String::from("https://gitlab.gnome.org/World/Rust/markup-rs/xrust/")),
                 None,
                 String::from("import"),
             ));
@@ -447,6 +447,7 @@ where
                             .expect("unable to resolve qualified name"),
                     )
                 }), // TODO: don't panic
+                m.to_string(),
             ));
             Ok::<(), Error>(())
         })?;
@@ -489,6 +490,7 @@ where
             vec![0],
             None,
             None,
+            String::from("/"),
         ))
         // This matches "*" and applies templates to all children
         .template(Template::new(
@@ -505,6 +507,7 @@ where
             vec![0],
             None,
             None,
+            String::from("child::*"),
         ))
         // This matches "text()" and copies content
         .template(Template::new(
@@ -514,6 +517,7 @@ where
             vec![0],
             None,
             None,
+            String::from("child::text()"),
         ))
         .template_all(templates)
         .output_definition(od)
@@ -992,6 +996,18 @@ fn to_transform<N: Node>(
                             )),
                             ("", adj, "", "") => Ok(Transform::ForEach(
                                 Some(Grouping::Adjacent(vec![parse::<N>(adj, Some(n.clone()))?])),
+                                Box::new(parse::<N>(&s.to_string(), Some(n.clone()))?),
+                                Box::new(Transform::SequenceItems(n.child_iter().try_fold(
+                                    vec![],
+                                    |mut body, e| {
+                                        body.push(to_transform(e, attr_sets)?);
+                                        Ok(body)
+                                    },
+                                )?)),
+                                ord,
+                            )),
+                            ("", "", start, "") => Ok(Transform::ForEach(
+                                Some(Grouping::StartingWith(Box::new(Pattern::try_from(start)?))),
                                 Box::new(parse::<N>(&s.to_string(), Some(n.clone()))?),
                                 Box::new(Transform::SequenceItems(n.child_iter().try_fold(
                                     vec![],

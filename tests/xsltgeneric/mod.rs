@@ -368,7 +368,9 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_xml() == "<HEAD><h1>a</h1><h1>b</h1><h1>c</h1><h1>d</h1></HEAD><BODY><p>a</p><p>b</p><p>c</p><p>d</p></BODY>" {
+    if result.to_xml()
+        == "<HEAD><h1>a</h1><h1>b</h1><h1>c</h1><h1>d</h1></HEAD><BODY><p>a</p><p>b</p><p>c</p><p>d</p></BODY>"
+    {
         Ok(())
     } else {
         Err(Error::new(
@@ -440,11 +442,18 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_xml() == "one<!-- this is a level 1 element -->two<!-- this is a level 1 element -->three<!-- this is a level 1 element -->four<!-- this is a level 1 element -->" {
+    if result.to_xml()
+        == "one<!-- this is a level 1 element -->two<!-- this is a level 1 element -->three<!-- this is a level 1 element -->four<!-- this is a level 1 element -->"
+    {
         Ok(())
     } else {
-        Err(Error::new(ErrorKind::Unknown,
-                       format!("got result \"{}\", expected \"one<!-- this is a level 1 element -->two<!-- this is a level 1 element -->three<!-- this is a level 1 element -->four<!-- this is a level 1 element -->\"", result.to_string())))
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!(
+                "got result \"{}\", expected \"one<!-- this is a level 1 element -->two<!-- this is a level 1 element -->three<!-- this is a level 1 element -->four<!-- this is a level 1 element -->\"",
+                result.to_string()
+            ),
+        ))
     }
 }
 
@@ -470,11 +479,18 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_xml() == "one<?piL1 this is a level 1 element?>two<?piL1 this is a level 1 element?>three<?piL1 this is a level 1 element?>four<?piL1 this is a level 1 element?>" {
+    if result.to_xml()
+        == "one<?piL1 this is a level 1 element?>two<?piL1 this is a level 1 element?>three<?piL1 this is a level 1 element?>four<?piL1 this is a level 1 element?>"
+    {
         Ok(())
     } else {
-        Err(Error::new(ErrorKind::Unknown,
-                       format!("got result \"{}\", expected \"one<?piL1 this is a level 1 element?>two<?piL1 this is a level 1 element?>three<?piL1 this is a level 1 element?>four<?piL1 this is a level 1 element?>\"", result.to_string())))
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!(
+                "got result \"{}\", expected \"one<?piL1 this is a level 1 element?>two<?piL1 this is a level 1 element?>three<?piL1 this is a level 1 element?>four<?piL1 this is a level 1 element?>\"",
+                result.to_string()
+            ),
+        ))
     }
 }
 
@@ -865,7 +881,13 @@ where
     {
         Ok(())
     } else {
-        Err(Error::new(ErrorKind::Unknown, format!("got result \"{}\", expected \"onefound Level1 elementtwofound Level2 elementthreefound Level3 elementfour\"", result.to_string())))
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!(
+                "got result \"{}\", expected \"onefound Level1 elementtwofound Level2 elementthreefound Level3 elementfour\"",
+                result.to_string()
+            ),
+        ))
     }
 }
 
@@ -904,7 +926,13 @@ where
     if result.to_string() == "found internal element|found external element" {
         Ok(())
     } else {
-        Err(Error::new(ErrorKind::Unknown, format!("got result \"{}\", expected \"onefound Level1 elementtwofound Level2 elementthreefound Level3 elementfour\"", result.to_string())))
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!(
+                "got result \"{}\", expected \"onefound Level1 elementtwofound Level2 elementthreefound Level3 elementfour\"",
+                result.to_string()
+            ),
+        ))
     }
 }
 
@@ -990,7 +1018,10 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    assert_eq!(result.to_xml(), "<MyElement bar='from set foo'>one</MyElement><MyElement bar='from set foo'>two</MyElement>");
+    assert_eq!(
+        result.to_xml(),
+        "<MyElement bar='from set foo'>one</MyElement><MyElement bar='from set foo'>two</MyElement>"
+    );
     Ok(())
 }
 
@@ -1019,6 +1050,89 @@ where
     assert_eq!(
         result.to_xml(),
         "<Element bar='from set foo'>one</Element><Element bar='from set foo'>two</Element>"
+    );
+    Ok(())
+}
+
+pub fn feg_starting_with_1<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+{
+    let result = test_rig(
+        "<Test><a>one</a><b>two</b><c>three</c><a>four</a><b>five</b><c>six</c><a>seven</a><b>eight</b><c>nine</c></Test>",
+        r#"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='Test'>
+    <result>
+      <xsl:for-each-group select='*' group-starting-with='a'>
+        <group>
+          <xsl:apply-templates select='current-group()'/>
+        </group>
+      </xsl:for-each-group>
+    </result>
+  </xsl:template>
+  <xsl:template match='*'>
+    <xsl:copy>
+      <xsl:apply-templates/>
+    </xsl:copy>
+  </xsl:template>
+</xsl:stylesheet>"#,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    )?;
+    assert_eq!(
+        result.to_xml(),
+        "<result><group><a>one</a><b>two</b><c>three</c></group><group><a>four</a><b>five</b><c>six</c></group><group><a>seven</a><b>eight</b><c>nine</c></group></result>"
+    );
+    Ok(())
+}
+
+pub fn feg_starting_with_2<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+{
+    let result = test_rig(
+        "<Test><a>one</a><b>two</b><c>three</c><a>four</a><b>five</b><c>six</c><a>seven</a><b>eight</b><c>nine</c></Test>",
+        r#"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='Test'>
+    <result>
+      <xsl:for-each-group select='*' group-starting-with='a'>
+        <group>
+          <first>
+            <xsl:apply-templates select='current-group()[position() eq 1]'/>
+          </first>
+          <rest>
+            <xsl:apply-templates select='current-group()[position() ne 1]'/>
+          </rest>
+        </group>
+      </xsl:for-each-group>
+    </result>
+  </xsl:template>
+  <xsl:template match='*'>
+    <xsl:copy>
+      <xsl:apply-templates/>
+    </xsl:copy>
+  </xsl:template>
+</xsl:stylesheet>"#,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    )?;
+    assert_eq!(
+        result.to_xml(),
+        "<result><group><first><a>one</a></first><rest><b>two</b><c>three</c></rest></group><group><first><a>four</a></first><rest><b>five</b><c>six</c></rest></group><group><first><a>seven</a></first><rest><b>eight</b><c>nine</c></rest></group></result>"
     );
     Ok(())
 }
@@ -1416,6 +1530,199 @@ where
     assert_eq!(
         result.to_xml(),
         "<HTML><TITLE>A really exciting document</TITLE><BODY BGCOLOR='#FFFFCC'><H1>Title: A really exciting document</H1></BODY></HTML>"
+    );
+    Ok(())
+}
+
+pub fn dbk_1<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+{
+    let result = test_rig(
+        "<db:article xmlns:db='http://docbook.org/ns/docbook'>
+        <db:sect1 xmlns:db='http://docbook.org/ns/docbook'>
+          <db:title xmlns:db='http://docbook.org/ns/docbook'>Level 1 Heading</db:title>
+          <db:para xmlns:db='http://docbook.org/ns/docbook'>First paragraph</db:para>
+          <db:sect2 xmlns:db='http://docbook.org/ns/docbook'>
+            <db:title xmlns:db='http://docbook.org/ns/docbook'>Level 2 Heading</db:title>
+            <db:para xmlns:db='http://docbook.org/ns/docbook'>Second paragraph</db:para>
+          </db:sect2>
+          <db:sect2 xmlns:db='http://docbook.org/ns/docbook'>
+            <db:title xmlns:db='http://docbook.org/ns/docbook'>Second Level 2 Heading</db:title>
+            <db:para xmlns:db='http://docbook.org/ns/docbook'>Third paragraph</db:para>
+          </db:sect2>
+        </db:sect1>
+        <db:sect1 xmlns:db='http://docbook.org/ns/docbook'>
+          <db:title xmlns:db='http://docbook.org/ns/docbook'>Second Level 1 Heading</db:title>
+          <db:para xmlns:db='http://docbook.org/ns/docbook'>Fourth paragraph</db:para>
+          <db:sect2 xmlns:db='http://docbook.org/ns/docbook'>
+            <db:title xmlns:db='http://docbook.org/ns/docbook'>Third Level 2 Heading</db:title>
+            <db:para xmlns:db='http://docbook.org/ns/docbook'>Fifth paragraph</db:para>
+          </db:sect2>
+        </db:sect1></db:article>
+",
+        r#"<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+          xmlns:db="http://docbook.org/ns/docbook"
+          version="3.0">
+
+          <xsl:output indent="yes"/>
+          <xsl:strip-space elements="*"/>
+
+          <xsl:template match="db:article">
+            <HTML>
+            <BODY>
+            <xsl:apply-templates/>
+            </BODY>
+            </HTML>
+          </xsl:template>
+          <xsl:template match="*">
+            <DIV>matched element <I><xsl:sequence select="name()"/></I></DIV>
+          </xsl:template>
+          <xsl:template match="db:sect1">
+            <DIV CLASS="sect1"><xsl:apply-templates/></DIV>
+          </xsl:template>
+          <xsl:template match="db:sect2">
+            <DIV CLASS="sect2"><xsl:apply-templates/></DIV>
+          </xsl:template>
+          <xsl:template match="db:title">
+            <H1><xsl:apply-templates/></H1>
+          </xsl:template>
+          <xsl:template match="db:para">
+            <P><xsl:apply-templates/></P>
+          </xsl:template>
+          <xsl:template match="db:emphasis">
+            <I><xsl:apply-templates/></I>
+          </xsl:template>
+        </xsl:stylesheet>
+"#,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    )?;
+
+    assert_eq!(
+        result.to_xml(),
+        "<HTML><BODY>
+        <DIV CLASS='sect1'>
+          <H1>Level 1 Heading</H1>
+          <P>First paragraph</P>
+          <DIV CLASS='sect2'>
+            <H1>Level 2 Heading</H1>
+            <P>Second paragraph</P>
+          </DIV>
+          <DIV CLASS='sect2'>
+            <H1>Second Level 2 Heading</H1>
+            <P>Third paragraph</P>
+          </DIV>
+        </DIV>
+        <DIV CLASS='sect1'>
+          <H1>Second Level 1 Heading</H1>
+          <P>Fourth paragraph</P>
+          <DIV CLASS='sect2'>
+            <H1>Third Level 2 Heading</H1>
+            <P>Fifth paragraph</P>
+          </DIV>
+        </DIV></BODY></HTML>"
+    );
+    Ok(())
+}
+
+pub fn md_1<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+{
+    let result = test_rig(
+        "<article>
+          <heading1>Level 1 Heading</heading1>
+          <para>First paragraph with <emph>emphasised</emph> text, <emph role='strong'>bold</emph> text, and <emph role='underline'>underlined</emph> text</para>
+        </article>
+",
+        r#"<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+          xmlns:db="http://docbook.org/ns/docbook"
+          version="3.0">
+
+          <xsl:output indent="yes"/>
+          <xsl:strip-space elements="*"/>
+
+          <xsl:template match="article">
+            <db:article>
+              <xsl:for-each-group select="*" group-starting-with="heading1">
+                <xsl:choose>
+                  <xsl:when test="current-group()[position() eq 1]/self::heading1">
+                    <db:sect1>
+                      <xsl:apply-templates select="current-group()[position() eq 1]"/>
+                      <xsl:for-each-group select="current-group()[position() ne 1]"
+                        group-starting-with="heading2">
+                        <xsl:choose>
+                          <xsl:when test="current-group()[position() eq 1]/self::heading2">
+                            <db:sect2>
+                              <xsl:apply-templates select="current-group()"/>
+                            </db:sect2>
+                          </xsl:when>
+                          <xsl:otherwise>
+                            <xsl:apply-templates select="current-group()"/>
+                          </xsl:otherwise>
+                        </xsl:choose>
+                      </xsl:for-each-group>
+                    </db:sect1>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:apply-templates select="current-group()"/>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </xsl:for-each-group>
+            </db:article>
+          </xsl:template>
+          <xsl:template match="heading1|heading2">
+            <db:title>
+              <xsl:apply-templates/>
+            </db:title>
+          </xsl:template>
+          <xsl:template match="para">
+            <db:para>
+              <xsl:apply-templates/>
+            </db:para>
+          </xsl:template>
+          <xsl:template match="emph">
+            <db:emphasis>
+              <xsl:apply-templates select="@*|node()"/>
+            </db:emphasis>
+          </xsl:template>
+          <xsl:template match="attribute::role|attribute::id">
+            <xsl:copy/>
+          </xsl:template>
+          <!--xsl:template match="emph[@role eq 'strong']">
+            <db:emphasis role="strong">
+              <xsl:apply-templates select="@*|node()"/>
+            </db:emphasis>
+          </xsl:template>
+          <xsl:template match="emph[@role eq 'underline']">
+            <db:emphasis role="underline">
+              <xsl:apply-templates select="@*|node()"/>
+            </db:emphasis>
+          </xsl:template-->
+        </xsl:stylesheet>
+"#,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    )?;
+
+    assert_eq!(
+        result.to_xml(),
+        "<db:article xmlns:db='http://docbook.org/ns/docbook'><db:sect1><db:title>Level 1 Heading</db:title><db:para>First paragraph with <db:emphasis>emphasised</db:emphasis> text, <db:emphasis role='strong'>bold</db:emphasis> text, and <db:emphasis role='underline'>underlined</db:emphasis> text</db:para></db:sect1></db:article>"
     );
     Ok(())
 }

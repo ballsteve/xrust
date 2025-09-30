@@ -9,20 +9,20 @@ use crate::parser::combinators::tuple::{tuple2, tuple3, tuple4, tuple5, tuple6};
 use crate::parser::combinators::value::value;
 use crate::parser::combinators::whitespace::whitespace0;
 use crate::parser::common::is_namechar;
-use crate::parser::xml::dtd::pereference::petextreference;
 use crate::parser::xml::dtd::Occurances;
+use crate::parser::xml::dtd::pereference::petextreference;
 use crate::parser::xml::qname::name;
 use crate::parser::{ParseError, ParseInput};
 use crate::qname::QualifiedName;
 use crate::xmldecl::DTDPattern;
 
-pub(crate) fn nmtoken<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn nmtoken<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     map(many1(take_while(|c| is_namechar(&c))), |x| x.join(""))
 }
 
-pub(crate) fn contentspec<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, DTDPattern), ParseError> {
+pub(crate) fn contentspec<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, DTDPattern), ParseError> {
     alt4(
         value(tag("EMPTY"), DTDPattern::Empty),
         value(tag("ANY"), DTDPattern::Any),
@@ -32,8 +32,8 @@ pub(crate) fn contentspec<N: Node>(
 }
 
 //Mixed	   ::=   	'(' S? '#PCDATA' (S? '|' S? Name)* S? ')*' | '(' S? '#PCDATA' S? ')'
-pub(crate) fn mixed<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, DTDPattern), ParseError> {
+pub(crate) fn mixed<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, DTDPattern), ParseError> {
     alt2(
         map(
             tuple6(
@@ -85,8 +85,8 @@ pub(crate) fn mixed<N: Node>(
 }
 
 // children	   ::=   	(choice | seq) ('?' | '*' | '+')?
-pub(crate) fn children<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, DTDPattern), ParseError> {
+pub(crate) fn children<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, DTDPattern), ParseError> {
     move |(input, state)| {
         map(
             tuple2(

@@ -8,7 +8,7 @@ use crate::conformance::dtdfileresolve;
 use std::fs;
 //use hexdump::hexdump;
 use xrust::item::Node;
-use xrust::parser::{xml, ParserConfig};
+use xrust::parser::{ParserConfig, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 

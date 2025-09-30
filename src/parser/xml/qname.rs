@@ -16,20 +16,20 @@ use crate::parser::{ParseError, ParseInput};
 use crate::qname::QualifiedName;
 
 // QualifiedName
-pub(crate) fn qualname<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, QualifiedName), ParseError> {
+pub(crate) fn qualname<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, QualifiedName), ParseError> {
     alt2(prefixed_name(), unprefixed_name())
 }
 
 // Expanded Qualified Name
 // EQName ::= QName | URIQualifiedName
-pub(crate) fn eqname<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, QualifiedName), ParseError> {
+pub(crate) fn eqname<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, QualifiedName), ParseError> {
     alt2(uriqualname(), qualname())
 }
 // URIQualifiedName ::= "Q" "{" [^{}]* "}" NCName
-pub(crate) fn uriqualname<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, QualifiedName), ParseError> {
+pub(crate) fn uriqualname<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, QualifiedName), ParseError> {
     map(
         pair(
             tuple3(
@@ -43,14 +43,14 @@ pub(crate) fn uriqualname<N: Node>(
     )
 }
 
-fn unprefixed_name<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, QualifiedName), ParseError> {
+fn unprefixed_name<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, QualifiedName), ParseError> {
     map(alt2(petextreference(), ncname()), |localpart| {
         QualifiedName::new(None, None, localpart)
     })
 }
-fn prefixed_name<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, QualifiedName), ParseError> {
+fn prefixed_name<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, QualifiedName), ParseError> {
     map(
         tuple3(
             alt2(petextreference(), ncname()),
@@ -65,8 +65,8 @@ fn prefixed_name<N: Node>(
 // Name ::= NameStartChar NameChar*
 // NameStartChar ::= ':' | [A-Z] | '_' | [a-z] | [#xC0-#xD6] | [#xD8-#xF6] | [#xF8-#x2FF] | [#x370-#x37D] | [#x37F-#x1FFF] | [#x200C-#x200D] | [#x2070-#x218F] | [#x2C00-#x2FEF] | [#x3001-#xD7FF] | [#xF900-#xFDCF] | [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
 // NameChar ::= NameStartChar | '-' | '.' | [0-9] | #xB7 | [#x0300-#x036F] | [#x203F-#x2040]
-pub(crate) fn ncname<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn ncname<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     map(
         tuple2(
             wellformed(take_one(), is_ncnamestartchar),
@@ -76,8 +76,8 @@ pub(crate) fn ncname<N: Node>(
     )
 }
 
-pub(crate) fn name<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn name<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     map(
         tuple2(
             wellformed(take_one(), is_namestartchar),
