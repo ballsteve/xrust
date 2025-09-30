@@ -1632,3 +1632,94 @@ where
     );
     Ok(())
 }
+
+pub fn md_1<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+{
+    let result = test_rig(
+        "<article>
+          <heading1>Level 1 Heading</heading1>
+          <para>First paragraph with <emph>emphasised</emph> text</para>
+        </article>
+",
+        r#"<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+          xmlns:db="http://docbook.org/ns/docbook"
+          version="3.0">
+
+          <xsl:output indent="yes"/>
+          <xsl:strip-space elements="*"/>
+
+          <xsl:template match="article">
+            <db:article>
+              <xsl:for-each-group select="*" group-starting-with="heading1">
+                <xsl:choose>
+                  <xsl:when test="current-group()[position() eq 1]/self::heading1">
+                    <db:sect1>
+                      <xsl:apply-templates select="current-group()[position() eq 1]"/>
+                      <xsl:for-each-group select="current-group()[position() ne 1]"
+                        group-starting-with="heading2">
+                        <xsl:choose>
+                          <xsl:when test="current-group()[position() eq 1]/self::heading2">
+                            <db:sect2>
+                              <xsl:apply-templates select="current-group()"/>
+                            </db:sect2>
+                          </xsl:when>
+                          <xsl:otherwise>
+                            <xsl:apply-templates select="current-group()"/>
+                          </xsl:otherwise>
+                        </xsl:choose>
+                      </xsl:for-each-group>
+                    </db:sect1>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:apply-templates select="current-group()"/>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </xsl:for-each-group>
+            </db:article>
+          </xsl:template>
+          <xsl:template match="heading1|heading2">
+            <db:title>
+              <xsl:apply-templates/>
+            </db:title>
+          </xsl:template>
+          <xsl:template match="para">
+            <db:para>
+              <xsl:apply-templates/>
+            </db:para>
+          </xsl:template>
+          <xsl:template match="emph">
+            <db:emphasis>
+              <xsl:apply-templates select="@*|node()"/>
+            </db:emphasis>
+          </xsl:template>
+          <xsl:template match="emph[@role eq 'strong']">
+            <db:emphasis role="strong">
+              <xsl:apply-templates select="@*|node()"/>
+            </db:emphasis>
+          </xsl:template>
+          <xsl:template match="emph[@role eq 'underline']">
+            <db:emphasis role="underline">
+              <xsl:apply-templates select="@*|node()"/>
+            </db:emphasis>
+          </xsl:template>
+        </xsl:stylesheet>
+"#,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    )?;
+
+    assert_eq!(
+        result.to_xml(),
+        "<db:article xmlns:db='http://docbook.org/ns/docbook'><db:sect1><db:title>Level 1 Heading</db:title><db:para>First paragraph with <db:emphasis>emphasised</db:emphasis> text</db:para></db:sect1></db:article>"
+    );
+    Ok(())
+}

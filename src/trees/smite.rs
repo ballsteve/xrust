@@ -258,10 +258,10 @@ impl ItemNode for RNode {
         }
     }
     fn to_xml(&self) -> String {
-        to_xml_int(self, &OutputDefinition::new(), 0)
+        to_xml_int(self, &OutputDefinition::new(), 0, vec![])
     }
     fn to_xml_with_options(&self, od: &OutputDefinition) -> std::string::String {
-        to_xml_int(self, od, 0)
+        to_xml_int(self, od, 0, vec![])
     }
     fn is_same(&self, other: &Self) -> bool {
         Rc::ptr_eq(self, other)
@@ -1033,25 +1033,38 @@ fn find_index(parent: &RNode, child: &RNode) -> Result<usize, Error> {
 
 // This handles the XML serialisation of the document.
 // "indent" is the current level of indentation.
-fn to_xml_int(node: &RNode, od: &OutputDefinition, indent: usize) -> String {
+fn to_xml_int(
+    node: &RNode,
+    od: &OutputDefinition,
+    indent: usize,
+    ns_in_scope: Vec<Rc<Value>>,
+) -> String {
     match &node.0 {
         NodeInner::Document(_, _, _, _) => {
             node.child_iter().fold(String::new(), |mut result, c| {
-                result.push_str(to_xml_int(&c, od, indent + 2).as_str());
+                result.push_str(to_xml_int(&c, od, indent + 2, ns_in_scope.clone()).as_str());
                 result
             })
         }
         NodeInner::Element(_, qn, _, _, ns) => {
+            let mut new_in_scope = ns_in_scope.clone();
             let mut result = String::from("<");
             result.push_str(qn.to_string().as_str());
 
             // Namespace declarations
             ns.borrow().iter().for_each(|(pre, nsuri)| {
-                let pre_str = pre.as_ref().map_or_else(
-                    || format!(" xmlns='{}'", nsuri.to_string()),
-                    |p| format!(" xmlns:{}='{}'", p, nsuri.to_string()),
-                );
-                result.push_str(pre_str.as_str());
+                if ns_in_scope
+                    .iter()
+                    .find(|insns| insns.to_string() == nsuri.value().to_string())
+                    .is_none()
+                {
+                    let pre_str = pre.as_ref().map_or_else(
+                        || format!(" xmlns='{}'", nsuri.to_string()),
+                        |p| format!(" xmlns:{}='{}'", p, nsuri.to_string()),
+                    );
+                    new_in_scope.push(nsuri.value());
+                    result.push_str(pre_str.as_str());
+                }
             });
 
             // Attributes
@@ -1086,7 +1099,7 @@ fn to_xml_int(node: &RNode, od: &OutputDefinition, indent: usize) -> String {
                     result.push('\n');
                     (0..indent).for_each(|_| result.push(' '))
                 }
-                result.push_str(to_xml_int(&c, od, indent + 2).as_str())
+                result.push_str(to_xml_int(&c, od, indent + 2, new_in_scope.clone()).as_str())
             });
             if do_indent && indent > 1 {
                 result.push('\n');
