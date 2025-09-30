@@ -1325,7 +1325,7 @@ mod tests {
     fn value_compare_eq() {
         assert!(
             Value::from("3")
-                .compare(&Value::Double(3.0), Operator::Equal)
+                .compare(&Value::from(3.0), Operator::Equal)
                 .expect("unable to compare")
         )
     }
@@ -1334,7 +1334,7 @@ mod tests {
     fn value_compare_ne() {
         assert!(
             !Value::from("3")
-                .compare(&Value::Double(3.0), Operator::NotEqual)
+                .compare(&Value::from(3.0), Operator::NotEqual)
                 .expect("unable to compare")
         )
     }

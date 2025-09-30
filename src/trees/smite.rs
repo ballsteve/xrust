@@ -1648,7 +1648,7 @@ mod tests {
     fn smite_attached_1() {
         let mut root = Rc::new(Node::new());
         let child1 = root
-            .new_element(Rc::new(QualifiedName::new(None, None, "Test")))
+            .new_element(QName::from_local_name(NcName::try_from("Test").unwrap()))
             .expect("unable to create element node");
         assert_eq!(child1.is_attached(), false);
         root.push(child1.clone()).expect("unable to add node");

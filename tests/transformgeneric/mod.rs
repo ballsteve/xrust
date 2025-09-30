@@ -4,6 +4,7 @@ use chrono::{Datelike, Local, Timelike};
 use qualname::{NamespaceDeclaration, NamespaceMap, NamespacePrefix, NamespaceUri, NcName, QName};
 use std::rc::Rc;
 use xrust::item::{Item, Node, SequenceTrait};
+use xrust::output::OutputSpec;
 use xrust::pattern::Pattern;
 use xrust::transform::callable::{ActualParameters, Callable, FormalParameters};
 use xrust::transform::context::{Context, ContextBuilder, StaticContextBuilder};
@@ -2900,7 +2901,7 @@ where
             Transform::Literal(Item::<N>::Value(Rc::new(Value::from("c")))),
         ])),
         Box::new(Transform::LiteralElement(
-            Rc::new(QualifiedName::new(None, None, String::from("group"))),
+            Rc::new(QName::from_local_name(NcName::try_from("group").unwrap())),
             Box::new(Transform::SequenceItems(vec![
                 Transform::Literal(Item::Value(Rc::new(Value::from(" #members ")))),
                 Transform::Count(Box::new(Transform::CurrentGroup)),

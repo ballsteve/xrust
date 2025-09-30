@@ -1387,7 +1387,7 @@ where
         match &f[0] {
             Transform::Invoke(qn, ap, _) => {
                 assert_eq!(
-                    qn,
+                    *qn,
                     QName::new_from_parts(
                         NcName::try_from("my_func").unwrap(),
                         Some(NamespaceUri::try_from("urn:my_test").unwrap())
@@ -1576,10 +1576,10 @@ where
             .dispatch(&mut stctxt, &xform)
             .expect("transform failed");
         assert_eq!(s.len(), 1);
-        assert_eq!(s[0].name().to_string(), "b");
+        assert_eq!(s[0].name().unwrap().to_string(), "b");
         if let Item::Node(r) = &s[0] {
             assert_eq!(
-                r.get_attribute(&QualifiedName::new(None, None, "id"))
+                r.get_attribute(&QName::from_local_name(NcName::try_from("id").unwrap()))
                     .to_string(),
                 "b1"
             );
@@ -1600,11 +1600,11 @@ where
     let rd = make_empty_doc();
     let mut sd = make_empty_doc();
     let mut top = sd
-        .new_element(Rc::new(QualifiedName::new(None, None, "root")))
+        .new_element(QName::from_local_name(NcName::try_from("root").unwrap()))
         .expect("unable to create root element");
     sd.push(top.clone()).expect("unable to add root element");
-    let e_name = Rc::new(QualifiedName::new(None, None, "element"));
-    let at_name = Rc::new(QualifiedName::new(None, None, "attr"));
+    let e_name = QName::from_local_name(NcName::try_from("element").unwrap());
+    let at_name = QName::from_local_name(NcName::try_from("attr").unwrap());
     // <element attr="val1">text1</element>
     let mut e1 = sd
         .new_element(e_name.clone())
@@ -1657,11 +1657,11 @@ where
     let rd = make_empty_doc();
     let mut sd = make_empty_doc();
     let mut top = sd
-        .new_element(Rc::new(QualifiedName::new(None, None, "root")))
+        .new_element(QName::from_local_name(NcName::try_from("root").unwrap()))
         .expect("unable to create root element");
     sd.push(top.clone()).expect("unable to add root element");
-    let e_name = Rc::new(QualifiedName::new(None, None, "element"));
-    let at_name = Rc::new(QualifiedName::new(None, None, "attr"));
+    let e_name = QName::from_local_name(NcName::try_from("element").unwrap());
+    let at_name = QName::from_local_name(NcName::try_from("attr").unwrap());
     // <element attr="val1">text1</element>
     let mut e1 = sd
         .new_element(e_name.clone())
