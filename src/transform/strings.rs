@@ -31,7 +31,7 @@ pub fn local_name<
             // Get the name of the context item
             // TODO: handle the case of there not being a context item
             match ctxt.context_item.as_ref().unwrap() {
-                Item::Node(ref m) => Ok(vec![Item::Value(Rc::new(Value::from(
+                Item::Node(m) => Ok(vec![Item::Value(Rc::new(Value::from(
                     m.name()
                         .map_or(String::from(""), |l| l.local_name().to_string()),
                 )))]),
@@ -85,7 +85,7 @@ pub fn name<
             // This may be a prefixed name.
             // TODO: handle the case of there being no context item
             match ctxt.context_item.as_ref().unwrap() {
-                Item::Node(ref m) => {
+                Item::Node(m) => {
                     if let Some(qn) = m.name() {
                         if let Some(nsuri) = qn.namespace_uri() {
                             Ok(vec![Item::Value(Rc::new(Value::from(

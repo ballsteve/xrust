@@ -29,7 +29,7 @@ where
                                 .doc
                                 .clone()
                                 .unwrap()
-                                .new_text(Rc::new(Value::String("&".to_string())))
+                                .new_text(Rc::new(Value::from("&")))
                                 .expect("unable to create text node"),
                         ],
                     )),
@@ -40,7 +40,7 @@ where
                                 .doc
                                 .clone()
                                 .unwrap()
-                                .new_text(Rc::new(Value::String(">".to_string())))
+                                .new_text(Rc::new(Value::from(">")))
                                 .expect("unable to create text node"),
                         ],
                     )),
@@ -51,7 +51,7 @@ where
                                 .doc
                                 .clone()
                                 .unwrap()
-                                .new_text(Rc::new(Value::String("<".to_string())))
+                                .new_text(Rc::new(Value::from("<")))
                                 .expect("unable to create text node"),
                         ],
                     )),
@@ -62,7 +62,7 @@ where
                                 .doc
                                 .clone()
                                 .unwrap()
-                                .new_text(Rc::new(Value::String("\"".to_string())))
+                                .new_text(Rc::new(Value::from("\"")))
                                 .expect("unable to create text node"),
                         ],
                     )),
@@ -73,7 +73,7 @@ where
                                 .doc
                                 .clone()
                                 .unwrap()
-                                .new_text(Rc::new(Value::String("'".to_string())))
+                                .new_text(Rc::new(Value::from("'")))
                                 .expect("unable to create text node"),
                         ],
                     )),

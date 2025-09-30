@@ -815,19 +815,13 @@ impl ItemNode for RNode {
                 }
                 Ok(result)
             }
-            NodeInner::ProcessingInstruction(_, _, _) => {
-                self.shallow_copy()
-            }
+            NodeInner::ProcessingInstruction(_, _, _) => self.shallow_copy(),
             NodeInner::Comment(_, _) | NodeInner::Namespace(_, _, _) => Err(Error::new(
                 ErrorKind::TypeError,
                 "invalid node type".to_string(),
             )),
-            NodeInner::Text(_, _) => {
-                self.shallow_copy()
-            }
-            NodeInner::Attribute(_, _, _) => {
-                self.shallow_copy()
-            }
+            NodeInner::Text(_, _) => self.shallow_copy(),
+            NodeInner::Attribute(_, _, _) => self.shallow_copy(),
             NodeInner::Element(_, _, _, _, _) => {
                 let mut result = self.shallow_copy()?;
 
@@ -838,7 +832,7 @@ impl ItemNode for RNode {
                     result.add_attribute(
                         d.new_attribute(
                             a.name().unwrap(),
-                            Rc::new(Value::String(
+                            Rc::new(Value::from(
                                 re.replace_all(a.clone().value().to_string().trim(), " ")
                                     .to_string(),
                             )),
@@ -1213,7 +1207,7 @@ fn to_xml_int(
     node: &RNode,
     od: &OutputDefinition,
     indent: usize,
-    ns_in_scope: Vec<Rc<Value>>,
+    ns_in_scope: Vec<NamespaceUri>,
 ) -> String {
     match &node.0 {
         NodeInner::Document(_, _, _, _) => {
@@ -1222,7 +1216,7 @@ fn to_xml_int(
                 result
             })
         }
-        NodeInner::Element(_, qn, _, _, ns) => {
+        NodeInner::Element(_, _qn, _, _, ns) => {
             let mut new_in_scope = ns_in_scope.clone();
             let mut result = String::from("<");
             result.push_str(to_prefixed_name(node).as_str());
@@ -1231,14 +1225,14 @@ fn to_xml_int(
             ns.borrow().iter().for_each(|(_, nsd)| {
                 if ns_in_scope
                     .iter()
-                    .find(|insns| insns.to_string() == nsd.as_namespace_uri().unwrap())
+                    .find(|insns| *insns == nsd.as_namespace_uri().unwrap())
                     .is_none()
                 {
-                    let nsd_nsuri = nsd.as_namespace_uri().unwrap().to_string();
+                    let nsd_nsuri = nsd.as_namespace_uri().unwrap();
                     new_in_scope.push(nsd_nsuri.clone());
                     let decl = nsd.as_namespace_prefix().unwrap().map_or_else(
-                        || format!(" xmlns='{}'", nsd_nsuri),
-                        |p| format!(" xmlns:{}='{}'", p.to_string(), nsd_nsuri),
+                        || format!(" xmlns='{}'", nsd_nsuri.to_string()),
+                        |p| format!(" xmlns:{}='{}'", p.to_string(), nsd_nsuri.to_string()),
                     );
                     result.push_str(decl.as_str());
                 }

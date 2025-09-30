@@ -240,7 +240,18 @@ impl fmt::Display for ValueData {
             ValueData::NamespaceUri(n) => n.to_string(),
             ValueData::ID(s) => s.to_string(),
             ValueData::IDREF(s) => s.to_string(),
-            ValueData::IDREFS(s) => s.join(" ").to_string(),
+            ValueData::IDREFS(s) => s.iter().map(|i| i.to_string()).enumerate().fold(
+                String::new(),
+                |mut acc, (j, i)| {
+                    if j > 0 {
+                        let new = format!(" {}", i);
+                        acc.push_str(new.as_str())
+                    } else {
+                        acc.push_str(i.as_str())
+                    }
+                    acc
+                },
+            ),
             _ => "".to_string(),
         };
         f.write_str(result.as_str())
@@ -755,6 +766,14 @@ impl From<NamespaceUri> for Value {
         }
     }
 }
+impl From<DateTime<Local>> for Value {
+    fn from(dt: DateTime<Local>) -> Self {
+        Value {
+            value: ValueData::DateTime(dt),
+            output: OutputSpec::Normal,
+        }
+    }
+}
 
 #[derive(Clone, Debug, Hash)]
 pub struct NonPositiveInteger(i64);
@@ -994,11 +1013,6 @@ impl TryFrom<&str> for IDREF {
                 String::from("value is not an IDREF"),
             ))
         }
-    }
-}
-impl Display for IDREF {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str(&self.0.to_string())
     }
 }
 impl TryFrom<String> for IDREF {

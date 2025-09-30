@@ -57,13 +57,13 @@ pub(crate) fn literal_element<
             Item::Node(t) => {
                 match t.node_type() {
                     NodeType::Attribute => {
-                        let new_att = r.new_attribute(t.name(), t.value())?;
+                        let new_att = r.new_attribute(t.name().unwrap(), t.value())?;
                         e.add_attribute(new_att)
                     } // TODO: Also check namespace of attribute
                     NodeType::Namespace => {
                         let new_ns = r.new_namespace(
-                            t.value(),
-                            Some(Rc::new(Value::from(t.name().to_string()))),
+                            t.as_namespace_uri()?.clone(),
+                            t.as_namespace_prefix()?.cloned(),
                         )?;
                         e.add_namespace(new_ns)
                     }

@@ -216,19 +216,26 @@ where
                                 };
                                 //Assign IDs only if we are tracking.
                                 let v = match (atttype, state1.id_tracking) {
-                                    (AttType::ID, true) => {
-                                        Rc::new(Value::from(ID::try_from(av.clone())?))
-                                    }
-                                    (AttType::IDREF, true) => {
-                                        Rc::new(Value::from(IDREF::try_from(av.clone())?))
-                                    }
+                                    (AttType::ID, true) => Rc::new(Value::from(
+                                        ID::try_from(av.clone())
+                                            .map_err(|_| ParseError::MissingNameSpace)?,
+                                    )),
+                                    (AttType::IDREF, true) => Rc::new(Value::from(
+                                        IDREF::try_from(av.clone())
+                                            .map_err(|_| ParseError::MissingNameSpace)?,
+                                    )),
                                     (AttType::IDREFS, true) => Rc::new(
                                         ValueBuilder::new()
                                             .value(ValueData::IDREFS(
                                                 av.clone().split(' ').try_fold(
                                                     vec![],
                                                     |mut acc, s| {
-                                                        acc.push(IDREF::try_from(s.to_string())?);
+                                                        acc.push(
+                                                            IDREF::try_from(s.to_string())
+                                                                .map_err(|_| {
+                                                                    ParseError::MissingNameSpace
+                                                                })?,
+                                                        );
                                                         Ok(acc)
                                                     },
                                                 )?,

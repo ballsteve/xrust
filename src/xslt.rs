@@ -84,7 +84,7 @@ use crate::transform::{
     Axis, Grouping, KindTest, NameTest, NodeMatch, NodeTest, Order, Transform, WildcardOrName,
     WildcardOrNamespaceUri, in_scope_namespaces,
 };
-use crate::value::{Value, ValueBuilder, ValueData};
+use crate::value::Value;
 use crate::xdmerror::*;
 use qualname::{NamespaceUri, NcName, QName};
 use std::convert::TryFrom;
@@ -820,7 +820,7 @@ fn to_transform<N: Node>(
                 let doe = n.get_attribute(&*ATTRDOE);
                 if !doe.to_string().is_empty() {
                     match &doe.to_string()[..] {
-                        "yes" => Ok(Transform::Literal(Item::Value(Rc::new(Value::String(
+                        "yes" => Ok(Transform::Literal(Item::Value(Rc::new(Value::from(
                             n.to_string(),
                         ))))),
                         "no" => {
@@ -855,11 +855,11 @@ fn to_transform<N: Node>(
                     match &doe.to_string()[..] {
                         "yes" => Ok(Transform::LiteralText(
                             Box::new(parse::<N>(&sel.to_string(), Some(n.clone()), None)?),
-                            true,
+                            OutputSpec::NoEscape,
                         )),
                         "no" => Ok(Transform::LiteralText(
                             Box::new(parse::<N>(&sel.to_string(), Some(n.clone()), None)?),
-                            false,
+                            OutputSpec::Normal,
                         )),
                         _ => Err(Error::new(
                             ErrorKind::TypeError,
@@ -869,7 +869,7 @@ fn to_transform<N: Node>(
                 } else {
                     Ok(Transform::LiteralText(
                         Box::new(parse::<N>(&sel.to_string(), Some(n.clone()), None)?),
-                        false,
+                        OutputSpec::Normal,
                     ))
                 }
             } else if qn == *XSLAPPLYTEMPLATES {
