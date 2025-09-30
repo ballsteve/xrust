@@ -1646,7 +1646,7 @@ where
     let result = test_rig(
         "<article>
           <heading1>Level 1 Heading</heading1>
-          <para>First paragraph with <emph>emphasised</emph> text</para>
+          <para>First paragraph with <emph>emphasised</emph> text, <emph role='strong'>bold</emph> text, and <emph role='underline'>underlined</emph> text</para>
         </article>
 ",
         r#"<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
@@ -1700,7 +1700,10 @@ where
               <xsl:apply-templates select="@*|node()"/>
             </db:emphasis>
           </xsl:template>
-          <xsl:template match="emph[@role eq 'strong']">
+          <xsl:template match="attribute::role|attribute::id">
+            <xsl:copy/>
+          </xsl:template>
+          <!--xsl:template match="emph[@role eq 'strong']">
             <db:emphasis role="strong">
               <xsl:apply-templates select="@*|node()"/>
             </db:emphasis>
@@ -1709,7 +1712,7 @@ where
             <db:emphasis role="underline">
               <xsl:apply-templates select="@*|node()"/>
             </db:emphasis>
-          </xsl:template>
+          </xsl:template-->
         </xsl:stylesheet>
 "#,
         parse_from_str,
@@ -1719,7 +1722,7 @@ where
 
     assert_eq!(
         result.to_xml(),
-        "<db:article xmlns:db='http://docbook.org/ns/docbook'><db:sect1><db:title>Level 1 Heading</db:title><db:para>First paragraph with <db:emphasis>emphasised</db:emphasis> text</db:para></db:sect1></db:article>"
+        "<db:article xmlns:db='http://docbook.org/ns/docbook'><db:sect1><db:title>Level 1 Heading</db:title><db:para>First paragraph with <db:emphasis>emphasised</db:emphasis> text, <db:emphasis role='strong'>bold</db:emphasis> text, and <db:emphasis role='underline'>underlined</db:emphasis> text</db:para></db:sect1></db:article>"
     );
     Ok(())
 }

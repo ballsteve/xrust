@@ -341,7 +341,13 @@ impl<N: Node> Debug for Transform<N> {
             Transform::Loop(_, _) => write!(f, "loop"),
             Transform::Switch(c, _) => write!(f, "switch {} clauses", c.len()),
             Transform::ForEach(_g, _, _, o) => write!(f, "for-each ({} sort keys)", o.len()),
-            Transform::Union(v) => write!(f, "union of {} operands", v.len()),
+            Transform::Union(v) => {
+                write!(f, "union of {} operands", v.len()).ok();
+                v.iter().for_each(|o| {
+                    write!(f, "\noperand: {:?}", o).ok();
+                });
+                Ok(())
+            }
             Transform::ApplyTemplates(_, m, o) => {
                 write!(f, "Apply templates (mode {:?}, {} sort keys)", m, o.len())
             }

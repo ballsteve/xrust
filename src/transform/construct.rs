@@ -1,13 +1,13 @@
 //! These functions construct nodes, possibly destined for the result document.
 
+use crate::Item;
 use crate::item::{Node, NodeType, Sequence, SequenceTrait};
 use crate::output::OutputSpec;
 use crate::qname::QualifiedName;
-use crate::transform::context::{Context, StaticContext};
 use crate::transform::Transform;
+use crate::transform::context::{Context, StaticContext};
 use crate::value::{Value, ValueBuilder, ValueData};
 use crate::xdmerror::{Error, ErrorKind};
-use crate::Item;
 use std::rc::Rc;
 use url::Url;
 
@@ -59,8 +59,17 @@ pub(crate) fn literal_element<
         match i {
             Item::Node(t) => {
                 match t.node_type() {
-                    NodeType::Attribute => e.add_attribute(t.clone()), // TODO: Also check namespace of attribute
-                    NodeType::Namespace => e.add_namespace(t.clone()),
+                    NodeType::Attribute => {
+                        let new_att = r.new_attribute(t.name(), t.value())?;
+                        e.add_attribute(new_att)
+                    } // TODO: Also check namespace of attribute
+                    NodeType::Namespace => {
+                        let new_ns = r.new_namespace(
+                            t.value(),
+                            Some(Rc::new(Value::from(t.name().to_string()))),
+                        )?;
+                        e.add_namespace(new_ns)
+                    }
                     _ => e.push(t.deep_copy()?),
                 }
             }
@@ -291,14 +300,14 @@ pub(crate) fn set_attribute<
                 return Err(Error::new(
                     ErrorKind::Unknown,
                     String::from("context item is not an element-type node"),
-                ))
+                ));
             }
         },
         _ => {
             return Err(Error::new(
                 ErrorKind::Unknown,
                 String::from("context item is not a node"),
-            ))
+            ));
         }
     }
     Ok(vec![])
@@ -353,7 +362,7 @@ pub(crate) fn copy<
                             return Err(Error::new(
                                 ErrorKind::NotImplemented,
                                 String::from("not yet implemented"),
-                            ))
+                            ));
                         }
                     }
                 }
