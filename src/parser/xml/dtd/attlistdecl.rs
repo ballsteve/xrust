@@ -20,8 +20,8 @@ use crate::xmldecl::{AttType, DefaultDecl};
 use std::collections::HashMap;
 
 //AttlistDecl ::= '<!ATTLIST' S Name AttDef* S? '>'
-pub(crate) fn attlistdecl<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn attlistdecl<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     move |(input, state)| match tuple6(
         tag("<!ATTLIST"),
         whitespace1(),
@@ -235,8 +235,8 @@ pub(crate) fn attlistdecl<N: Node>(
 }
 
 //AttDef ::= S Name S AttType S DefaultDecl
-fn attdef<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, (QualifiedName, AttType, DefaultDecl)), ParseError>
+fn attdef<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, (QualifiedName, AttType, DefaultDecl)), ParseError>
 {
     map(
         tuple6(
@@ -279,8 +279,8 @@ fn atttype<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, AttTyp
 }
 
 //DefaultDecl ::= '#REQUIRED' | '#IMPLIED' | (('#FIXED' S)? AttValue)
-fn defaultdecl<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, DefaultDecl), ParseError> {
+fn defaultdecl<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, DefaultDecl), ParseError> {
     alt3(
         value(tag("#REQUIRED"), DefaultDecl::Required),
         value(tag("#IMPLIED"), DefaultDecl::Implied),

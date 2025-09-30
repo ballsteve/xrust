@@ -732,19 +732,13 @@ impl ItemNode for RNode {
                 }
                 Ok(result)
             }
-            NodeInner::ProcessingInstruction(_, _, _) => {
-                self.shallow_copy()
-            }
+            NodeInner::ProcessingInstruction(_, _, _) => self.shallow_copy(),
             NodeInner::Comment(_, _) | NodeInner::Namespace(_, _, _) => Err(Error::new(
                 ErrorKind::TypeError,
                 "invalid node type".to_string(),
             )),
-            NodeInner::Text(_, _) => {
-                self.shallow_copy()
-            }
-            NodeInner::Attribute(_, _, _) => {
-                self.shallow_copy()
-            }
+            NodeInner::Text(_, _) => self.shallow_copy(),
+            NodeInner::Attribute(_, _, _) => self.shallow_copy(),
             NodeInner::Element(_, _, _, _, _) => {
                 let mut result = self.shallow_copy()?;
 

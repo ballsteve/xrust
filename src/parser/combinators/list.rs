@@ -99,11 +99,11 @@ where
 
 #[cfg(test)]
 mod tests {
+    use crate::parser::ParserState;
     use crate::parser::combinators::alt::alt4;
     use crate::parser::combinators::list::{separated_list0, separated_list1};
     use crate::parser::combinators::map::map;
     use crate::parser::combinators::tag::tag;
-    use crate::parser::ParserState;
     use crate::trees::nullo::Nullo;
 
     #[test]

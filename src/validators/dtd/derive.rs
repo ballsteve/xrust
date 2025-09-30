@@ -1,8 +1,8 @@
+use crate::Node;
 use crate::item::NodeType;
 use crate::qname::QualifiedName;
-use crate::Node;
 
-use crate::xmldecl::{DTDPattern, DTD};
+use crate::xmldecl::{DTD, DTDPattern};
 
 pub(crate) fn is_nullable(pat: DTDPattern) -> bool {
     match pat {

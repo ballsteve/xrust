@@ -8,8 +8,8 @@ use crate::xdmerror::{Error, ErrorKind};
 use chrono::{DateTime, Local, NaiveDate};
 use core::fmt;
 use core::hash::{Hash, Hasher};
-use rust_decimal::prelude::ToPrimitive;
 use rust_decimal::Decimal;
+use rust_decimal::prelude::ToPrimitive;
 #[cfg(test)]
 use rust_decimal_macros::dec;
 use std::cmp::Ordering;
@@ -1296,16 +1296,20 @@ mod tests {
 
     #[test]
     fn value_compare_eq() {
-        assert!(Value::from("3")
-            .compare(&Value::from(3.0), Operator::Equal)
-            .expect("unable to compare"))
+        assert!(
+            Value::from("3")
+                .compare(&Value::from(3.0), Operator::Equal)
+                .expect("unable to compare")
+        )
     }
 
     #[test]
     fn value_compare_ne() {
-        assert!(!Value::from("3")
-            .compare(&Value::from(3.0), Operator::NotEqual)
-            .expect("unable to compare"))
+        assert!(
+            !Value::from("3")
+                .compare(&Value::from(3.0), Operator::NotEqual)
+                .expect("unable to compare")
+        )
     }
 
     //#[test]

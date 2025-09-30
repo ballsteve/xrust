@@ -11,8 +11,8 @@ use crate::parser::{ParseError, ParseInput};
 use crate::xmldecl::AttType;
 
 //EnumeratedType ::= NotationType | Enumeration
-pub(crate) fn enumeratedtype<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, AttType), ParseError> {
+pub(crate) fn enumeratedtype<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, AttType), ParseError> {
     alt2(notationtype(), enumeration())
 }
 

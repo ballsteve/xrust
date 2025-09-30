@@ -90,9 +90,9 @@ pub mod xslt;
 pub mod parser;
 
 pub mod transform;
+pub use transform::Transform;
 pub use transform::context::Context;
 pub use transform::template::Template;
-pub use transform::Transform;
 
 pub mod trees;
 

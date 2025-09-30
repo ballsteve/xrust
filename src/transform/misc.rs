@@ -1,11 +1,11 @@
 //! Miscellaneous support functions.
 
+use crate::ErrorKind;
 use crate::item::{Node, Sequence, SequenceTrait};
 use crate::qname::QualifiedName;
-use crate::transform::context::{Context, StaticContext};
 use crate::transform::Transform;
+use crate::transform::context::{Context, StaticContext};
 use crate::xdmerror::Error;
-use crate::ErrorKind;
 use url::Url;
 
 /// XSLT current() function.

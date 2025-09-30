@@ -35,8 +35,8 @@ fn xmldeclversion<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>,
     }
 }
 
-pub(crate) fn textdecl<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, XMLDecl), ParseError> {
+pub(crate) fn textdecl<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, XMLDecl), ParseError> {
     //This is NOT the same as the XML declaration in XML documents.
     //There is no standalone, and the version is optional.
     map(

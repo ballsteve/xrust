@@ -16,9 +16,9 @@ where
 
 #[cfg(test)]
 mod tests {
+    use crate::parser::ParserState;
     use crate::parser::combinators::opt::opt;
     use crate::parser::combinators::tag::tag;
-    use crate::parser::ParserState;
     use crate::trees::nullo::Nullo;
 
     #[test]

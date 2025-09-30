@@ -10,8 +10,8 @@ use crate::parser::xml::dtd::extsubset::extsubsetdecl;
 use crate::parser::xml::dtd::pereference::petextreference;
 use crate::parser::{ParseError, ParseInput};
 
-pub(crate) fn conditionalsect<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn conditionalsect<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     move |(input, state)| match tuple5(
         tag("<!["),
         whitespace0(),
@@ -33,16 +33,16 @@ pub(crate) fn conditionalsect<N: Node>(
     }
 }
 
-pub(crate) fn includesect<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn includesect<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     move |(input, state)| match tuple2(extsubsetdecl(), tag("]]>"))((input, state)) {
         Ok(((input2, state2), (_, _))) => Ok(((input2, state2), ())),
         Err(e) => Err(e),
     }
 }
 
-pub(crate) fn ignoresect<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn ignoresect<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     move |(input, state)| match tuple2(ignoresectcontents(), tag("]]>"))((input, state.clone())) {
         Ok(((input2, _), (_, _))) => Ok(((input2, state), ())),
         Err(e) => Err(e),

@@ -4,13 +4,13 @@ use pkg_version::*;
 use std::rc::Rc;
 use url::Url;
 
+use crate::SequenceTrait;
 use crate::item::{Item, Node, Sequence};
 use crate::qname::QualifiedName;
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::{NamespaceMap, Transform};
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
-use crate::SequenceTrait;
 
 /// XPath position function.
 pub fn position<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
@@ -68,7 +68,7 @@ pub fn generate_id<
                     return Err(Error::new(
                         ErrorKind::TypeError,
                         String::from("not a singleton sequence"),
-                    ))
+                    ));
                 }
             }
         }

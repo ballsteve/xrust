@@ -3,8 +3,8 @@
 
 use crate::item::Node;
 use crate::namespace::NamespaceMap;
-use crate::parser::xml::qname::eqname;
 use crate::parser::ParserState;
+use crate::parser::xml::qname::eqname;
 use crate::trees::nullo::Nullo;
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};

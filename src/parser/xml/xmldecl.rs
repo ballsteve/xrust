@@ -38,8 +38,8 @@ fn xmldeclversion<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>,
     }
 }
 
-fn xmldeclstandalone<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+fn xmldeclstandalone<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     move |(input, state)| match map(
         wellformed(
             tuple6(
@@ -65,8 +65,8 @@ fn xmldeclstandalone<N: Node>(
     }
 }
 
-pub(crate) fn encodingdecl<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn encodingdecl<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     map(
         tuple6(
             whitespace1(),
@@ -104,8 +104,8 @@ pub(crate) fn encodingdecl<N: Node>(
     )
 }
 
-pub(crate) fn xmldecl<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, XMLDecl), ParseError> {
+pub(crate) fn xmldecl<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, XMLDecl), ParseError> {
     move |(input, state)| match tuple8(
         tag("<?xml"),
         whitespace1(),

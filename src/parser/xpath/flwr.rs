@@ -5,18 +5,18 @@ use crate::parser::combinators::list::separated_list1;
 use crate::parser::combinators::map::{map, map_with_state};
 use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::tag::tag;
-use crate::parser::combinators::tuple::{tuple10, tuple3, tuple5, tuple6};
+use crate::parser::combinators::tuple::{tuple3, tuple5, tuple6, tuple10};
 use crate::parser::combinators::whitespace::xpwhitespace;
 //use crate::parser::combinators::debug::inspect;
 use crate::parser::xpath::nodetests::qualname_test;
 use crate::parser::xpath::support::get_nt_localname;
 use crate::parser::xpath::{expr_single_wrapper, expr_wrapper};
 use crate::parser::{ParseError, ParseInput};
-use crate::transform::{in_scope_namespaces, Transform};
+use crate::transform::{Transform, in_scope_namespaces};
 
 // IfExpr ::= 'if' '(' Expr ')' 'then' ExprSingle 'else' ExprSingle
-pub(crate) fn if_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+pub(crate) fn if_expr<'a, N: Node + 'a>()
+-> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
         pair(
             // need tuple15
@@ -47,8 +47,8 @@ pub(crate) fn if_expr<'a, N: Node + 'a>(
 }
 
 // ForExpr ::= SimpleForClause 'return' ExprSingle
-pub(crate) fn for_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+pub(crate) fn for_expr<'a, N: Node + 'a>()
+-> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
         tuple3(
             simple_for_clause::<N>(),
@@ -88,8 +88,8 @@ fn simple_for_clause<'a, N: Node + 'a>() -> Box<
 }
 
 // LetExpr ::= SimpleLetClause 'return' ExprSingle
-pub(crate) fn let_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+pub(crate) fn let_expr<'a, N: Node + 'a>()
+-> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map_with_state(
         tuple3(
             simple_let_clause::<N>(),

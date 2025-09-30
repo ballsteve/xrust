@@ -11,8 +11,8 @@ use crate::parser::{ParseError, ParseInput};
 use crate::transform::Transform;
 
 // StringConcatExpr ::= RangeExpr ( '||' RangeExpr)*
-pub(crate) fn stringconcat_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+pub(crate) fn stringconcat_expr<'a, N: Node + 'a>()
+-> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
         separated_list1(
             map(tuple3(xpwhitespace(), tag("||"), xpwhitespace()), |_| ()),

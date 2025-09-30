@@ -4,12 +4,12 @@ University of Edinburgh XML 1.0 4th edition errata test suite.
 
 */
 
+use crate::conformance::dtdfileresolve;
 use std::fs;
 use xrust::item::Node;
 use xrust::parser::{ParserConfig, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
-use crate::conformance::dtdfileresolve;
 
 #[test]
 #[ignore]
@@ -53,7 +53,6 @@ fn invalidbo2() {
     let mut pc = ParserConfig::new();
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/eduni/errata-4e/".to_string());
-
 
     let testxml = RNode::new_document();
     let parseresult = xml::parse(

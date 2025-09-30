@@ -147,7 +147,7 @@ fn main() {
     -cr = #d.
     "###).expect("unable to parse grammar");
 
-     */
+    */
     // Let's try something simpler for now
     let g = ixml_grammar();
     let ixml = r###"doc = para+.
@@ -164,7 +164,7 @@ eol = "X".
     -cr = #d.
     "###;
 
-     */
+    */
     let mut parser = Parser::new(g);
     let arena = parser.parse(ixml).expect("unable to parse grammar");
     let gen_grammar = ixml_tree_to_grammar(&arena);

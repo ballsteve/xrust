@@ -143,8 +143,8 @@ fn document<N: Node>(input: ParseInput<N>) -> Result<(ParseInput<N>, N), ParseEr
 }
 
 // prolog ::= XMLDecl misc* (doctypedecl Misc*)?
-fn prolog<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, (Option<XMLDecl>, Vec<N>)), ParseError> {
+fn prolog<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, (Option<XMLDecl>, Vec<N>)), ParseError> {
     map(
         tuple4(opt(xmldecl()), misc(), opt(doctypedecl()), misc()),
         |(xmld, mut m1, _dtd, mut m2)| {

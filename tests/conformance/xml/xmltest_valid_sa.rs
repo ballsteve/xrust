@@ -11,7 +11,7 @@ James Clark XMLTEST cases - Standalone
 use crate::conformance::{dtdfileresolve, non_utf8_file_reader};
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::{xml, ParserConfig};
+use xrust::parser::{ParserConfig, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 

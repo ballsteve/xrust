@@ -13,8 +13,8 @@ use crate::parser::xml::misc::comment;
 use crate::parser::xml::misc::processing_instruction;
 use crate::parser::{ParseError, ParseInput};
 
-pub(crate) fn intsubset<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<()>), ParseError> {
+pub(crate) fn intsubset<N: Node>()
+-> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<()>), ParseError> {
     many0(alt9(
         elementdecl(),
         attlistdecl(),
