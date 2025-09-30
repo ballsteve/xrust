@@ -3342,6 +3342,7 @@ where
             vec![0], // import
             None,    // document order
             None,    // mode
+            String::from("/"),
         ))
         .template(Template::new(
             // pattern child::text()
@@ -3352,6 +3353,7 @@ where
             vec![0],
             None,
             None,
+            String::from("child::text()"),
         ))
         .context(vec![Item::Node(sd)])
         .build();
@@ -3410,6 +3412,7 @@ where
             vec![0],   // import
             Some(1),   // document order
             None,      // mode
+            String::from("child::Test"),
         ))
         .template(Template::new(
             // pattern "/",
@@ -3426,6 +3429,7 @@ where
             vec![0], // import
             None,    // document order
             None,    // mode
+            String::from("/"),
         ))
         .template(Template::new(
             // pattern child::text()
@@ -3436,6 +3440,7 @@ where
             vec![0],                // import
             None,                   // document order
             None,                   // mode
+            String::from("child::text()"),
         ))
         .context(vec![Item::Node(sd)])
         .build();
@@ -3486,6 +3491,7 @@ where
             vec![0],   // import
             Some(1),   // document order
             None,      // mode
+            String::from("child::Test"),
         ))
         .template(Template::new(
             // pattern "*"
@@ -3497,6 +3503,7 @@ where
             vec![0],   // import
             Some(2),   // document order
             None,      // mode
+            String::from("child::*"),
         ))
         .template(Template::new(
             // pattern "/",
@@ -3513,6 +3520,7 @@ where
             vec![0], // import
             None,    // document order
             None,    // mode
+            String::from("/"),
         ))
         .template(Template::new(
             // pattern child::text()
@@ -3523,6 +3531,7 @@ where
             vec![0],                // import
             None,                   // document order
             None,                   // mode
+            String::from("child::text()"),
         ))
         .context(vec![Item::Node(sd)])
         .build();
@@ -3604,6 +3613,7 @@ where
             vec![0],   // import
             Some(1),   // document order
             None,      // mode
+            String::from("child::Test"),
         ))
         .template(Template::new(
             // pattern "/",
@@ -3620,6 +3630,7 @@ where
             vec![0], // import
             None,    // document order
             None,    // mode
+            String::from("/"),
         ))
         .template(Template::new(
             // pattern child::text()
@@ -3630,6 +3641,7 @@ where
             vec![0],                // import
             None,                   // document order
             None,                   // mode
+            String::from("child::text()"),
         ))
         .template(Template::new(
             // pattern child::node()
@@ -3646,6 +3658,7 @@ where
             vec![0],                                                // import
             None,                                                   // document order
             Some(Rc::new(QualifiedName::new(None, None, "first"))), // mode
+            String::from("child::*"),
         ))
         .template(Template::new(
             // pattern child::node()
@@ -3662,6 +3675,7 @@ where
             vec![0],                                                 // import
             None,                                                    // document order
             Some(Rc::new(QualifiedName::new(None, None, "second"))), // mode
+            String::from("child::*"),
         ))
         .template(Template::new(
             // pattern child::text()
@@ -3672,6 +3686,7 @@ where
             vec![0],                // import
             None,                   // document order
             Some(Rc::new(QualifiedName::new(None, None, "first"))), // mode
+            String::from("child::text()"),
         ))
         .template(Template::new(
             // pattern child::text()
@@ -3682,6 +3697,7 @@ where
             vec![0],                // import
             None,                   // document order
             Some(Rc::new(QualifiedName::new(None, None, "second"))), // mode
+            String::from("child::text()"),
         ))
         .context(vec![Item::Node(sd)])
         .build();
@@ -3738,6 +3754,7 @@ where
             vec![0, 1], // import
             Some(1),    // document order
             None,       // mode
+            String::from("child::Test"),
         ))
         .template(Template::new(
             // pattern "Test"
@@ -3749,6 +3766,7 @@ where
             vec![0],   // import
             Some(2),   // document order
             None,      // mode
+            String::from("child::Test"),
         ))
         .template(Template::new(
             // pattern "*"
@@ -3765,6 +3783,7 @@ where
             vec![0], // import
             None,    // document order
             None,    // mode
+            String::from("child::*"),
         ))
         .template(Template::new(
             // pattern "/",
@@ -3781,6 +3800,7 @@ where
             vec![0], // import
             None,    // document order
             None,    // mode
+            String::from("/"),
         ))
         .template(Template::new(
             // pattern child::text()
@@ -3791,6 +3811,7 @@ where
             vec![0],                // import
             None,                   // document order
             None,                   // mode
+            String::from("child::text()"),
         ))
         .context(vec![Item::Node(sd)])
         .build();
@@ -3846,6 +3867,7 @@ where
             vec![0],   // import
             Some(1),   // document order
             None,      // mode
+            String::from("child::Test"),
         ))
         .template(Template::new(
             // pattern "Test"
@@ -3857,6 +3879,7 @@ where
             vec![0],   // import
             Some(2),   // document order
             None,      // mode
+            String::from("child::Test"),
         ))
         .template(Template::new(
             // pattern "*"
@@ -3873,6 +3896,7 @@ where
             vec![0], // import
             None,    // document order
             None,    // mode
+            String::from("child::*"),
         ))
         .template(Template::new(
             // pattern "/",
@@ -3889,6 +3913,7 @@ where
             vec![0], // import
             None,    // document order
             None,    // mode
+            String::from("/"),
         ))
         .template(Template::new(
             // pattern child::text()
@@ -3899,6 +3924,7 @@ where
             vec![0],                // import
             None,                   // document order
             None,                   // mode
+            String::from("child::text()"),
         ))
         .context(vec![Item::Node(sd)])
         .build();
@@ -3948,6 +3974,7 @@ where
             vec![0],   // import
             Some(1),   // document order
             None,      // mode
+            String::from("child::Test"),
         ))
         .template(Template::new(
             // pattern "Test"
@@ -3963,6 +3990,7 @@ where
                 None,
                 String::from("modetest"),
             ))), // mode
+            String::from("child::Test"),
         ))
         .template(Template::new(
             // pattern "*"
@@ -3979,6 +4007,7 @@ where
             vec![0], // import
             None,    // document order
             None,    // mode
+            String::from("child::*"),
         ))
         .template(Template::new(
             // pattern "/",
@@ -4009,6 +4038,7 @@ where
             vec![0],   // import
             None,      // document order
             None,      // mode
+            String::from("/"),
         ))
         .template(Template::new(
             // pattern child::text()
@@ -4019,6 +4049,7 @@ where
             vec![0],                // import
             None,                   // document order
             None,                   // mode
+            String::from("child::text()"),
         ))
         .context(vec![Item::Node(sd)])
         .build();
@@ -4092,6 +4123,7 @@ where
             vec![0],   // import
             Some(1),   // document order
             None,      // mode
+            String::from("child::Test"),
         ))
         .template(Template::new(
             // pattern "*"
@@ -4108,6 +4140,7 @@ where
             vec![0], // import
             None,    // document order
             None,    // mode
+            String::from("child::*"),
         ))
         .template(Template::new(
             // pattern "/",
@@ -4124,6 +4157,7 @@ where
             vec![0],   // import
             None,      // document order
             None,      // mode
+            String::from("/"),
         ))
         .template(Template::new(
             // pattern child::text()
@@ -4134,6 +4168,7 @@ where
             vec![0],                // import
             None,                   // document order
             None,                   // mode
+            String::from("child::text()"),
         ))
         .context(vec![Item::Node(sd)])
         .build();

@@ -1533,3 +1533,102 @@ where
     );
     Ok(())
 }
+
+pub fn dbk_1<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+{
+    let result = test_rig(
+        "<db:article xmlns:db='http://docbook.org/ns/docbook'>
+        <db:sect1 xmlns:db='http://docbook.org/ns/docbook'>
+          <db:title xmlns:db='http://docbook.org/ns/docbook'>Level 1 Heading</db:title>
+          <db:para xmlns:db='http://docbook.org/ns/docbook'>First paragraph</db:para>
+          <db:sect2 xmlns:db='http://docbook.org/ns/docbook'>
+            <db:title xmlns:db='http://docbook.org/ns/docbook'>Level 2 Heading</db:title>
+            <db:para xmlns:db='http://docbook.org/ns/docbook'>Second paragraph</db:para>
+          </db:sect2>
+          <db:sect2 xmlns:db='http://docbook.org/ns/docbook'>
+            <db:title xmlns:db='http://docbook.org/ns/docbook'>Second Level 2 Heading</db:title>
+            <db:para xmlns:db='http://docbook.org/ns/docbook'>Third paragraph</db:para>
+          </db:sect2>
+        </db:sect1>
+        <db:sect1 xmlns:db='http://docbook.org/ns/docbook'>
+          <db:title xmlns:db='http://docbook.org/ns/docbook'>Second Level 1 Heading</db:title>
+          <db:para xmlns:db='http://docbook.org/ns/docbook'>Fourth paragraph</db:para>
+          <db:sect2 xmlns:db='http://docbook.org/ns/docbook'>
+            <db:title xmlns:db='http://docbook.org/ns/docbook'>Third Level 2 Heading</db:title>
+            <db:para xmlns:db='http://docbook.org/ns/docbook'>Fifth paragraph</db:para>
+          </db:sect2>
+        </db:sect1></db:article>
+",
+        r#"<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+          xmlns:db="http://docbook.org/ns/docbook"
+          version="3.0">
+
+          <xsl:output indent="yes"/>
+          <xsl:strip-space elements="*"/>
+
+          <xsl:template match="db:article">
+            <HTML>
+            <BODY>
+            <xsl:apply-templates/>
+            </BODY>
+            </HTML>
+          </xsl:template>
+          <xsl:template match="*">
+            <DIV>matched element <I><xsl:sequence select="name()"/></I></DIV>
+          </xsl:template>
+          <xsl:template match="db:sect1">
+            <DIV CLASS="sect1"><xsl:apply-templates/></DIV>
+          </xsl:template>
+          <xsl:template match="db:sect2">
+            <DIV CLASS="sect2"><xsl:apply-templates/></DIV>
+          </xsl:template>
+          <xsl:template match="db:title">
+            <H1><xsl:apply-templates/></H1>
+          </xsl:template>
+          <xsl:template match="db:para">
+            <P><xsl:apply-templates/></P>
+          </xsl:template>
+          <xsl:template match="db:emphasis">
+            <I><xsl:apply-templates/></I>
+          </xsl:template>
+        </xsl:stylesheet>
+"#,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    )?;
+
+    assert_eq!(
+        result.to_xml(),
+        "<HTML><BODY>
+        <DIV CLASS='sect1'>
+          <H1>Level 1 Heading</H1>
+          <P>First paragraph</P>
+          <DIV CLASS='sect2'>
+            <H1>Level 2 Heading</H1>
+            <P>Second paragraph</P>
+          </DIV>
+          <DIV CLASS='sect2'>
+            <H1>Second Level 2 Heading</H1>
+            <P>Third paragraph</P>
+          </DIV>
+        </DIV>
+        <DIV CLASS='sect1'>
+          <H1>Second Level 1 Heading</H1>
+          <P>Fourth paragraph</P>
+          <DIV CLASS='sect2'>
+            <H1>Third Level 2 Heading</H1>
+            <P>Fifth paragraph</P>
+          </DIV>
+        </DIV></BODY></HTML>"
+    );
+    Ok(())
+}

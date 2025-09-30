@@ -13,7 +13,7 @@ use crate::qname::QualifiedName;
 use crate::validators::{Schema, ValidationError};
 use crate::value::{Operator, Value};
 use crate::xdmerror::{Error, ErrorKind};
-use crate::xmldecl::{XMLDecl, DTD};
+use crate::xmldecl::{DTD, XMLDecl};
 use std::cmp::Ordering;
 use std::fmt;
 use std::fmt::Formatter;
@@ -424,6 +424,9 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
 
     /// Check if two Nodes are the same Node
     fn is_same(&self, other: &Self) -> bool;
+
+    // Check if the node is attached to the tree
+    fn is_attached(&self) -> bool;
 
     /// Get the document order of the node. The value returned is relative to the document containing the node.
     /// Depending on the implementation, this value may be volatile;
