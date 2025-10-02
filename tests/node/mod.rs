@@ -3,7 +3,8 @@
 use qualname::{NcName, QName};
 use std::rc::Rc;
 use xrust::item::{Node, NodeType};
-use xrust::value::Value;
+use xrust::output::OutputSpec;
+use xrust::value::{Value, ValueBuilder, ValueData};
 use xrust::xdmerror::Error;
 
 pub fn get_attr_node<N: Node, G>(make_doc: G) -> Result<(), Error>
@@ -45,14 +46,10 @@ where
     G: Fn() -> N,
 {
     let mut sd = make_doc();
-    let mut t = sd.new_element(Rc::new(QualifiedName::new(
-        None,
-        None,
-        String::from("Test"),
-    )))?;
+    let mut t = sd.new_element(QName::from_local_name(NcName::try_from("Test").unwrap()))?;
     sd.push(t.clone())?;
     let a1 = sd.new_attribute(
-        Rc::new(QualifiedName::new(None, None, String::from("attr"))),
+        QName::from_local_name(NcName::try_from("attr").unwrap()),
         Rc::new(Value::from("'")),
     )?;
     t.add_attribute(a1)?;
@@ -78,14 +75,10 @@ where
     G: Fn() -> N,
 {
     let mut sd = make_doc();
-    let mut t = sd.new_element(Rc::new(QualifiedName::new(
-        None,
-        None,
-        String::from("Test"),
-    )))?;
+    let mut t = sd.new_element(QName::from_local_name(NcName::try_from("Test").unwrap()))?;
     sd.push(t.clone())?;
     let a1 = sd.new_attribute(
-        Rc::new(QualifiedName::new(None, None, String::from("attr"))),
+        QName::from_local_name(NcName::try_from("attr").unwrap()),
         Rc::new(Value::from("'")),
     )?;
     t.add_attribute(a1)?;

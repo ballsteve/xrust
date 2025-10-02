@@ -2901,7 +2901,7 @@ where
             Transform::Literal(Item::<N>::Value(Rc::new(Value::from("c")))),
         ])),
         Box::new(Transform::LiteralElement(
-            Rc::new(QName::from_local_name(NcName::try_from("group").unwrap())),
+            QName::from_local_name(NcName::try_from("group").unwrap()),
             Box::new(Transform::SequenceItems(vec![
                 Transform::Literal(Item::Value(Rc::new(Value::from(" #members ")))),
                 Transform::Count(Box::new(Transform::CurrentGroup)),

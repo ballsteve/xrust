@@ -876,16 +876,12 @@ where
     // Setup a source document
     let mut sd = make_empty_doc();
     let t = sd
-        .new_element(Rc::new(QualifiedName::new(
-            None,
-            None,
-            String::from("Test"),
-        )))
+        .new_element(QName::from_local_name(NcName::try_from("Test").unwrap()))
         .expect("unable to create element");
     sd.push(t.clone()).expect("unable to append child");
     let a = sd
         .new_attribute(
-            Rc::new(QualifiedName::new(None, None, String::from("a"))),
+            QName::from_local_name(NcName::try_from("a").unwrap()),
             Rc::new(Value::from("attr value")),
         )
         .expect("unable to create attribute");

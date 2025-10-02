@@ -1066,9 +1066,9 @@ pub fn feg_starting_with_1<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
-    let result = test_rig(
+    let (result, _rd) = test_rig(
         "<Test><a>one</a><b>two</b><c>three</c><a>four</a><b>five</b><c>six</c><a>seven</a><b>eight</b><c>nine</c></Test>",
         r#"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='Test'>
@@ -1105,9 +1105,9 @@ pub fn feg_starting_with_2<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
-    let result = test_rig(
+    let (result, _rd) = test_rig(
         "<Test><a>one</a><b>two</b><c>three</c><a>four</a><b>five</b><c>six</c><a>seven</a><b>eight</b><c>nine</c></Test>",
         r#"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='Test'>
@@ -1546,9 +1546,9 @@ pub fn dbk_1<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
-    let result = test_rig(
+    let (result, _rd) = test_rig(
         "<db:article xmlns:db='http://docbook.org/ns/docbook'>
         <db:sect1 xmlns:db='http://docbook.org/ns/docbook'>
           <db:title xmlns:db='http://docbook.org/ns/docbook'>Level 1 Heading</db:title>
@@ -1645,9 +1645,9 @@ pub fn md_1<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
-    let result = test_rig(
+    let (result, _rd) = test_rig(
         "<article>
           <heading1>Level 1 Heading</heading1>
           <para>First paragraph with <emph>emphasised</emph> text, <emph role='strong'>bold</emph> text, and <emph role='underline'>underlined</emph> text</para>
