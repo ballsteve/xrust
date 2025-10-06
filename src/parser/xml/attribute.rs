@@ -356,12 +356,16 @@ where
                     rn.concat()
                         .replace(['\u{85}', '\u{2028}', '\n', '\r', '\t', '\n'], " ")
                         .trim()
-                        .to_string()
+                        .split_whitespace()
+                        .collect::<Vec<&str>>()
+                        .join(" ")
                 } else {
                     rn.concat()
                         .replace(['\n', '\r', '\t', '\n'], " ")
                         .trim()
-                        .to_string()
+                        .split_whitespace()
+                        .collect::<Vec<&str>>()
+                        .join(" ")
                 };
                 //NEL character cannot be in attributes.
                 if state1.xmlversion.as_str() == "1.1" && r.find(|c| !is_char11(&c)).is_some() {
