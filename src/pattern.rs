@@ -480,14 +480,20 @@ impl<'a, N: Node> TryFrom<(String, N)> for Pattern<N> {
 }
 
 fn pattern_driver<N: Node>(e: &str, n: Option<N>) -> Result<Pattern<N>, Error> {
-    let state = n.map_or_else(
+    let state = n.clone().map_or_else(
         || ParserState::new(),
         |m| ParserStateBuilder::new().doc(m).build(),
     );
     // TODO: use closure that uses node's in-scope namespaces
     let mut static_state = StaticStateBuilder::new()
-        .namespace(|_| {
-            NamespaceUri::try_from("urn:xrust").map_err(|_| ParseError::MissingNameSpace)
+        .namespace(|nsp| {
+            n.as_ref().map_or_else(
+                || Err(ParseError::MissingNameSpace),
+                |m| {
+                    m.to_namespace_uri(&Some(nsp.clone()))
+                        .map_err(|_| ParseError::MissingNameSpace)
+                },
+            )
         })
         .build();
     match pattern((e, state), &mut static_state) {

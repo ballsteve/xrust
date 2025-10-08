@@ -1365,7 +1365,7 @@ fn to_transform<N: Node>(
             } else if qn.namespace_uri() == *XSLTNS {
                 Ok(Transform::NotImplemented(format!(
                     "unsupported XSL element \"{}\"",
-                    qn.local_name()
+                    qn.local_name().to_string()
                 )))
             } else {
                 let u = qn.namespace_uri();
@@ -1422,11 +1422,7 @@ fn to_transform<N: Node>(
                     Ok::<(), Error>(())
                 })?;
                 Ok(Transform::LiteralElement(
-                    QName::new_from_parts(
-                        NcName::try_from(a.as_str())
-                            .map_err(|_| Error::new(ErrorKind::ParseError, "not a NcName"))?,
-                        u,
-                    ),
+                    QName::new_from_parts(a, u),
                     Box::new(if content.is_empty() && attrs.is_empty() {
                         Transform::Empty
                     } else {

@@ -186,86 +186,86 @@ where
                     }
 
                     for attnode in av.into_iter() {
-                        let thisatprefix =
-                            attnode.name().unwrap().namespace_uri().map_or(None, |ns| {
-                                ss.in_scope_namespaces.prefix(&ns).map(|p| p.to_string())
-                            });
-                        let thisatlocalpart = attnode.name().unwrap().local_name().to_string();
-                        match atts.get(&(thisatprefix, thisatlocalpart)) {
-                            //No DTD found, we just create the value
-                            None => {
-                                //Ordinarily, you'll just treat attributes as CDATA and not normalize, however we need to check xml:id
-                                let av = if attnode.name().unwrap() == *XMLID {
-                                    attnode.value().to_string().trim().replace("  ", " ")
-                                } else {
-                                    attnode.value().to_string()
-                                };
-                                let a = d
-                                    .new_attribute(
-                                        attnode.name().unwrap(),
-                                        Rc::new(Value::from(av)),
-                                    )
-                                    .expect("unable to create attribute");
-                                e.add_attribute(a).expect("unable to add attribute")
-                            }
-                            Some((atttype, _, _)) => {
-                                //https://www.w3.org/TR/xml11/#AVNormalize
-                                let av = match atttype {
-                                    AttType::CDATA => attnode.value().to_string(),
-                                    _ => attnode.value().to_string().trim().replace("  ", " "),
-                                };
-                                //Assign IDs only if we are tracking.
-                                let v = match (atttype, state1.id_tracking) {
-                                    (AttType::ID, true) => Rc::new(Value::from(
-                                        ID::try_from(av.clone())
-                                            .map_err(|_| ParseError::MissingNameSpace)?,
-                                    )),
-                                    (AttType::IDREF, true) => Rc::new(Value::from(
-                                        IDREF::try_from(av.clone())
-                                            .map_err(|_| ParseError::MissingNameSpace)?,
-                                    )),
-                                    (AttType::IDREFS, true) => Rc::new(
-                                        ValueBuilder::new()
-                                            .value(ValueData::IDREFS(
-                                                av.clone().split(' ').try_fold(
-                                                    vec![],
-                                                    |mut acc, s| {
-                                                        acc.push(
-                                                            IDREF::try_from(s.to_string())
-                                                                .map_err(|_| {
-                                                                    ParseError::MissingNameSpace
-                                                                })?,
-                                                        );
-                                                        Ok(acc)
-                                                    },
-                                                )?,
-                                            ))
-                                            .build(),
-                                    ),
-                                    (_, _) => Rc::new(Value::from(av.clone())),
-                                };
-                                if atttype == &AttType::NMTOKENS && av.is_empty() {
-                                    return Err(ParseError::NotWellFormed(
-                                        "NMTOKENs must not be empty".to_string(),
-                                    ));
-                                } else if atttype == &AttType::NMTOKENS {
-                                    let names = av.split(' ');
-                                    for name in names {
-                                        let ch = name.chars();
-                                        for cha in ch {
-                                            if !(is_ncnamechar(&cha) || cha == ':') {
-                                                return Err(ParseError::NotWellFormed(
-                                                    String::from("Invalid NMTOKEN"),
-                                                ));
+                        if attnode.name().unwrap() == *XMLID {
+                            let a = d
+                                .new_attribute(attnode.name().unwrap(), attnode.value())
+                                .expect("unable to create xml:id attribute");
+                            e.add_attribute(a).expect("unable to add xml:id attribute")
+                        } else {
+                            let thisatprefix =
+                                attnode.name().unwrap().namespace_uri().map_or(None, |ns| {
+                                    ss.in_scope_namespaces.prefix(&ns).map(|p| p.to_string())
+                                });
+                            let thisatlocalpart = attnode.name().unwrap().local_name().to_string();
+                            match atts.get(&(thisatprefix, thisatlocalpart)) {
+                                //No DTD found, we just create the value
+                                None => {
+                                    // TODO: this is duplicate code to the @xml:id case above.
+                                    // Consolidate this with the above code.
+                                    let a = d
+                                        .new_attribute(attnode.name().unwrap(), attnode.value())
+                                        .expect("unable to create attribute");
+                                    e.add_attribute(a).expect("unable to add attribute")
+                                }
+                                Some((atttype, _, _)) => {
+                                    //https://www.w3.org/TR/xml11/#AVNormalize
+                                    let av = match atttype {
+                                        AttType::CDATA => attnode.value().to_string(),
+                                        _ => attnode.value().to_string().trim().replace("  ", " "), // see attribute.rs for better attr value normalisation
+                                    };
+                                    //Assign IDs only if we are tracking.
+                                    let v = match (atttype, state1.id_tracking) {
+                                        (AttType::ID, true) => Rc::new(Value::from(
+                                            ID::try_from(av.clone())
+                                                .map_err(|_| ParseError::MissingNameSpace)?,
+                                        )),
+                                        (AttType::IDREF, true) => Rc::new(Value::from(
+                                            IDREF::try_from(av.clone())
+                                                .map_err(|_| ParseError::MissingNameSpace)?,
+                                        )),
+                                        (AttType::IDREFS, true) => Rc::new(
+                                            ValueBuilder::new()
+                                                .value(ValueData::IDREFS(
+                                                    av.clone().split(' ').try_fold(
+                                                        vec![],
+                                                        |mut acc, s| {
+                                                            acc.push(
+                                                                IDREF::try_from(s.to_string())
+                                                                    .map_err(|_| {
+                                                                        ParseError::MissingNameSpace
+                                                                    })?,
+                                                            );
+                                                            Ok(acc)
+                                                        },
+                                                    )?,
+                                                ))
+                                                .build(),
+                                        ),
+                                        (_, _) => Rc::new(Value::from(av.clone())),
+                                    };
+                                    if atttype == &AttType::NMTOKENS && av.is_empty() {
+                                        return Err(ParseError::NotWellFormed(
+                                            "NMTOKENs must not be empty".to_string(),
+                                        ));
+                                    } else if atttype == &AttType::NMTOKENS {
+                                        let names = av.split(' ');
+                                        for name in names {
+                                            let ch = name.chars();
+                                            for cha in ch {
+                                                if !(is_ncnamechar(&cha) || cha == ':') {
+                                                    return Err(ParseError::NotWellFormed(
+                                                        String::from("Invalid NMTOKEN"),
+                                                    ));
+                                                }
                                             }
                                         }
                                     }
-                                }
 
-                                let a = d
-                                    .new_attribute(attnode.name().unwrap(), v)
-                                    .expect("unable to create attribute");
-                                e.add_attribute(a).expect("unable to add attribute")
+                                    let a = d
+                                        .new_attribute(attnode.name().unwrap(), v)
+                                        .expect("unable to create attribute");
+                                    e.add_attribute(a).expect("unable to add attribute")
+                                }
                             }
                         }
                     }

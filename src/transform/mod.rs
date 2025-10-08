@@ -414,8 +414,10 @@ pub fn in_scope_namespaces<N: Node>(n: Option<N>) -> Rc<NamespaceMap> {
             hm.push(
                 NamespaceDeclaration::new(
                     Some(
-                        NamespacePrefix::try_from(ns.name().unwrap().local_name().as_str())
-                            .unwrap(),
+                        NamespacePrefix::try_from(
+                            ns.name().unwrap().local_name().to_string().as_str(),
+                        )
+                        .unwrap(),
                     ),
                     NamespaceUri::try_from(ns.value().to_string().as_str()).unwrap(),
                 )
@@ -752,6 +754,13 @@ impl NameTest {
                     match (self.name.as_ref(), self.ns.as_ref()) {
                         (None, None) => false,
                         (Some(WildcardOrName::Name(nt)), None) => nm == *nt,
+                        (
+                            Some(WildcardOrName::Name(nt)),
+                            Some(WildcardOrNamespaceUri::NamespaceUri(nst)),
+                        ) => {
+                            nm.local_name() == nt.local_name()
+                                && nm.namespace_uri().is_some_and(|nmuri| nmuri == *nst)
+                        }
                         (Some(WildcardOrName::Wildcard), None) => true,
                         (None, Some(WildcardOrNamespaceUri::Wildcard)) => {
                             nm.namespace_uri().is_none()
@@ -835,16 +844,38 @@ impl fmt::Display for NameTest {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub enum WildcardOrNamespaceUri {
     Wildcard,
     NamespaceUri(NamespaceUri),
 }
 
-#[derive(Clone, Debug)]
+impl Debug for WildcardOrNamespaceUri {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            WildcardOrNamespaceUri::Wildcard => f.write_str("WildcardOrNamespaceUri::Wildcard"),
+            WildcardOrNamespaceUri::NamespaceUri(ns) => f.write_str(
+                format!("WildcardOrNamespaceUri::NamespaceUri({})", ns.to_string()).as_str(),
+            ),
+        }
+    }
+}
+
+#[derive(Clone)]
 pub enum WildcardOrName {
     Wildcard,
     Name(QName),
+}
+
+impl Debug for WildcardOrName {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            WildcardOrName::Wildcard => f.write_str("WildcardOrNamespaceUri::Wildcard"),
+            WildcardOrName::Name(n) => {
+                f.write_str(format!("WildcardOrName::Name({})", n.to_string()).as_str())
+            }
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]

@@ -13,7 +13,7 @@ use crate::parser::xml::chardata::chardata_unicode_codepoint;
 use crate::parser::xml::qname::qualname_to_parts;
 use crate::parser::xml::reference::textreference;
 use crate::parser::{ParseError, ParseInput, StaticState};
-use crate::value::Value;
+use crate::value::{ID, Value, ValueBuilder, ValueData};
 use qualname::{NamespaceDeclaration, NamespacePrefix, NamespaceUri, NcName, QName};
 use std::rc::Rc;
 
@@ -225,6 +225,27 @@ where
                             row: state1.currentrow,
                             col: state1.currentcol,
                         }),
+                        (Some("xml"), "id", val) => {
+                            attr_vec.push(
+                                doc.new_attribute(
+                                    QName::new_from_parts(
+                                        NcName::try_from("id").unwrap(),
+                                        ss.in_scope_namespaces.namespace_uri(&Some(
+                                            NamespacePrefix::try_from("xml").unwrap(),
+                                        )),
+                                    ),
+                                    Rc::new(Value::from(ID::try_from(val).map_err(|_| {
+                                        ParseError::IDError(String::from("not a valid ID value"))
+                                    })?)),
+                                )
+                                .map_err(|_| {
+                                    ParseError::NotWellFormed(String::from(
+                                        "unable to create attribute",
+                                    ))
+                                })?,
+                            );
+                            Ok(())
+                        }
                         (Some(p), lp, v) => {
                             // lookup namespace uri
                             attr_vec.push(

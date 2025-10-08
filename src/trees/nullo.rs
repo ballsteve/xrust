@@ -42,6 +42,9 @@ impl Node for Nullo {
     fn to_namespace_prefix(&self, _nsuri: &NamespaceUri) -> Result<Option<NamespacePrefix>, Error> {
         Err(Error::new(ErrorKind::NotImplemented, "not implemented"))
     }
+    fn to_namespace_uri(&self, _nsuri: &Option<NamespacePrefix>) -> Result<NamespaceUri, Error> {
+        Err(Error::new(ErrorKind::NotImplemented, "not implemented"))
+    }
     fn as_namespace_prefix(&self) -> Result<Option<&NamespacePrefix>, Error> {
         Err(Error::new(ErrorKind::NotImplemented, "not implemented"))
     }

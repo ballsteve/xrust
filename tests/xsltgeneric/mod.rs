@@ -170,7 +170,7 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.0.to_string() == "special &lt; less than" {
+    if result.0.to_string() == "special < less than" {
         Ok(())
     } else {
         Err(Error::new(
@@ -742,7 +742,7 @@ where
         Err(e) => {
             if e.kind == ErrorKind::Terminated
                 && e.message == "here is a level 1 element"
-                && e.code.is_some_and(|f| f.local_name() == "XTMM9000")
+                && e.code.is_some_and(|f| f.local_name() == *"XTMM9000")
             {
                 Ok(())
             } else {

@@ -553,10 +553,7 @@ where
                 ns: Some(WildcardOrNamespaceUri::NamespaceUri(nsuri)),
                 //prefix: p,
             }) => Transform::Invoke(
-                QName::new_from_parts(
-                    NcName::try_from(localpart.local_name().as_str()).unwrap(),
-                    Some(nsuri),
-                ),
+                QName::new_from_parts(localpart.local_name(), Some(nsuri)),
                 ActualParameters::Positional(a),
                 in_scope_namespaces(state.cur.clone()),
             ),

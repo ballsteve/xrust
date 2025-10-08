@@ -90,9 +90,9 @@ pub fn name<
                         if let Some(nsuri) = qn.namespace_uri() {
                             Ok(vec![Item::Value(Rc::new(Value::from(
                                 get_prefix(ctxt, m, &nsuri)?.map_or_else(
-                                    || String::from(qn.local_name()),
+                                    || qn.local_name().to_string(),
                                     |p| {
-                                        format!("{}:{}", p.to_string(), qn.local_name()).to_string()
+                                        format!("{}:{}", p.to_string(), qn.local_name().to_string())
                                     },
                                 ),
                             )))])
@@ -120,10 +120,13 @@ pub fn name<
                             if let Some(nsuri) = qn.namespace_uri() {
                                 Ok(vec![Item::Value(Rc::new(Value::from(
                                     get_prefix(ctxt, m, &nsuri)?.map_or_else(
-                                        || String::from(qn.local_name()),
+                                        || qn.local_name().to_string(),
                                         |p| {
-                                            format!("{}:{}", p.to_string(), qn.local_name())
-                                                .to_string()
+                                            format!(
+                                                "{}:{}",
+                                                p.to_string(),
+                                                qn.local_name().to_string()
+                                            )
                                         },
                                     ),
                                 )))])

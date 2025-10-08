@@ -182,21 +182,18 @@ pub fn expr<'a, N: Node + 'a, L>() -> Box<
 where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError> + 'a,
 {
-    Box::new(inspect(
-        "xpath_expr",
-        map(
-            separated_list1(
-                map(tuple3(xpwhitespace(), tag(","), xpwhitespace()), |_| ()),
-                expr_single::<N, L>(),
-            ),
-            |mut v| {
-                if v.len() == 1 {
-                    v.pop().unwrap()
-                } else {
-                    Transform::SequenceItems(v)
-                }
-            },
+    Box::new(map(
+        separated_list1(
+            map(tuple3(xpwhitespace(), tag(","), xpwhitespace()), |_| ()),
+            expr_single::<N, L>(),
         ),
+        |mut v| {
+            if v.len() == 1 {
+                v.pop().unwrap()
+            } else {
+                Transform::SequenceItems(v)
+            }
+        },
     ))
 }
 

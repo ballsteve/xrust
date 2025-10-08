@@ -419,6 +419,9 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     /// Find the prefix for the given namespace URI using the node's in-scope namespaces. If the namespace is the default, then None is returned.
     /// If the namespace URI is not found in the in-scope namespaces returns an error.
     fn to_namespace_prefix(&self, nsuri: &NamespaceUri) -> Result<Option<NamespacePrefix>, Error>;
+    /// Find the namespace URI for the given namespace prefix using the node's in-scope namespaces.
+    /// If the namespace prefix is not found in the in-scope namespaces returns an error.
+    fn to_namespace_uri(&self, prefix: &Option<NamespacePrefix>) -> Result<NamespaceUri, Error>;
     /// For a namespace node give the prefix. If the namespace is the default namespace, then None is given.
     /// If the node is not a namespace-type node then returns an error.
     fn as_namespace_prefix(&self) -> Result<Option<&NamespacePrefix>, Error>;

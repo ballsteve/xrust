@@ -258,7 +258,8 @@ impl ItemNode for RNode {
             .namespace(|prefix: &NamespacePrefix| {
                 let nsdo = self.namespace_iter().find(|ns| {
                     // TODO: it's annoying to have to convert the namespace node name back to a prefix when we know it is a prefix
-                    NamespacePrefix::try_from(ns.name().unwrap().local_name().as_str()).unwrap()
+                    NamespacePrefix::try_from(ns.name().unwrap().local_name().to_string().as_str())
+                        .unwrap()
                         == *prefix
                 });
                 nsdo.map_or(
@@ -280,11 +281,11 @@ impl ItemNode for RNode {
     fn to_prefixed_name(&self) -> String {
         self.name().map_or(String::new(), |qn| {
             qn.namespace_uri().as_ref().map_or_else(
-                || String::from(qn.local_name()),
+                || qn.local_name().to_string(),
                 |nsuri| {
                     self.to_namespace_prefix(nsuri).unwrap().map_or_else(
-                        || String::from(qn.local_name()),
-                        |prefix| format!("{}:{}", prefix.to_string(), qn.local_name()),
+                        || qn.local_name().to_string(),
+                        |prefix| format!("{}:{}", prefix.to_string(), qn.local_name().to_string()),
                     )
                 },
             )
@@ -296,6 +297,14 @@ impl ItemNode for RNode {
             .map_or(
                 Err(Error::new(ErrorKind::DynamicAbsent, "namespace not found")),
                 |nsd| Ok(nsd.as_namespace_prefix().unwrap().map(|p| p.clone())),
+            )
+    }
+    fn to_namespace_uri(&self, prefix: &Option<NamespacePrefix>) -> Result<NamespaceUri, Error> {
+        self.namespace_iter()
+            .find(|nsd| nsd.as_namespace_prefix().unwrap() == prefix.as_ref())
+            .map_or(
+                Err(Error::new(ErrorKind::DynamicAbsent, "namespace not found")),
+                |nsd| Ok(nsd.as_namespace_uri().unwrap().clone()),
             )
     }
     fn as_namespace_prefix(&self) -> Result<Option<&NamespacePrefix>, Error> {
@@ -1181,7 +1190,7 @@ fn to_prefixed_name(n: &RNode) -> String {
             let ns = qn.namespace_uri();
             if ns.is_none() {
                 // Unprefixed name
-                String::from(qn.local_name())
+                qn.local_name().to_string()
             } else {
                 let uns = ns.unwrap();
                 n.namespace_iter()
@@ -1191,7 +1200,7 @@ fn to_prefixed_name(n: &RNode) -> String {
                         |p| {
                             p.ns_prefix().map_or_else(
                                 || qn.local_name().to_string(),
-                                |q| format!("{}:{}", q.to_string(), qn.local_name()),
+                                |q| format!("{}:{}", q.to_string(), qn.local_name().to_string()),
                             )
                         },
                     )
