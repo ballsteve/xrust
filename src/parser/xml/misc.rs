@@ -19,6 +19,7 @@ use std::rc::Rc;
 // PI ::= '<?' PITarget (char* - '?>') '?>'
 // PITarget ::= Name - 'X' 'M' 'L'
 // In other words, the name must not start with the three characters 'X' 'M' 'L' in any capitalisation.
+// XML Namespaces 1.0 S7 states that processing instruction targets may not contain a colon.
 pub(crate) fn processing_instruction<'a, N: Node, L>()
 -> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, N), ParseError>
 where
@@ -60,15 +61,11 @@ where
                 NodeType::ProcessingInstruction => {
                     if v.to_string().contains(|c: char| !is_char10(&c)) {
                         false
-                    } else if v.name().unwrap().to_string().contains(':') {
-                        //"No entity names, processing instruction targets, or notation names contain any colons."
-                        false
                     } else {
-                        !v.name()
-                            .unwrap()
-                            .to_string()
-                            .to_lowercase()
-                            .starts_with("xml")
+                        v.name().map_or_else(
+                            || false, // "No entity names, processing instruction targets, or notation names contain any colons."
+                            |nm| !nm.to_string().to_lowercase().starts_with("xml"),
+                        )
                     }
                 }
                 _ => false,
@@ -78,15 +75,11 @@ where
                 NodeType::ProcessingInstruction => {
                     if v.to_string().contains(|c: char| !is_char11(&c)) {
                         false
-                    } else if v.name().unwrap().to_string().contains(':') {
-                        // "No entity names, processing instruction targets, or notation names contain any colons."
-                        false
                     } else {
-                        !v.name()
-                            .unwrap()
-                            .to_string()
-                            .to_lowercase()
-                            .starts_with("xml")
+                        v.name().map_or_else(
+                            || false, // "No entity names, processing instruction targets, or notation names contain any colons."
+                            |nm| !nm.to_string().to_lowercase().starts_with("xml"),
+                        )
                     }
                 }
                 _ => false,

@@ -4,6 +4,7 @@ Richard Tobin's XML Namespaces 1.0 test suite 14 Feb 2003
 
 */
 
+use qualname::NamespacePrefix;
 use std::fs;
 use xrust::item::Node;
 use xrust::parser::{ParseError, xml};
@@ -24,7 +25,10 @@ fn rmtns10009() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/009.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        Some(|p: &NamespacePrefix| {
+            eprintln!("resolve ns prefix {}", p.to_string());
+            Err(ParseError::MissingNameSpace)
+        }),
     );
 
     assert!(parseresult.is_err());
@@ -293,7 +297,7 @@ fn rmtns10031() {
 
     let testxml = RNode::new_document();
     let parseresult = xml::parse(
-        testxml,
+        testxml.clone(),
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/031.xml")
             .unwrap()
             .as_str(),

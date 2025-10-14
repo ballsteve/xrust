@@ -1,17 +1,16 @@
+//mod relaxng;
+mod xml;
+mod xml_id;
+
+use encoding_rs::UTF_8;
+use encoding_rs::UTF_16BE;
+use encoding_rs::UTF_16LE;
+use encoding_rs::WINDOWS_1252;
+use encoding_rs_io::DecodeReaderBytesBuilder;
 use std::fs;
 use std::fs::File;
 use std::io::{Read, Seek, SeekFrom};
 use xrust::{Error, ErrorKind};
-
-//mod relaxng;
-//mod xml;
-mod xml_id;
-
-use encoding_rs::UTF_16BE;
-use encoding_rs::UTF_16LE;
-use encoding_rs::UTF_8;
-use encoding_rs::WINDOWS_1252;
-use encoding_rs_io::DecodeReaderBytesBuilder;
 
 fn dtdfileresolve() -> fn(Option<String>, String) -> Result<String, Error> {
     move |locdir, uri| {

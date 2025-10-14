@@ -43,6 +43,8 @@ pub enum ParseError {
     IncorrectArguments,
     // An unexpected character has been encountered
     NotWellFormed(String),
+    // An attribute has been declared more than once
+    DuplicateAttribute(String),
     Unbalanced,
     Notimplemented,
     ExtDTDLoadError,

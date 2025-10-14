@@ -642,9 +642,24 @@ impl ItemNode for RNode {
         match &self.0 {
             NodeInner::Element(_, _, patt, _, _) => {
                 // Short-circuit: Is this attribute already attached to this element?
-                if let Some(b) = patt.borrow().get(&self.name().unwrap()) {
+                if let Some(b) = patt.borrow().get(&att.name().unwrap()) {
                     if att.is_same(b) {
                         return Ok(());
+                    } else {
+                        return Err(Error::new_with_code(
+                            ErrorKind::DuplicateAttribute,
+                            format!(
+                                "attribute named \"{}\" already exists",
+                                self.name().unwrap()
+                            ),
+                            Some(QName::new_from_parts(
+                                NcName::try_from("SXXP0003").unwrap(),
+                                Some(
+                                    NamespaceUri::try_from("http://www.w3.org/2005/xqt-errors")
+                                        .unwrap(),
+                                ),
+                            )),
+                        ));
                     }
                 }
                 // Firstly, make sure the node is removed from its old parent

@@ -34,6 +34,8 @@ pub enum ErrorKind {
     /// XTMM9000 - (http://)www.w3.org/2005/xqt-errors
     NotImplemented,
     ParseError,
+    /// SXXP0003 - attribute declared more than once
+    DuplicateAttribute,
     Unknown,
 }
 impl ErrorKind {
@@ -55,6 +57,7 @@ impl ErrorKind {
             ErrorKind::NotImplemented => "not implemented",
             ErrorKind::Unknown => "unknown",
             ErrorKind::ParseError => "XML Parse error",
+            ErrorKind::DuplicateAttribute => "XML parse error - attribute declared more than once",
         }
     }
 }

@@ -13,7 +13,7 @@ use crate::parser::xml::chardata::chardata_unicode_codepoint;
 use crate::parser::xml::qname::qualname_to_parts;
 use crate::parser::xml::reference::textreference;
 use crate::parser::{ParseError, ParseInput, StaticState};
-use crate::value::{ID, Value, ValueBuilder, ValueData};
+use crate::value::{ID, Value};
 use qualname::{NamespaceDeclaration, NamespacePrefix, NamespaceUri, NcName, QName};
 use std::rc::Rc;
 
@@ -56,31 +56,12 @@ where
                 .try_for_each(|((prefix, local_part), value)| {
                     match (prefix.as_deref(), local_part.as_str(), value.as_str()) {
                         (Some("xmlns"), "xmlns", "http://www.w3.org/2000/xmlns/") => {
-                            ss.in_scope_namespaces.push(
-                                NamespaceDeclaration::new(
-                                    Some(NamespacePrefix::try_from("xmlns").unwrap()),
-                                    NamespaceUri::try_from("http://www.w3.org/2000/xmlns/")
-                                        .unwrap(),
-                                )
-                                .map_err(|_| {
-                                    ParseError::NotWellFormed(
-                                        "unable to create namespace declaration".to_string(),
-                                    )
-                                })?,
-                            );
-                            nsd_vec.push(
-                                // TODO: setup static values
-                                doc.new_namespace(
-                                    NamespaceUri::try_from("http://www.w3.org/2000/xmlns/")
-                                        .unwrap(),
-                                    Some(NamespacePrefix::try_from("xmlns").unwrap()),
-                                )
-                                .map_err(|_| ParseError::MissingNameSpace)?,
-                            );
-                            Ok(())
+                            Err(ParseError::NotWellFormed(
+                                "namespace definition not allowed".to_string(),
+                            ))
                         }
                         (Some("xmlns"), "xmlns", _) => Err(ParseError::NotWellFormed(
-                            String::from("cannot redefine namespace"),
+                            String::from("namespace prefix \"xmlns\" not allowed"),
                         )),
                         (Some("xmlns"), "xml", "http://www.w3.org/XML/1998/namespace") => {
                             ss.in_scope_namespaces.push(
@@ -132,7 +113,11 @@ where
                         (Some("xmlns"), p, v) => {
                             ss.in_scope_namespaces.push(
                                 NamespaceDeclaration::new(
-                                    Some(NamespacePrefix::try_from(p).unwrap()),
+                                    Some(NamespacePrefix::try_from(p).map_err(|_| {
+                                        ParseError::NotWellFormed(String::from(
+                                            "invalid namespace prefix",
+                                        ))
+                                    })?),
                                     NamespaceUri::try_from(v).unwrap(),
                                 )
                                 .map_err(|_| {
@@ -144,7 +129,11 @@ where
                             nsd_vec.push(
                                 doc.new_namespace(
                                     NamespaceUri::try_from(v).unwrap(),
-                                    Some(NamespacePrefix::try_from(p).unwrap()),
+                                    Some(NamespacePrefix::try_from(p).map_err(|_| {
+                                        ParseError::NotWellFormed(String::from(
+                                            "invalid namespace prefix",
+                                        ))
+                                    })?),
                                 )
                                 .map_err(|_| ParseError::MissingNameSpace)?,
                             );
@@ -304,6 +293,7 @@ where
                         }
                     }
                 })?;
+            eprintln!("attributes: normal attrs: {:?} nsd {:?}", attr_vec, nsd_vec);
 
             Ok(((input1, state1), (attr_vec, nsd_vec)))
         }

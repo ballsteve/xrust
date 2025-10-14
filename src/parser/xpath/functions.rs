@@ -21,7 +21,7 @@ use crate::transform::{
     NameTest, NodeTest, Transform, WildcardOrName, WildcardOrNamespaceUri, in_scope_namespaces,
 };
 use crate::xdmerror::ErrorKind;
-use qualname::{NamespacePrefix, NamespaceUri, NcName, QName};
+use qualname::{NamespacePrefix, NamespaceUri, QName};
 
 // ArrowExpr ::= UnaryExpr ( '=>' ArrowFunctionSpecifier ArgumentList)*
 pub(crate) fn arrow_expr<'a, N: Node + 'a, L>() -> Box<

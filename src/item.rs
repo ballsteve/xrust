@@ -525,6 +525,7 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     /// Insert a node in the child list before the given node. The node will be detached from it's current position prior to insertion.
     fn insert_before(&mut self, n: Self) -> Result<(), Error>;
     /// Set an attribute. self must be an element-type node. att must be an attribute-type node.
+    /// Returns an error if an attribute with the same name is already attached to this element.
     fn add_attribute(&self, att: Self) -> Result<(), Error>;
 
     /// Shallow copy the node, i.e. copy only the node, but not it's attributes or content.

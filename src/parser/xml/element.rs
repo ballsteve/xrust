@@ -107,7 +107,7 @@ where
             }*/
             let d = state1.doc.clone().unwrap();
             let mut e = d
-                .new_element(elementname)
+                .new_element(elementname.clone())
                 .expect("unable to create element");
 
             // Looking up the DTD, seeing if there are any attributes we should populate
@@ -115,6 +115,10 @@ where
             // We generate the attributes in two sweeps:
             // Once for attributes declared on the element and once for the DTD default attribute values.
 
+            eprintln!(
+                "element: name \"{}\" attrs {:?} nsd {:?}",
+                elementname, av, namespaces
+            );
             let attlist = state1
                 .dtd
                 .attlists
@@ -123,8 +127,14 @@ where
             match attlist {
                 None => {
                     // No Attribute DTD, just insert all attributes.
-                    av.into_iter()
-                        .for_each(|a| e.add_attribute(a).expect("unable to add attribute"))
+                    eprintln!("no attr DTD, insert all attrs as-is");
+                    if let Err(e) = av.into_iter().try_for_each(|a| {
+                        e.add_attribute(a).map_err(|_| {
+                            ParseError::NotWellFormed(String::from("unable to add attribute"))
+                        })
+                    }) {
+                        return Err(e);
+                    }
                     /*for (attname, attval) in av.into_iter() {
                         //Ordinarily, you'll just treat attributes as CDATA and not normalize, however we need to check xml:id
                         let avalue: String;
@@ -151,6 +161,7 @@ where
                     }*/
                 }
                 Some(atts) => {
+                    eprintln!("attr defaults");
                     if state1.attr_defaults {
                         for ((attprefix, attlocalname), (atttype, defdecl, _)) in atts.iter() {
                             match defdecl {
@@ -175,10 +186,15 @@ where
                                         AttType::CDATA => s.clone(),
                                         _ => s.trim().replace("  ", " "),
                                     };
+                                    eprintln!("creating default attribute {}", qn.to_string());
                                     let a = d
-                                        .new_attribute(qn, Rc::new(Value::from(attval)))
+                                        .new_attribute(qn.clone(), Rc::new(Value::from(attval)))
                                         .expect("unable to create attribute");
-                                    e.add_attribute(a).expect("unable to add attribute")
+                                    if let Err(_) = e.add_attribute(a) {
+                                        eprintln!("add attr failed");
+                                        return Err(ParseError::DuplicateAttribute(qn.to_string()));
+                                    }
+                                    eprintln!("add attr OK");
                                 }
                                 _ => {}
                             }
@@ -190,7 +206,11 @@ where
                             let a = d
                                 .new_attribute(attnode.name().unwrap(), attnode.value())
                                 .expect("unable to create xml:id attribute");
-                            e.add_attribute(a).expect("unable to add xml:id attribute")
+                            if let Err(_) = e.add_attribute(a) {
+                                return Err(ParseError::DuplicateAttribute(
+                                    attnode.name().unwrap().to_string(),
+                                ));
+                            }
                         } else {
                             let thisatprefix =
                                 attnode.name().unwrap().namespace_uri().map_or(None, |ns| {
@@ -202,10 +222,19 @@ where
                                 None => {
                                     // TODO: this is duplicate code to the @xml:id case above.
                                     // Consolidate this with the above code.
+                                    eprintln!(
+                                        "create attr {} (no DTD)",
+                                        attnode.name().unwrap().to_string()
+                                    );
                                     let a = d
                                         .new_attribute(attnode.name().unwrap(), attnode.value())
                                         .expect("unable to create attribute");
-                                    e.add_attribute(a).expect("unable to add attribute")
+                                    if let Err(_) = e.add_attribute(a) {
+                                        eprintln!("add attr failed");
+                                        return Err(ParseError::DuplicateAttribute(
+                                            attnode.name().unwrap().to_string(),
+                                        ));
+                                    }
                                 }
                                 Some((atttype, _, _)) => {
                                     //https://www.w3.org/TR/xml11/#AVNormalize
@@ -261,10 +290,21 @@ where
                                         }
                                     }
 
+                                    eprintln!(
+                                        "create attr {} (AVN)",
+                                        attnode.name().unwrap().to_string()
+                                    );
                                     let a = d
                                         .new_attribute(attnode.name().unwrap(), v)
                                         .expect("unable to create attribute");
-                                    e.add_attribute(a).expect("unable to add attribute")
+                                    if let Err(_) = e.add_attribute(a) {
+                                        eprintln!("add attr failed");
+                                        return Err(ParseError::DuplicateAttribute(
+                                            attnode.name().unwrap().to_string(),
+                                        ));
+                                    } else {
+                                        eprintln!("add attr OK")
+                                    }
                                 }
                             }
                         }
