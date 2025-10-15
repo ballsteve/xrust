@@ -58,10 +58,6 @@ pub struct StaticState<L>
 where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
-    // The in-scope namespace declarations.
-    // This will be reset when the parsing context changes
-    pub(crate) in_scope_namespaces: NamespaceMap,
-
     // Tracking ID-type attributes
     ids_read: HashSet<String>,
     ids_pending: HashSet<String>,
@@ -83,7 +79,6 @@ where
         Self {
             namespace: None,
             ext_dtd_resolver: None,
-            in_scope_namespaces: NamespaceMap::new(),
             ids_read: Default::default(),
             ids_pending: Default::default(),
         }
@@ -135,6 +130,10 @@ pub struct ParserState<N: Node> {
     // Do we add DTD specified attributes or not
     attr_defaults: bool,
 
+    // The in-scope namespace declarations.
+    // This will be reset when the parsing context changes
+    pub(crate) in_scope_namespaces: NamespaceMap,
+
     /*
       ID tracking:
       ids_read covers all IDs for duplicate checking. Where an IDREF is found and the ID is not
@@ -174,6 +173,7 @@ impl<N: Node> ParserState<N> {
             dtd: DTD::new(),
             standalone: false,
             xmlversion: "1.0".to_string(), // Always assume 1.0
+            in_scope_namespaces: NamespaceMap::new(),
             id_tracking: true,
             maxentitydepth: 8,
             attr_defaults: true,
@@ -230,6 +230,10 @@ impl<N: Node> ParserStateBuilder<N> {
     }
     pub fn attribute_defaults(mut self, a: bool) -> Self {
         self.0.attr_defaults = a;
+        self
+    }
+    pub fn in_scope_namespaces(mut self, nsm: NamespaceMap) -> Self {
+        self.0.in_scope_namespaces = nsm;
         self
     }
     pub fn id_tracking(mut self, a: bool) -> Self {

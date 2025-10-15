@@ -75,7 +75,7 @@ where
             let elementname = if let Some(p) = prefix.clone() {
                 // This is a prefixed name, so the prefix must resolve to a URI
                 // NB. Creating the prefix cannot fail, since it has already been parsed
-                if let Some(u) = ss
+                if let Some(u) = state1
                     .in_scope_namespaces
                     .namespace_uri(&Some(NamespacePrefix::try_from(p.as_str()).unwrap()))
                 {
@@ -88,7 +88,7 @@ where
                 }
             } else {
                 // This is either an unprefixed name or a name in the default namespace, if one has been defined
-                if let Some(u) = ss.in_scope_namespaces.namespace_uri(&None) {
+                if let Some(u) = state1.in_scope_namespaces.namespace_uri(&None) {
                     let lp = NcName::try_from(local_part.as_str()).unwrap();
                     QName::new_from_parts(
                         lp, // creating NcName cannot fail, since we have already parsed it
@@ -175,7 +175,7 @@ where
                                         |ap| {
                                             QName::new_from_parts(
                                                 NcName::try_from(attlocalname.as_str()).unwrap(),
-                                                ss.in_scope_namespaces.namespace_uri(&Some(
+                                                state1.in_scope_namespaces.namespace_uri(&Some(
                                                     NamespacePrefix::try_from(ap.as_str()).unwrap(),
                                                 )), // TODO: return error if no namespace found
                                             )
@@ -214,7 +214,10 @@ where
                         } else {
                             let thisatprefix =
                                 attnode.name().unwrap().namespace_uri().map_or(None, |ns| {
-                                    ss.in_scope_namespaces.prefix(&ns).map(|p| p.to_string())
+                                    state1
+                                        .in_scope_namespaces
+                                        .prefix(&ns)
+                                        .map(|p| p.to_string())
                                 });
                             let thisatlocalpart = attnode.name().unwrap().local_name().to_string();
                             match atts.get(&(thisatprefix, thisatlocalpart)) {

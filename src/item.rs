@@ -428,6 +428,9 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     /// For a namespace node give the namespace URI.
     /// If the node is not a namespace-type node then returns an error.
     fn as_namespace_uri(&self) -> Result<&NamespaceUri, Error>;
+    /// Is this namespace in scope, or is it a descoping declaration? See Namespaces in XML v1.1 s6.1.
+    /// This only applies to Namespace-type nodes. All other node types return false.
+    fn is_in_scope(&self) -> bool;
 
     /// Get a unique identifier for this node.
     fn get_id(&self) -> String;
@@ -512,10 +515,12 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     /// Create a new processing-instruction-type node in the same document tree. The new node is not attached to the tree.
     fn new_processing_instruction(&self, qn: Rc<Value>, v: Rc<Value>) -> Result<Self, Error>;
     /// Create a namespace node for an XML Namespace declaration.
+    /// A namespace may be descoped (see Namespace in XML v1.1). In this case, the prefix and namespace URI are given for the namespace being descoped, but with the in_scope argument 'false'.
     fn new_namespace(
         &self,
         ns: NamespaceUri,
         prefix: Option<NamespacePrefix>,
+        in_scope: bool,
     ) -> Result<Self, Error>;
 
     /// Append a node to the child list
@@ -623,7 +628,7 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
             _ => self.node_type() == other.node_type(), // Other types of node do not affect the equality
         }
     }
-    /// An iterator over the in-scope namespace nodes of an element.
+    /// An iterator over the namespace nodes of an element.
     /// Note: These nodes are calculated at the time the iterator is created.
     /// It is not guaranteed that the namespace nodes returned
     /// will specify the current element node as their parent.

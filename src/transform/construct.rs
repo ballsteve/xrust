@@ -64,6 +64,7 @@ pub(crate) fn literal_element<
                         let new_ns = r.new_namespace(
                             t.as_namespace_uri()?.clone(),
                             t.as_namespace_prefix()?.cloned(),
+                            t.is_in_scope(),
                         )?;
                         e.add_namespace(new_ns)
                     }
@@ -252,6 +253,7 @@ pub(crate) fn namespace_declaration<
     stctxt: &mut StaticContext<N, F, G, H>,
     p: &Option<Box<Transform<N>>>, // prefix
     u: &Transform<N>,              // namespace URI
+    in_scope: &Transform<N>,       // in scope
 ) -> Result<Sequence<N>, Error> {
     if ctxt.rd.is_none() {
         return Err(Error::new(
@@ -274,6 +276,7 @@ pub(crate) fn namespace_declaration<
             NamespaceUri::try_from(ctxt.dispatch(stctxt, u)?.to_string().as_str())
                 .map_err(|_| Error::new(ErrorKind::ParseError, "invalid namespapce URI"))?,
             np,
+            ctxt.dispatch(stctxt, in_scope)?.to_bool(),
         )?,
     )])
 }

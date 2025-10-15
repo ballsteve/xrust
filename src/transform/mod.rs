@@ -112,8 +112,12 @@ pub enum Transform<N: Node> {
     LiteralComment(Box<Transform<N>>),
     /// A literal processing instruction. Consists of the name and value.
     LiteralProcessingInstruction(Box<Transform<N>>, Box<Transform<N>>),
-    /// Create an XML Namespace declaration. Consists of a prefix and a namespace URI.
-    NamespaceDeclaration(Option<Box<Transform<N>>>, Box<Transform<N>>),
+    /// Create an XML Namespace declaration. Consists of a prefix, a namespace URI, and if the declaration is in scope.
+    NamespaceDeclaration(
+        Option<Box<Transform<N>>>,
+        Box<Transform<N>>,
+        Box<Transform<N>>,
+    ),
     /// Produce a [Sequence]. Each element in the vector becomes one, or more, item in the sequence.
     SequenceItems(Vec<Transform<N>>),
 
@@ -322,7 +326,7 @@ impl<N: Node> Debug for Transform<N> {
             Transform::LiteralProcessingInstruction(_, _) => {
                 write!(f, "literal processing-instruction")
             }
-            Transform::NamespaceDeclaration(_, _) => write!(f, "namespace declaration"),
+            Transform::NamespaceDeclaration(_, _, _) => write!(f, "namespace declaration"),
             Transform::Copy(_, _) => write!(f, "shallow copy"),
             Transform::DeepCopy(_) => write!(f, "deep copy"),
             Transform::GeneralComparison(o, v, u) => {

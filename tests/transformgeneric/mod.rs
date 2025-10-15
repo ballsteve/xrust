@@ -4031,6 +4031,7 @@ where
         .new_namespace(
             NamespaceUri::try_from("urn:test-example.com").unwrap(),
             Some(NamespacePrefix::try_from("eg").unwrap()),
+            true,
         )
         .expect("unable to create namespace node");
     l1.add_namespace(nsd).expect("unable to add namespace");

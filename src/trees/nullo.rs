@@ -51,6 +51,9 @@ impl Node for Nullo {
     fn as_namespace_uri(&self) -> Result<&NamespaceUri, Error> {
         Err(Error::new(ErrorKind::NotImplemented, "not implemented"))
     }
+    fn is_in_scope(&self) -> bool {
+        false
+    }
     fn value(&self) -> Rc<Value> {
         Rc::new(Value::from(""))
     }
@@ -154,6 +157,7 @@ impl Node for Nullo {
         &self,
         _ns: NamespaceUri,
         _prefix: Option<NamespacePrefix>,
+        _in_scope: bool,
     ) -> Result<Self, Error> {
         Err(Error::new(ErrorKind::NotImplemented, "not implemented"))
     }

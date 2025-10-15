@@ -1407,6 +1407,7 @@ fn to_transform<N: Node>(
                         Box::new(Transform::Literal(Item::Value(Rc::new(Value::from(
                             u.clone().unwrap(),
                         ))))),
+                        Box::new(Transform::Literal(Item::Value(Rc::new(Value::from(true))))),
                     ));
                 }
 
