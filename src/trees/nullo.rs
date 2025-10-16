@@ -4,6 +4,8 @@
 //! The parser combinator is generic in [Node].
 //! Occasionally, a module using the parser, but not needing a [Node],
 //! nevertheless requires a concrete type that has the [Node] trait.
+#![allow(dead_code)]
+
 use crate::item::{Node, NodeType};
 use crate::output::OutputDefinition;
 use crate::validators::{Schema, ValidationError};
@@ -263,5 +265,16 @@ impl fmt::Debug for Nullo {
 impl PartialEq for Nullo {
     fn eq(&self, other: &Self) -> bool {
         Node::eq(self, other)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn nullo_new() {
+        let _ = Nullo::new_document();
+        assert!(true)
     }
 }
