@@ -23,5 +23,5 @@ pub(crate) fn noop<'a, N: Node, L>() -> impl Fn(
 where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
-    move |_, _| Err(ParseError::Combinator)
+    move |_, _| Err(ParseError::Combinator(String::from("noop - xpath")))
 }

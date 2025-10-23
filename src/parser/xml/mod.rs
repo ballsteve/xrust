@@ -33,13 +33,18 @@ where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
     match document((input, ps), &mut ss) {
-        Ok(((_, _), xmldoc)) => Ok(xmldoc),
+        Ok(((_, _), xmldoc)) => {
+            eprintln!("parse_with_state OK");
+            Ok(xmldoc)
+        }
         Err(err) => {
+            eprintln!("parse_with_state error");
             match err {
-                ParseError::Combinator => Err(Error::new(
+                ParseError::Combinator(f) => Err(Error::new(
                     ErrorKind::ParseError,
                     format!(
-                        "Unrecoverable parser error while parsing XML \"{}\"",
+                        "Unrecoverable parser error ({}) while parsing XML \"{}\"",
+                        f,
                         input.chars().take(80).collect::<String>()
                     ),
                 )),
@@ -123,9 +128,13 @@ where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
     match tuple4(opt(utf8bom()), opt(prolog()), element(), opt(misc()))(input, ss) {
-        Err(err) => Err(err),
+        Err(err) => {
+            eprintln!("document returning error ({:?})", err);
+            Err(err)
+        }
         Ok(((input1, state1), (_, p, e, m))) => {
             //Check nothing remaining in iterator, nothing after the end of the root node.
+            eprintln!("document: post-processing");
             if input1.is_empty() {
                 /*
                    We were checking XML IDRefs as we parsed, but sometimes an ID comes after the IDREF,
@@ -158,6 +167,7 @@ where
                     let _ = d.set_dtd(state1.dtd.clone());
                 };
 
+                eprintln!("document returning result");
                 Ok((
                     (input1, state1.clone()),
                     state1.doc.clone().unwrap().clone(),

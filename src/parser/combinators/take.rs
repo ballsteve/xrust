@@ -10,7 +10,7 @@ where
     move |(input, state), _ss| {
         let c = input.chars().next();
         match c {
-            None => Err(ParseError::Combinator),
+            None => Err(ParseError::Combinator(String::from("take_one: no input"))),
             Some(ind) => Ok(((&input[ind.len_utf8()..], state), ind)),
         }
     }
@@ -23,7 +23,7 @@ where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
     move |(input, state), _ss| match input.find(s) {
-        None => Err(ParseError::Combinator),
+        None => Err(ParseError::Combinator(String::from("take_until: no input"))),
         Some(ind) => Ok(((&input[ind..], state), input[0..ind].to_string())),
     }
 }
@@ -45,7 +45,9 @@ where
             )),
             (Some(i1), None) => Ok(((&input[i1..], state), input[0..i1].to_string())),
             (None, Some(i2)) => Ok(((&input[i2..], state), input[0..i2].to_string())),
-            (None, None) => Err(ParseError::Combinator),
+            (None, None) => Err(ParseError::Combinator(String::from(
+                "take_until_either_or: no input",
+            ))),
         }
     }
 }
@@ -63,7 +65,9 @@ where
         match (r1, r2) {
             (Some(i1), Some(i2)) => {
                 if i1 == 0 || i2 == 0 {
-                    Err(ParseError::Combinator)
+                    Err(ParseError::Combinator(String::from(
+                        "take_until_either_or_min: no input",
+                    )))
                 } else {
                     Ok((
                         (&input[i1.min(i2)..], state),
@@ -73,19 +77,25 @@ where
             }
             (Some(i1), None) => {
                 if i1 == 0 {
-                    Err(ParseError::Combinator)
+                    Err(ParseError::Combinator(String::from(
+                        "take_until_either_or_min: unable to find second term",
+                    )))
                 } else {
                     Ok(((&input[i1..], state), input[0..i1].to_string()))
                 }
             }
             (None, Some(i2)) => {
                 if i2 == 0 {
-                    Err(ParseError::Combinator)
+                    Err(ParseError::Combinator(String::from(
+                        "take_until_either_or_min: unable to find first term",
+                    )))
                 } else {
                     Ok(((&input[i2..], state), input[0..i2].to_string()))
                 }
             }
-            (None, None) => Err(ParseError::Combinator),
+            (None, None) => Err(ParseError::Combinator(String::from(
+                "take_until_either_or_min: no input",
+            ))),
         }
     }
 }
@@ -113,12 +123,14 @@ where
     move |(input, state), _ss| match input.find(|c| !condition(c)) {
         None => {
             if input.is_empty() {
-                Err(ParseError::Combinator)
+                Err(ParseError::Combinator(String::from("take_while: no input")))
             } else {
                 Ok((("", state), input.to_string()))
             }
         }
-        Some(0) => Err(ParseError::Combinator),
+        Some(0) => Err(ParseError::Combinator(String::from(
+            "take_while: term not found",
+        ))),
         Some(pos) => Ok(((&input[pos..], state), input[0..pos].to_string())),
     }
 }
@@ -140,7 +152,9 @@ where
     move |(input, state), _ss| match input.find(|c| !condition(c)) {
         None => {
             if input.is_empty() {
-                Err(ParseError::Combinator)
+                Err(ParseError::Combinator(String::from(
+                    "take_while_m_n: no input",
+                )))
             } else {
                 Ok(((&input[max..], state), input[0..max].to_string()))
             }
@@ -153,7 +167,9 @@ where
                     Ok(((&input[pos..], state), input[0..pos].to_string()))
                 }
             } else {
-                Err(ParseError::Combinator)
+                Err(ParseError::Combinator(String::from(
+                    "take_while_m_n: term not found",
+                )))
             }
         }
     }
@@ -194,7 +210,7 @@ mod tests {
             .build();
         let parse_doc = take_until(">");
         assert_eq!(
-            Err(ParseError::Combinator),
+            Err(ParseError::Combinator(String::from("test"))),
             parse_doc((testdoc, teststate), &mut static_state)
         );
     }
@@ -306,7 +322,7 @@ mod tests {
             .build();
         let parse_doc = take_until_either_or("AA", "BB");
         assert_eq!(
-            Err(ParseError::Combinator),
+            Err(ParseError::Combinator(String::from("test"))),
             parse_doc((testdoc, teststate), &mut static_state)
         );
     }
@@ -385,7 +401,7 @@ mod tests {
             .build();
         let parse_doc = take_while_m_n(2, 4, |c| c.is_lowercase());
         assert_eq!(
-            Err(ParseError::Combinator),
+            Err(ParseError::Combinator(String::from("test"))),
             parse_doc((testdoc, teststate), &mut static_state)
         );
     }

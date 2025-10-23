@@ -30,7 +30,7 @@ pub type ParseResult<'a, N: Node, Output> = Result<(ParseInput<'a, N>, Output), 
 pub enum ParseError {
     // The "Combinator" error just means a parser hasn't matched, its not serious necessarily.
     // Every other error should get returned.
-    Combinator, // Combinator isn't correct, not a serious error.
+    Combinator(String), // Combinator isn't correct, not a serious error.
     //InvalidChar{ row:usize, col:usize },
     //MissingClosingElement{ row:usize, col:usize, element: String},
     //IncorrectClosingElement{ row:usize, col:usize, open: String, close:String},

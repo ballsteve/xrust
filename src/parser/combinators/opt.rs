@@ -11,7 +11,7 @@ where
 {
     move |input, ss| match parser1(input.clone(), ss) {
         Ok((input1, result1)) => Ok((input1, Some(result1))),
-        Err(ParseError::Combinator) => Ok((input, None)),
+        Err(ParseError::Combinator(_)) => Ok((input, None)),
         Err(err) => Err(err),
     }
 }

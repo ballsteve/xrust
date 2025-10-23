@@ -124,11 +124,11 @@ pub fn parse<N: Node>(
     match result {
         Ok((_, x)) => Ok(x),
         Err(err) => match err {
-            ParseError::Combinator => Err(Error::new(
+            ParseError::Combinator(f) => Err(Error::new(
                 ErrorKind::ParseError,
                 format!(
-                    "Unrecoverable parser error while parsing XPath expression \"{}\"",
-                    input
+                    "Unrecoverable parser error ({}) while parsing XPath expression \"{}\"",
+                    f, input
                 ),
             )),
             ParseError::NotWellFormed(e) => Err(Error::new(

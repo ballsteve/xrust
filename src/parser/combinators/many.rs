@@ -9,13 +9,18 @@ where
     P: Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, R), ParseError>,
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
-    //TODO ERROR IF ANY ERROR OTHER THAN COMBINATOR RETURNED.
     move |mut input, ss| {
         let mut result = Vec::new();
 
-        while let Ok((input2, next_item)) = parser(input.clone(), ss) {
-            result.push(next_item);
-            input = input2;
+        loop {
+            match parser(input.clone(), ss) {
+                Ok((input2, next_item)) => {
+                    result.push(next_item);
+                    input = input2;
+                }
+                Err(ParseError::Combinator(_)) => break,
+                Err(e) => return Err(e),
+            }
         }
 
         Ok((input, result))
@@ -36,15 +41,21 @@ where
 
     move |(mut input, state), ss| {
         let mut result = Vec::new();
+        let mut new_state = state.clone();
         //let namespaces = state.in_scope_namespaces.clone();
 
-        while let Ok(((input2, _state2), next_item)) = parser((input, state.clone()), ss) {
+        eprintln!("many0nsreset: input==\"{}\"", input);
+        while let Ok(((input2, state2), next_item)) = parser((input, state.clone()), ss) {
+            eprintln!("got item, input2==\"{}\"", input2);
             result.push(next_item);
             input = input2;
+            new_state = state2;
+            eprintln!("many0nsreset: input now==\"{}\"", input);
             //ss.in_scope_namespaces = namespaces.clone();
         }
 
-        Ok(((input, state), result))
+        eprintln!("many0nsreset: end input==\"{}\"", input);
+        Ok(((input, new_state), result))
     }
 }
 

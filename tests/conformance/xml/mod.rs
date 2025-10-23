@@ -22,15 +22,15 @@ mod eduni_xml11_error;
 mod eduni_xml11_invalid;
 mod eduni_xml11_notwf;
 mod eduni_xml11_valid;
-mod ibm11_invalid;*/
+mod ibm11_invalid;
 mod ibm11_notwf;
 mod ibm11_valid;
-/* not yet checked
 mod ibm_error;
 mod ibm_invalid;
 mod ibm_notwf;
-mod ibm_valid;
+mod ibm_valid;*/
 mod oasis_error;
+/* not yet checked
 mod oasis_invalid;
 mod oasis_notwf;
 mod oasis_valid;

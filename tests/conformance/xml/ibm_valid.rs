@@ -8,7 +8,8 @@ use crate::conformance::dtdfileresolve;
 use std::fs;
 //use hexdump::hexdump;
 use xrust::item::Node;
-use xrust::parser::{ParseError, ParserStateBuilder, StaticStateBuilder, xml};
+use xrust::parser::xml::parse_with_state;
+use xrust::parser::{ParseError, ParserState, ParserStateBuilder, StaticStateBuilder, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
@@ -4334,14 +4335,21 @@ fn ibmvalid_p60ibm60v01xml() {
         Description:Tests DefaultDecl for P60. It shows different options "#REQUIRED", "#FIXED", "#IMPLIED", and default for the attribute "chapter".
     */
 
+    let testsource =
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P60/ibm60v01.xml").unwrap();
+    eprintln!("testsource:\n{}", testsource);
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P60/ibm60v01.xml")
-            .unwrap()
-            .as_str(),
+    /*let parseresult = xml::parse(
+        testxml.clone(),
+        &testsource,
         Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
+    );*/
+    let ps = ParserStateBuilder::new().doc(testxml.clone()).build();
+    let static_state = StaticStateBuilder::new()
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
+    let parseresult = parse_with_state(&testsource, ps, static_state);
+    eprintln!("parseresult: {:?}\n\n", parseresult);
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
@@ -4351,6 +4359,7 @@ fn ibmvalid_p60ibm60v01xml() {
         Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
+    eprintln!("testxml:\n{}", testxml.to_xml());
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
 

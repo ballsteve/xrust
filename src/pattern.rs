@@ -604,7 +604,7 @@ fn noop<'a, N: Node, L>() -> Box<
 where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
-    Box::new(move |_, _| Err(ParseError::Combinator))
+    Box::new(move |_, _| Err(ParseError::Combinator(String::from("noop - pattern"))))
 }
 
 // IntersectExceptExprP ::= PathExprP (("intersect" | "except") PathExprP)*

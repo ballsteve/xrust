@@ -26,7 +26,7 @@ where
 
         loop {
             match sep(input.clone(), ss) {
-                Err(ParseError::Combinator) => {
+                Err(ParseError::Combinator(_)) => {
                     return Ok((input, res));
                 }
                 Err(e) => return Err(e),
@@ -38,7 +38,7 @@ where
                     //		    }
 
                     match f(i1, ss) {
-                        Err(ParseError::Combinator) => return Ok((input, res)),
+                        Err(ParseError::Combinator(_)) => return Ok((input, res)),
                         Err(e) => return Err(e),
                         Ok((i2, o)) => {
                             res.push(o);
@@ -73,7 +73,7 @@ where
 
         loop {
             match sep(input.clone(), ss) {
-                Err(ParseError::Combinator) => {
+                Err(ParseError::Combinator(_)) => {
                     return Ok((input, res));
                 }
                 Err(e) => return Err(e),
@@ -85,7 +85,7 @@ where
                     //		    }
 
                     match f(i1, ss) {
-                        Err(ParseError::Combinator) => {
+                        Err(ParseError::Combinator(_)) => {
                             return Ok((input, res));
                         }
                         Err(e) => return Err(e),

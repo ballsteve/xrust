@@ -35,9 +35,9 @@ pub fn parse<N: Node>(input: &str, n: Option<N>) -> Result<Transform<N>, Error> 
     match avt_expr((input, state), &mut static_state) {
         Ok((_, x)) => Ok(x),
         Err(err) => match err {
-            ParseError::Combinator => Result::Err(Error::new(
+            ParseError::Combinator(f) => Result::Err(Error::new(
                 ErrorKind::ParseError,
-                "Unrecoverable parser error.".to_string(),
+                format!("Unrecoverable parser error ({})", f),
             )),
             ParseError::NotWellFormed(e) => Result::Err(Error::new(
                 ErrorKind::ParseError,
@@ -128,7 +128,7 @@ where
     Box::new(move |(input, state), ss| {
         match input.get(0..1) {
             Some("{") => match input.find('}') {
-                None => Err(ParseError::Combinator),
+                None => Err(ParseError::Combinator(String::from("no closing brace"))),
                 Some(ind) => match expr()((input.get(1..ind).unwrap(), state.clone()), ss) {
                     Ok((_, result)) => {
                         // Successful parse of expression
@@ -138,7 +138,9 @@ where
                     Err(e) => Err(e),
                 },
             },
-            _ => Err(ParseError::Combinator),
+            _ => Err(ParseError::Combinator(String::from(
+                "closing brace not found",
+            ))),
         }
     })
 }

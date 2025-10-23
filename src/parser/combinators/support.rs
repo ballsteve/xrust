@@ -12,14 +12,14 @@ where
 {
     move |(input, state), _ss| {
         match input.find(|c| !('0'..='9').contains(&c)) {
-            Some(0) => Err(ParseError::Combinator),
+            Some(0) => Err(ParseError::Combinator(String::from("digit0: no digits"))),
             Some(pos) => {
                 //let result = (&mut input).take(pos).collect::<String>();
                 Ok(((&input[pos..], state), input[..pos].to_string()))
             }
             None => {
                 if input.is_empty() {
-                    Err(ParseError::Combinator)
+                    Err(ParseError::Combinator(String::from("digit0: no input")))
                 } else {
                     Ok((("", state), input.to_string()))
                 }
@@ -41,7 +41,7 @@ where
                 None => Ok((("", state), input.to_string())),
             }
         } else {
-            Err(ParseError::Combinator)
+            Err(ParseError::Combinator(String::from("digit1: no digits")))
         }
     }
 }
@@ -55,11 +55,13 @@ where
 {
     move |(input, state), _ss| {
         if input.is_empty() {
-            Err(ParseError::Combinator)
+            Err(ParseError::Combinator(String::from("none_of: no input")))
         } else {
             let a = input.chars().next().unwrap();
             match s.find(|b| a == b) {
-                Some(_) => Err(ParseError::Combinator),
+                Some(_) => Err(ParseError::Combinator(String::from(
+                    "none_of: found characters",
+                ))),
                 None => Ok(((&input[1..], state), a)),
             }
         }

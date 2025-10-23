@@ -9,12 +9,18 @@ where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
     move |(input, state), _ss| match input.get(0..expected.len()) {
-        None => Err(ParseError::Combinator),
+        None => Err(ParseError::Combinator(format!(
+            "expected \"{}\" but didn't find it",
+            expected
+        ))),
         Some(chars) => {
             if chars == expected {
                 Ok(((&input[expected.len()..], state), ()))
             } else {
-                Err(ParseError::Combinator)
+                Err(ParseError::Combinator(format!(
+                    "expected \"{}\", found \"{}\"",
+                    expected, chars
+                )))
             }
         }
     }
@@ -49,7 +55,7 @@ where
             }
         });
         if u.is_empty() {
-            Err(ParseError::Combinator)
+            Err(ParseError::Combinator(String::from("anytag: no input")))
         } else {
             Ok(((&input[u.len()..], state), u.to_string()))
         }
@@ -66,7 +72,9 @@ where
         if input.starts_with(expected) {
             Ok(((&input[1..], state), ()))
         } else {
-            Err(ParseError::Combinator)
+            Err(ParseError::Combinator(String::from(
+                "anychar: unexpected characters",
+            )))
         }
     }
 }
@@ -105,7 +113,9 @@ mod tests {
             .build();
         let parse_doc = tag(">");
         assert_eq!(
-            Err(ParseError::Combinator),
+            Err(ParseError::Combinator(String::from(
+                "expected \">\", found \"<\""
+            ))),
             parse_doc((testdoc, teststate), &mut static_state)
         );
     }
@@ -152,7 +162,9 @@ mod tests {
             .build();
         let parse_doc = anychar('>');
         assert_eq!(
-            Err(ParseError::Combinator),
+            Err(ParseError::Combinator(String::from(
+                "anychar: unexpected characters"
+            ))),
             parse_doc((testdoc, teststate), &mut static_state)
         )
     }

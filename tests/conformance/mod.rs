@@ -1,6 +1,6 @@
 //mod relaxng;
 mod xml;
-mod xml_id;
+//mod xml_id;
 
 use encoding_rs::UTF_8;
 use encoding_rs::UTF_16BE;
