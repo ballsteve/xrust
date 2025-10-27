@@ -35,7 +35,10 @@ where
                     Err(ParseError::Notimplemented)
                 }
             } else {
-                Err(ParseError::NotWellFormed(v))
+                Err(ParseError::NotWellFormed(format!(
+                    "invalid XML version \"{}\"",
+                    v
+                )))
             }
         }
         Err(err) => Err(err),
@@ -58,6 +61,7 @@ where
                 delimited_string(),
             ),
             |(_, _, _, _, _, s)| ["yes".to_string(), "no".to_string()].contains(s),
+            "invalid standalone value",
         ),
         |(_, _, _, _, _, s)| s,
     )((input, state), ss)
@@ -90,7 +94,11 @@ where
                     tag("'"),
                     map(
                         tuple2(
-                            wellformed(take_one(), |c| is_encname_startchar(*c)),
+                            wellformed(
+                                take_one(),
+                                |c| is_encname_startchar(*c),
+                                "invalid character in XML encoding",
+                            ),
                             take_while(is_encname_char),
                         ),
                         |(s, r)| [s.to_string(), r].concat(),
@@ -101,7 +109,11 @@ where
                     tag("\""),
                     map(
                         tuple2(
-                            wellformed(take_one(), |c| is_encname_startchar(*c)),
+                            wellformed(
+                                take_one(),
+                                |c| is_encname_startchar(*c),
+                                "invalid character in XML encoding",
+                            ),
                             take_while(is_encname_char),
                         ),
                         |(s, r)| [s.to_string(), r].concat(),

@@ -5,6 +5,7 @@ use qualname::{NamespacePrefix, NamespaceUri};
 pub(crate) fn wellformed<'a, P, F, A, N: Node, L>(
     parser: P,
     validate_fn: F,
+    reason: &str,
 ) -> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, A), ParseError>
 where
     P: Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, A), ParseError>,
@@ -16,7 +17,11 @@ where
             if validate_fn(&result) {
                 Ok(((input2, state2), result))
             } else {
-                Err(ParseError::NotWellFormed(input2.to_string()))
+                Err(ParseError::NotWellFormed(format!(
+                    "{} - \"{}\"",
+                    reason,
+                    input2.to_string()
+                )))
             }
         }
         Err(err) => Err(err),
@@ -26,6 +31,7 @@ pub(crate) fn wellformed_ver<'a, P, F10, F11, A, N: Node, L>(
     parser: P,
     validate_fn10: F10,
     validate_fn11: F11,
+    reason: &str,
 ) -> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, A), ParseError>
 where
     P: Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, A), ParseError>,
@@ -43,12 +49,20 @@ where
                 if validate_fn11(&result) {
                     Ok(((input2, state2), result))
                 } else {
-                    Err(ParseError::NotWellFormed(input2.to_string()))
+                    Err(ParseError::NotWellFormed(format!(
+                        "{} - \"{}\"",
+                        reason,
+                        input2.to_string()
+                    )))
                 }
             } else if validate_fn10(&result) {
                 Ok(((input2, state2), result))
             } else {
-                Err(ParseError::NotWellFormed(input2.to_string()))
+                Err(ParseError::NotWellFormed(format!(
+                    "{} - \"{}\"",
+                    reason,
+                    input2.to_string()
+                )))
             }
         }
         Err(err) => Err(err),

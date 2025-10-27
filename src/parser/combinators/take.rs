@@ -210,7 +210,7 @@ mod tests {
             .build();
         let parse_doc = take_until(">");
         assert_eq!(
-            Err(ParseError::Combinator(String::from("test"))),
+            Err(ParseError::Combinator(String::from("take_until: no input"))),
             parse_doc((testdoc, teststate), &mut static_state)
         );
     }
@@ -322,7 +322,9 @@ mod tests {
             .build();
         let parse_doc = take_until_either_or("AA", "BB");
         assert_eq!(
-            Err(ParseError::Combinator(String::from("test"))),
+            Err(ParseError::Combinator(String::from(
+                "take_until_either_or: no input"
+            ))),
             parse_doc((testdoc, teststate), &mut static_state)
         );
     }
@@ -401,7 +403,9 @@ mod tests {
             .build();
         let parse_doc = take_while_m_n(2, 4, |c| c.is_lowercase());
         assert_eq!(
-            Err(ParseError::Combinator(String::from("test"))),
+            Err(ParseError::Combinator(String::from(
+                "take_while_m_n: term not found"
+            ))),
             parse_doc((testdoc, teststate), &mut static_state)
         );
     }

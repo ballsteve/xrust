@@ -167,6 +167,7 @@ fn parser_config_id_1() {
         }),
     );
 
+    eprintln!("parse1result {:?}", parseresult);
     assert!(parseresult.is_err());
 
     let testxml2 = RNode::new_document();
@@ -180,6 +181,7 @@ fn parser_config_id_1() {
 
     let parseresult2 = xml::parse_with_state(doc, pc2, ss);
 
+    eprintln!("parseresult2 result {:?}", parseresult2);
     assert!(parseresult2.is_ok());
 }
 

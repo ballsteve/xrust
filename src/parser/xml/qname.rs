@@ -154,7 +154,11 @@ where
 {
     map(
         tuple2(
-            wellformed(take_one(), is_ncnamestartchar),
+            wellformed(
+                take_one(),
+                is_ncnamestartchar,
+                "invalid character in NcName",
+            ),
             opt(take_while(|c| is_ncnamechar(&c))),
         ),
         |(a, b)| [a.to_string(), b.unwrap_or_default()].concat(),
@@ -169,7 +173,7 @@ where
 {
     map(
         tuple2(
-            wellformed(take_one(), is_namestartchar),
+            wellformed(take_one(), is_namestartchar, "invalid name start character"),
             opt(take_while(|c| is_namechar(&c))),
         ),
         |(nsc, nc)| match nc {

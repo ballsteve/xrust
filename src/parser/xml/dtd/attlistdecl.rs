@@ -273,6 +273,7 @@ where
             } else {
                 (None, an)
             };
+            eprintln!("att defn \"{:?}\"", qn);
             (qn, at, dd)
         },
     )

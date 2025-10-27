@@ -128,10 +128,7 @@ where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
     match tuple4(opt(utf8bom()), opt(prolog()), element(), opt(misc()))(input, ss) {
-        Err(err) => {
-            eprintln!("document returning error ({:?})", err);
-            Err(err)
-        }
+        Err(err) => Err(err),
         Ok(((input1, state1), (_, p, e, m))) => {
             //Check nothing remaining in iterator, nothing after the end of the root node.
             eprintln!("document: post-processing");

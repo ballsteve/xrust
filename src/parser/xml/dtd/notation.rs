@@ -104,7 +104,11 @@ where
     move |input, ss| match tuple7(
         tag("<!NOTATION"),
         whitespace1(),
-        wellformed(qualname_to_parts(), |(p, _)| p.is_none()),
+        wellformed(
+            qualname_to_parts(),
+            |(p, _)| p.is_none(),
+            "colon in notation name not allowed",
+        ),
         whitespace1(),
         notationpublicid(),
         //contentspec(), //take_until(">"), //contentspec - TODO Build out.

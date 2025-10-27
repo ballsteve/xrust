@@ -18,7 +18,7 @@ where
                     result.push(next_item);
                     input = input2;
                 }
-                Err(ParseError::Combinator(_)) => break,
+                Err(ParseError::Combinator(_)) | Err(ParseError::NotWellFormed(_)) => break,
                 Err(e) => return Err(e),
             }
         }
@@ -29,7 +29,6 @@ where
 
 /// This is a special combinator, it will reset namespaces on the parser state between iterations
 /// It is only intended for use when parsing the children of an element node.
-/// TODO: consider the performance of copying the NamespaceMap for every iteration. Perhaps copy-on-write?
 pub fn many0nsreset<'a, P, R, N: Node, L>(
     parser: P,
 ) -> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, Vec<R>), ParseError>
@@ -39,23 +38,18 @@ where
 {
     //TODO ERROR IF ANY ERROR OTHER THAN COMBINATOR RETURNED.
 
-    move |(mut input, state), ss| {
+    move |(mut input, mut state), ss| {
         let mut result = Vec::new();
-        let mut new_state = state.clone();
-        //let namespaces = state.in_scope_namespaces.clone();
+        let namespaces = state.in_scope_namespaces.clone();
 
-        eprintln!("many0nsreset: input==\"{}\"", input);
         while let Ok(((input2, state2), next_item)) = parser((input, state.clone()), ss) {
-            eprintln!("got item, input2==\"{}\"", input2);
             result.push(next_item);
             input = input2;
-            new_state = state2;
-            eprintln!("many0nsreset: input now==\"{}\"", input);
-            //ss.in_scope_namespaces = namespaces.clone();
+            state = state2;
+            state.in_scope_namespaces = namespaces.clone();
         }
 
-        eprintln!("many0nsreset: end input==\"{}\"", input);
-        Ok(((input, new_state), result))
+        Ok(((input, state), result))
     }
 }
 

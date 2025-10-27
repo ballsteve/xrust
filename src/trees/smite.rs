@@ -1231,6 +1231,18 @@ fn find_index(parent: &RNode, child: &RNode) -> Result<usize, Error> {
 /// Otherwise, the in-scope namespaces are used to find the prefix.
 /// Nodes that don't have a name return an empty string.
 fn to_prefixed_name(n: &RNode) -> String {
+    eprintln!(
+        "smite: to_prefixed_name \"{:?}\"\nin-scope namespaces:",
+        n.name().map_or("--none--".to_string(), |nm| nm.to_string())
+    );
+    n.namespace_iter().for_each(|nsd| {
+        eprintln!(
+            "nsd prefix {:?} uri {}",
+            nsd.name()
+                .map_or("--none--".to_string(), |nm| nm.to_string()),
+            nsd.value().to_string()
+        )
+    });
     match &n.0 {
         NodeInner::Element(_, qn, _, _, _) | NodeInner::Attribute(_, qn, _) => {
             let ns = qn.namespace_uri();

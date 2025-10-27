@@ -25,6 +25,7 @@ where
                         chardata_cdata(),
                         |s| !s.contains(|c: char| !is_char10(&c)), //XML 1.0
                         |s| !s.contains(|c: char| !is_unrestricted_char11(&c)), //XML 1.1
+                        "invalid character",
                     ),
                     |s: String| s.replace("\r\n", "\n").replace("\r", "\n"),
                     |s: String| {
@@ -40,6 +41,7 @@ where
                         chardata_unicode_codepoint(),
                         is_char10, //XML 1.0
                         is_char11,
+                        "invalid character",
                     ), //XML 1.1
                     |c| c.to_string(),
                 ),
@@ -50,6 +52,7 @@ where
                         |s| {
                             !s.contains("]]>") && !s.contains(|c: char| !is_unrestricted_char11(&c))
                         }, //XML 1.1
+                        "processing instruction contains invalid character",
                     ),
                     |s: String| s.replace("\r\n", "\n").replace("\r", "\n"),
                     |s: String| {
@@ -104,6 +107,7 @@ where
                 //    _ => true
                 //}
             },
+            "invalid character in codepoint",
         ),
         |value| std::char::from_u32(value).unwrap(),
     )

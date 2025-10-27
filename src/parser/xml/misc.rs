@@ -84,6 +84,7 @@ where
                 }
                 _ => false,
             },
+            "invalid character in processing instruction",
         )((input, state.clone()), ss)
     }
 }
@@ -117,6 +118,7 @@ where
                 NodeType::Comment => !v.to_string().contains(|c: char| !is_char11(&c)),
                 _ => false,
             },
+            "invalid character in comment",
         )((input, state.clone()), ss)
     }
 }

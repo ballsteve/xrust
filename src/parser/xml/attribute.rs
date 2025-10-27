@@ -32,7 +32,6 @@ where
     move |input, ss| match many0(attribute())(input, ss) {
         Ok(((input1, mut state1), attrs)) => {
             // First separate namespace declarations from other attributes
-            eprintln!("got attrs: {:?}", attrs);
             let (ns_decls, attr_list): (
                 Vec<((Option<String>, String), String)>,
                 Vec<((Option<String>, String), String)>,
@@ -52,7 +51,6 @@ where
             // and update in-scope namespace map
             // TODO: use try_collect()
             let mut nsd_vec: Vec<N> = vec![];
-            eprintln!("ns attrs: {:?}", ns_decls);
             let _ = ns_decls
                 .iter()
                 .try_for_each(|((prefix, local_part), value)| {
@@ -102,7 +100,6 @@ where
                             ParseError::NotWellFormed(String::from("invalid default namespace")),
                         ),
                         (Some("xmlns"), p, "") => {
-                            eprintln!("found ns decl with empty value");
                             if state1.xmlversion == *"1.0" {
                                 Err(ParseError::NotWellFormed(String::from(
                                     "cannot redefine alias to empty",
@@ -191,6 +188,7 @@ where
                                     .map_err(|_| ParseError::MissingNameSpace)?,
                                 );
                             } else {
+                                eprintln!("default ns decl for \"{}\"", v);
                                 state1.in_scope_namespaces.push(
                                     NamespaceDeclaration::new(
                                         None,
@@ -353,7 +351,6 @@ where
                         }
                     }
                 })?;
-            eprintln!("attributes: normal attrs: {:?} nsd {:?}", attr_vec, nsd_vec);
 
             Ok(((input1, state1), (attr_vec, nsd_vec)))
         }
@@ -397,7 +394,11 @@ where
                 many0(alt3(
                     map(chardata_unicode_codepoint(), |c| c.to_string()),
                     textreference(),
-                    wellformed(take_while(|c| c != '&' && c != '\''), |c| !c.contains('<')),
+                    wellformed(
+                        take_while(|c| c != '&' && c != '\''),
+                        |c| !c.contains('<'),
+                        "'<' not allowed in attribute value",
+                    ),
                 )),
                 tag("'"),
             ),
@@ -406,7 +407,11 @@ where
                 many0(alt3(
                     map(chardata_unicode_codepoint(), |c| c.to_string()),
                     textreference(),
-                    wellformed(take_while(|c| c != '&' && c != '\"'), |c| !c.contains('<')),
+                    wellformed(
+                        take_while(|c| c != '&' && c != '\"'),
+                        |c| !c.contains('<'),
+                        "'<' not allowed in attribute value",
+                    ),
                 )),
                 tag("\""),
             ),

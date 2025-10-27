@@ -28,7 +28,11 @@ where
             whitespace1(),
             tag("%"),
             whitespace1(),
-            wellformed(qualname_to_parts(), |(p, _)| p.is_none()),
+            wellformed(
+                qualname_to_parts(),
+                |(p, _)| p.is_none(),
+                "colon in parameter entity name not allowed",
+            ),
             whitespace1(),
             alt3(
                 textexternalid(),
@@ -40,6 +44,7 @@ where
         ),
         |(_, _, _, _, _, _, s, _, _)| !s.contains(|c: char| !is_char10(&c)), //XML 1.0
         |(_, _, _, _, _, _, s, _, _)| !s.contains(|c: char| !is_unrestricted_char11(&c)), //XML 1.1
+        "invalid character in entity declaration",
     )(input, ss)
     {
         Ok(((input2, mut state2), (_, _, _, _, (_, l), _, s, _, _))) => {
@@ -48,7 +53,10 @@ where
             deal with later, after that we just store the entity as a string and parse again when called.
              */
             if !state2.currentlyexternal && s.contains('%') {
-                return Err(ParseError::NotWellFormed(s));
+                return Err(ParseError::NotWellFormed(format!(
+                    "unable to expand parameter entity \"{}\"",
+                    s
+                )));
             }
             let entityparse = map(
                 tuple2(
@@ -67,7 +75,11 @@ where
                         )),
                         |ve| ve.concat(),
                     ),
-                    wellformed(take_until_end(), |s| !s.contains('&') && !s.contains('%')),
+                    wellformed(
+                        take_until_end(),
+                        |s| !s.contains('&') && !s.contains('%'),
+                        "entity has invalid character",
+                    ),
                 ),
                 |(a, b)| [a, b].concat(),
             )((s.as_str(), state2.clone()), ss);
@@ -77,7 +89,12 @@ where
                     if !state2.currentlyexternal {
                         match intsubset()((res.as_str(), state2.clone()), ss) {
                             Ok(((_i, _s), _)) => {}
-                            Err(_) => return Err(ParseError::NotWellFormed(res.clone())),
+                            Err(_) => {
+                                return Err(ParseError::NotWellFormed(format!(
+                                    "unable to parse entity \"{}\"",
+                                    res.clone()
+                                )));
+                            }
                         }
                     };
 

@@ -26,7 +26,11 @@ where
         tuple7(
             tag("<!ENTITY"),
             whitespace1(),
-            wellformed(qualname_to_parts(), |(p, _)| p.is_none()),
+            wellformed(
+                qualname_to_parts(),
+                |(p, _)| p.is_none(),
+                "entity name has colon",
+            ),
             whitespace1(),
             alt3(
                 textexternalid(),
@@ -38,6 +42,7 @@ where
         ),
         |(_, _, _, _, s, _, _)| !s.contains(|c: char| !is_char10(&c)), //XML 1.0
         |(_, _, _, _, s, _, _)| !s.contains(|c: char| !is_unrestricted_char11(&c)), //XML 1.1
+        "entity name has invalid characters",
     )(input, ss)
     {
         Ok(((input2, mut state2), (_, _, (_, l), _, s, _, _))) => {
@@ -46,7 +51,10 @@ where
             deal with later, after that we just store the entity as a string and parse again when called.
              */
             if !state2.currentlyexternal && s.contains('%') {
-                return Err(ParseError::NotWellFormed(s));
+                return Err(ParseError::NotWellFormed(format!(
+                    "cannot expand parameter entity \"{}\"",
+                    s
+                )));
             }
 
             let entityparse = map(
@@ -55,7 +63,12 @@ where
                         many0(alt4(
                             //we leave the &#13; or #xD; as is, as it will be converted later if needed and we don't want the \r character stripped later.
                             map(
-                                wellformed_ver(chardata_unicode_codepoint(), is_char10, is_char11),
+                                wellformed_ver(
+                                    chardata_unicode_codepoint(),
+                                    is_char10,
+                                    is_char11,
+                                    "invalid Unicode codepoint",
+                                ),
                                 |c| {
                                     if c == '\r' {
                                         "&#13;".to_string()
@@ -73,7 +86,11 @@ where
                         )),
                         |ve| ve.concat(),
                     ),
-                    wellformed(take_until_end(), |s| !s.contains('&') && !s.contains('%')),
+                    wellformed(
+                        take_until_end(),
+                        |s| !s.contains('&') && !s.contains('%'),
+                        "entity not allowed",
+                    ),
                 ),
                 |(a, b)| [a, b].concat(),
             )((s.as_str(), state2.clone()), ss);
@@ -83,7 +100,12 @@ where
                     if !state2.currentlyexternal {
                         match intsubset()((res.as_str(), state2.clone()), ss) {
                             Ok(_) => {}
-                            Err(_) => return Err(ParseError::NotWellFormed(res.clone())),
+                            Err(_) => {
+                                return Err(ParseError::NotWellFormed(format!(
+                                    "unable to parse entity \"{}\"",
+                                    res.clone()
+                                )));
+                            }
                         }
                     };
 

@@ -1,6 +1,6 @@
 use crate::item::{Node, NodeType};
 use crate::parser::combinators::alt::{alt2, alt4};
-use crate::parser::combinators::many::{many0, many0nsreset};
+use crate::parser::combinators::many::many0nsreset;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::tag;
@@ -35,7 +35,6 @@ where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
     move |input, ss| {
-        eprintln!("element - input \"{}\"", input.0);
         match alt2(
             //Empty element
             map(
@@ -63,6 +62,7 @@ where
                     tag(">"),
                 ),
                 |(_, n, _a, _, _, _c, _, e, _, _)| n == e,
+                "mismatched start and end tags",
             ),
         )(input, ss)
         {
@@ -90,7 +90,9 @@ where
                     }
                 } else {
                     // This is either an unprefixed name or a name in the default namespace, if one has been defined
+                    eprintln!("creating element, local name \"{}\", no prefix", local_part);
                     if let Some(u) = state1.in_scope_namespaces.namespace_uri(&None) {
+                        eprintln!("found dflt ns \"{}\"", u.to_string());
                         let lp = NcName::try_from(local_part.as_str()).unwrap();
                         QName::new_from_parts(
                             lp, // creating NcName cannot fail, since we have already parsed it
@@ -117,10 +119,6 @@ where
                 // We generate the attributes in two sweeps:
                 // Once for attributes declared on the element and once for the DTD default attribute values.
 
-                eprintln!(
-                    "element: name \"{}\" attrs {:?} nsd {:?}",
-                    elementname, av, namespaces
-                );
                 let attlist = state1
                     .dtd
                     .attlists
@@ -129,7 +127,6 @@ where
                 match attlist {
                     None => {
                         // No Attribute DTD, just insert all attributes.
-                        eprintln!("no attr DTD, insert all attrs as-is");
                         if let Err(e) = av.into_iter().try_for_each(|a| {
                             e.add_attribute(a).map_err(|_| {
                                 ParseError::NotWellFormed(String::from("unable to add attribute"))
@@ -194,17 +191,11 @@ where
                                             AttType::CDATA => s.clone(),
                                             _ => s.trim().replace("  ", " "),
                                         };
-                                        eprintln!(
-                                            "created default attr \"{}\" with value \"{}\"",
-                                            qn.to_string(),
-                                            attval
-                                        );
                                         default_attrs.push(qn.clone());
                                         let a = d
                                             .new_attribute(qn.clone(), Rc::new(Value::from(attval)))
                                             .expect("unable to create attribute");
                                         if let Err(_) = e.add_attribute(a) {
-                                            eprintln!("add attr failed");
                                             return Err(ParseError::DuplicateAttribute(
                                                 qn.to_string(),
                                             ));
@@ -307,28 +298,20 @@ where
                                             }
                                         }
 
-                                        eprintln!(
-                                            "create attr {} (AVN) atttype {:?}",
-                                            attnode.name().unwrap().to_string(),
-                                            atttype,
-                                        );
                                         if default_attrs
                                             .iter()
                                             .find(|aqn| **aqn == attnode.name().unwrap())
                                             .is_some()
                                         {
-                                            eprintln!("already created this attribute as default")
+                                            //eprintln!("already created this attribute as default")
                                         } else {
                                             let a = d
                                                 .new_attribute(attnode.name().unwrap(), v)
                                                 .expect("unable to create attribute");
                                             if let Err(_) = e.add_attribute(a) {
-                                                eprintln!("add attr failed");
                                                 return Err(ParseError::DuplicateAttribute(
                                                     attnode.name().unwrap().to_string(),
                                                 ));
-                                            } else {
-                                                eprintln!("add attr OK")
                                             }
                                         }
                                     }
@@ -378,15 +361,19 @@ where
 
                 namespaces
                     .iter()
+                    .inspect(|b| {
+                        eprintln!(
+                            "adding nsd {}/{} to element {}",
+                            b.name().map_or("--dflt--".to_string(), |ns| ns.to_string()),
+                            b.value().to_string(),
+                            e.name().unwrap().to_string()
+                        )
+                    })
                     .for_each(|b| e.add_namespace(b.clone()).expect("unable to add namespace"));
                 // Add child nodes
                 c.iter().for_each(|d| {
                     e.push(d.clone()).expect("unable to add node");
                 });
-                eprintln!(
-                    "element {} finished post-processing, remaining input \"{}\"",
-                    elementname, input1
-                );
                 Ok(((input1, state1.clone()), e))
             }
         }
@@ -401,8 +388,7 @@ where
 {
     move |(input, state), ss| match tuple2(
         opt(chardata()),
-        //many0nsreset(tuple2(
-        many0(tuple2(
+        many0nsreset(tuple2(
             alt4(
                 map(processing_instruction(), |e| vec![e]),
                 map(comment(), |e| vec![e]),
@@ -414,7 +400,6 @@ where
     )((input, state.clone()), ss)
     {
         Ok((state1, (c, v))) => {
-            eprintln!("content: remaining input \"{}\"", state1.0);
             let mut new: Vec<N> = Vec::new();
             let mut notex: Vec<String> = Vec::new();
             if c.is_some() {
@@ -459,9 +444,6 @@ where
             Ok((state1, new))
         }
 
-        Err(e) => {
-            eprintln!("content returning error");
-            Err(e)
-        }
+        Err(e) => Err(e),
     }
 }

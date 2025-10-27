@@ -52,6 +52,7 @@ where
     )(input, ss)
     {
         Ok(((input1, mut state1), (_, _, n, _, _, _, _inss, _))) => {
+            eprintln!("doctypedecl");
             if n.contains(':') {
                 let mut nameparts = n.split(':');
                 let prefix = nameparts.next().unwrap();
@@ -158,6 +159,7 @@ where
                 }
             }
             //println!("{:?}", patternrefs);
+            eprintln!("doctypedecl done");
             Ok(((input1, state1), ()))
         }
         Err(err) => Err(err),
