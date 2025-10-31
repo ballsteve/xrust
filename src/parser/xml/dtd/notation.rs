@@ -28,7 +28,13 @@ where
             whitespace0(),
             name(),
             many0(map(
-                tuple4(whitespace0(), tag("|"), whitespace0(), name()),
+                tuple4(
+                    whitespace0(),
+                    tag("|"),
+                    whitespace0(),
+                    name(),
+                    "notationtype",
+                ),
                 |(_, _, _, n)| n,
             )),
             whitespace0(),
@@ -134,7 +140,13 @@ where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
     map(
-        tuple4(whitespace1(), tag("NDATA"), whitespace1(), name()),
+        tuple4(
+            whitespace1(),
+            tag("NDATA"),
+            whitespace1(),
+            name(),
+            "ndatadecl",
+        ),
         |(_, _, _, notation)| notation,
     )
 }

@@ -54,6 +54,7 @@ where
                     tag("|"),
                     whitespace0(),
                     alt2(petextreference(), name()),
+                    "mixed",
                 )),
                 whitespace0(),
                 tag(")*"),
@@ -246,7 +247,7 @@ where
                             }
                         }
                     },
-                    tuple4(whitespace0(), tag("|"), whitespace0(), cp()),
+                    tuple4(whitespace0(), tag("|"), whitespace0(), cp(), "choice"),
                 )),
                 whitespace0(),
                 tag(")"),
@@ -273,7 +274,7 @@ where
             tag("("),
             whitespace0(),
             cp(),
-            many0(tuple4(whitespace0(), tag(","), whitespace0(), cp())),
+            many0(tuple4(whitespace0(), tag(","), whitespace0(), cp(), "seq")),
             whitespace0(),
             tag(")"),
         ),

@@ -162,6 +162,7 @@ where
             alt2(tag("e"), tag("E")),
             opt(alt2(map(tag("+"), |_| "+"), map(tag("-"), |_| "-"))),
             digit1(),
+            "xpath literal",
         ),
         |((_, f), _, s, e)| {
             let n = format!("0.{}e{}{}", f, s.unwrap_or(""), e).parse::<f64>();
@@ -189,6 +190,7 @@ where
             alt2(tag("e"), tag("E")),
             opt(alt2(map(tag("+"), |_| "+"), map(tag("-"), |_| "-"))),
             digit1(),
+            "xpath literal",
         ),
         |((c, _, f), _, s, e)| {
             let n = format!("{}.{}e{}{}", c, f, s.unwrap_or(""), e).parse::<f64>();

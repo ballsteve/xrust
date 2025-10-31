@@ -51,6 +51,7 @@ pub fn tuple4<'a, P1, P2, P3, P4, R1, R2, R3, R4, N: Node, L>(
     parser2: P2,
     parser3: P3,
     parser4: P4,
+    _msg: &str,
 ) -> impl Fn(
     ParseInput<'a, N>,
     &mut StaticState<L>,
@@ -63,16 +64,40 @@ where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
     move |input, ss| match parser1(input, ss) {
-        Ok((input1, result1)) => match parser2(input1, ss) {
-            Ok((input2, result2)) => match parser3(input2, ss) {
-                Ok((input3, result3)) => match parser4(input3, ss) {
-                    Ok((input4, result4)) => Ok((input4, (result1, result2, result3, result4))),
-                    Err(err) => Err(err),
-                },
+        Ok((input1, result1)) => {
+            /*eprintln!(
+                "tuple4 - {} - step 1 success - remaining input: \"{}\"",
+                msg, input1.0
+            );*/
+            match parser2(input1, ss) {
+                Ok((input2, result2)) => {
+                    /*eprintln!(
+                        "tuple4 - {} - step 2 success - remaining input: \"{}\"",
+                        msg, input2.0
+                    );*/
+                    match parser3(input2, ss) {
+                        Ok((input3, result3)) => {
+                            /*eprintln!(
+                                "tuple4 - {} - step 3 success - remaining input: \"{}\"",
+                                msg, input3.0
+                            );*/
+                            match parser4(input3, ss) {
+                                Ok((input4, result4)) => {
+                                    /*eprintln!(
+                                        "tuple4 - {} - step 4 success - remaining input: \"{}\"",
+                                        msg, input4.0
+                                    );*/
+                                    Ok((input4, (result1, result2, result3, result4)))
+                                }
+                                Err(err) => Err(err),
+                            }
+                        }
+                        Err(err) => Err(err),
+                    }
+                }
                 Err(err) => Err(err),
-            },
-            Err(err) => Err(err),
-        },
+            }
+        }
         Err(err) => Err(err),
     }
 }

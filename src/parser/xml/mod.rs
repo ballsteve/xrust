@@ -99,6 +99,7 @@ pub fn parse<L, N: Node>(doc: N, input: &str, r: Option<L>) -> Result<N, Error>
 where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
+    eprintln!("parse input:\"{}\"", input);
     let (xmldoc, _) = parse_with_ns(doc, input, r)?;
     Ok(xmldoc)
 }
@@ -127,7 +128,14 @@ fn document<'a, N: Node, L>(
 where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
-    match tuple4(opt(utf8bom()), opt(prolog()), element(), opt(misc()))(input, ss) {
+    match tuple4(
+        opt(utf8bom()),
+        opt(prolog()),
+        element(),
+        opt(misc()),
+        "document",
+    )(input, ss)
+    {
         Err(err) => Err(err),
         Ok(((input1, state1), (_, p, e, m))) => {
             //Check nothing remaining in iterator, nothing after the end of the root node.
@@ -191,7 +199,7 @@ where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
     map(
-        tuple4(opt(xmldecl()), misc(), opt(doctypedecl()), misc()),
+        tuple4(opt(xmldecl()), misc(), opt(doctypedecl()), misc(), "prolog"),
         |(xmld, mut m1, _dtd, mut m2)| {
             m1.append(&mut m2);
             (xmld, m1)

@@ -68,6 +68,7 @@ where
                 Some(s) => match ss.resolve(state1.docloc.clone(), s) {
                     Err(_) => return Err(ParseError::ExtDTDLoadError),
                     Ok(s) => {
+                        eprintln!("have external entity to parse:\n{}", s);
                         if let Err(e) = extsubset()((s.as_str(), state1.clone()), ss) {
                             return Err(e);
                         }

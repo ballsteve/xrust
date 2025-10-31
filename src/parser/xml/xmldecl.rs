@@ -143,6 +143,13 @@ where
     )((input, state), ss)
     {
         Ok(((input1, mut state1), (_, _, ver, enc, sta, _, _, _))) => {
+            // XML 1.0 (fifth edition): an external entity must include the encoding in its text declaration
+            if state1.currentlyexternal && enc.is_none() {
+                return Err(ParseError::NotWellFormed(String::from(
+                    "missing encoding - external entity",
+                )));
+            }
+
             state1.xmlversion.clone_from(&ver);
             let res = XMLDecl {
                 version: ver,

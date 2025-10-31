@@ -62,9 +62,15 @@ where
                     if v.to_string().contains(|c: char| !is_char10(&c)) {
                         false
                     } else {
+                        // "xml*" in a PI name is reserved, but don't report as an error
+                        // "xml" is the text declaration, but it must be at the very beginning of the document.
+                        // If it appears as a PI then it is not part of the text declaration.
                         v.name().map_or_else(
                             || false, // "No entity names, processing instruction targets, or notation names contain any colons."
-                            |nm| !nm.to_string().to_lowercase().starts_with("xml"),
+                            |nm| {
+                                nm.namespace_uri().is_none()
+                                    && nm.local_name().to_string().to_lowercase() != "xml"
+                            }, // TODO: setup fixed QName for comparison
                         )
                     }
                 }
@@ -76,9 +82,14 @@ where
                     if v.to_string().contains(|c: char| !is_char11(&c)) {
                         false
                     } else {
+                        // "xml" is the text declaration, but it must be at the very beginning of the document
+                        // If it appears as a PI then it is not part of the text declaration.
                         v.name().map_or_else(
                             || false, // "No entity names, processing instruction targets, or notation names contain any colons."
-                            |nm| !nm.to_string().to_lowercase().starts_with("xml"),
+                            |nm| {
+                                nm.namespace_uri().is_none()
+                                    && nm.local_name().to_string().to_lowercase() != "xml"
+                            },
                         )
                     }
                 }

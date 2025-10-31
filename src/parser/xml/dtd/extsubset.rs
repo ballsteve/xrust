@@ -29,9 +29,14 @@ where
         } else {
             state.currentlyexternal = true;
             match tuple3(opt(utf8bom()), opt(textdecl()), extsubsetdecl())((input, state), ss) {
-                Ok(((input2, mut state2), (_, _, _))) => {
+                Ok(((input2, mut state2), (_, td, _))) => {
                     if !input2.is_empty() {
-                        Err(ParseError::NotWellFormed(input2.to_string()))
+                        Err(ParseError::NotWellFormed(format!(
+                            "unexpected text in external subset \"{}\"",
+                            input2.to_string()
+                        )))
+                    } else if td.is_some_and(|xd| xd.encoding.is_none()) {
+                        Err(ParseError::ExtDTDLoadError)
                     } else {
                         state2.currentlyexternal = false;
                         Ok(((input2, state2), ()))

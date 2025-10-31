@@ -15,10 +15,6 @@ where
         Ok(parse_result) => Ok(parse_result),
         Err(ParseError::Combinator(_)) | Err(ParseError::NotWellFormed(_)) => {
             parser2((input, state), ss)
-            /*match parser2((input, state)) {
-                Ok(parse_result2) => Ok(parse_result2),
-                Err(err) => Err(err),
-            }*/
         }
         Err(err) => Err(err),
     }

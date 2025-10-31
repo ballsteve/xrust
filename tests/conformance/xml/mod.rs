@@ -28,15 +28,15 @@ mod ibm11_valid;
 mod ibm_error;
 mod ibm_invalid;
 mod ibm_notwf;
-mod ibm_valid;*/
+mod ibm_valid;
 mod oasis_error;
-/* not yet checked
 mod oasis_invalid;
 mod oasis_notwf;
 mod oasis_valid;
 mod sun_error;
-mod sun_invalid;
+mod sun_invalid;*/
 mod sun_notwf;
+/* not yet checked
 mod sun_valid;
 mod xmltest_invalid;
 mod xmltest_notwf_ext_sa;

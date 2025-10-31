@@ -32,7 +32,13 @@ where
             whitespace0(),
             nmtoken(),
             many0(map(
-                tuple4(whitespace0(), tag("|"), whitespace0(), nmtoken()),
+                tuple4(
+                    whitespace0(),
+                    tag("|"),
+                    whitespace0(),
+                    nmtoken(),
+                    "dtd enumeration",
+                ),
                 |(_, _, _, nmt)| nmt,
             )),
             whitespace0(),

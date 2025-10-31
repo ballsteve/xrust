@@ -50,7 +50,7 @@ where
         tuple6(
             tag("<?xml"),
             opt(tuple2(whitespace1(), xmldeclversion())),
-            encodingdecl(),
+            opt(encodingdecl()),
             whitespace0(),
             tag("?>"),
             whitespace0(),
@@ -59,13 +59,13 @@ where
             if ver == Some(((), "1.1".to_string())) {
                 XMLDecl {
                     version: "1.1".to_string(),
-                    encoding: Some(enc),
+                    encoding: enc,
                     standalone: None,
                 }
             } else {
                 XMLDecl {
                     version: "1.0".to_string(),
-                    encoding: Some(enc),
+                    encoding: enc,
                     standalone: None,
                 }
             }

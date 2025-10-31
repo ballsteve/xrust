@@ -17,11 +17,7 @@ where
             if validate_fn(&result) {
                 Ok(((input2, state2), result))
             } else {
-                Err(ParseError::NotWellFormed(format!(
-                    "{} - \"{}\"",
-                    reason,
-                    input2.to_string()
-                )))
+                Err(ParseError::NotWellFormed(format!("{}", reason,)))
             }
         }
         Err(err) => Err(err),
