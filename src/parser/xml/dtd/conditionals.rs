@@ -31,10 +31,7 @@ where
         Ok(((input2, state2), (_, _, ii, _, _))) => match ii.as_str() {
             "INCLUDE" => includesect()((input2, state2), ss),
             "IGNORE" => ignoresect()((input2, state2), ss),
-            _ => {
-                eprintln!("conditionalsect error");
-                Err(ParseError::Combinator(String::from("conditionalsect")))
-            }
+            _ => Err(ParseError::Combinator(String::from("conditionalsect"))),
         },
         Err(e) => Err(e),
     }

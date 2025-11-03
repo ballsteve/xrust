@@ -90,9 +90,7 @@ where
                     }
                 } else {
                     // This is either an unprefixed name or a name in the default namespace, if one has been defined
-                    eprintln!("creating element, local name \"{}\", no prefix", local_part);
                     if let Some(u) = state1.in_scope_namespaces.namespace_uri(&None) {
-                        eprintln!("found dflt ns \"{}\"", u.to_string());
                         let lp = NcName::try_from(local_part.as_str()).unwrap();
                         QName::new_from_parts(
                             lp, // creating NcName cannot fail, since we have already parsed it
@@ -361,14 +359,6 @@ where
 
                 namespaces
                     .iter()
-                    .inspect(|b| {
-                        eprintln!(
-                            "adding nsd {}/{} to element {}",
-                            b.name().map_or("--dflt--".to_string(), |ns| ns.to_string()),
-                            b.value().to_string(),
-                            e.name().unwrap().to_string()
-                        )
-                    })
                     .for_each(|b| e.add_namespace(b.clone()).expect("unable to add namespace"));
                 // Add child nodes
                 c.iter().for_each(|d| {

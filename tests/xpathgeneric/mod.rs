@@ -1633,7 +1633,6 @@ where
     top.push(e2).expect("unable to add element 2");
 
     let xform = parse("/root/element[position() = 1]", None, None).expect("parsing failed");
-    eprintln!("xform=={:?}", xform);
     let mut stctxt = StaticContextBuilder::new()
         .message(|_| Ok(()))
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
@@ -1647,7 +1646,6 @@ where
         .dispatch(&mut stctxt, &xform)
         .expect("transform failed");
     assert_eq!(s.len(), 1);
-    eprintln!("final check");
     assert_eq!(s.to_xml(), "<element attr='val1'>text1</element>");
     Ok(())
 }

@@ -188,7 +188,6 @@ where
                                     .map_err(|_| ParseError::MissingNameSpace)?,
                                 );
                             } else {
-                                eprintln!("default ns decl for \"{}\"", v);
                                 state1.in_scope_namespaces.push(
                                     NamespaceDeclaration::new(
                                         None,

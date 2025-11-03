@@ -405,7 +405,6 @@ impl ItemNode for RNode {
     // Find the document node, given an arbitrary node in the tree.
     // There is always a document node, so this will not panic.
     fn owner_document(&self) -> Self {
-        eprintln!("own_doc: {:?}", self);
         match &self.0 {
             NodeInner::Document(_, _, _, _) => self.clone(),
             _ => self.ancestor_iter().last().unwrap(),
@@ -1232,18 +1231,6 @@ fn find_index(parent: &RNode, child: &RNode) -> Result<usize, Error> {
 /// Otherwise, the in-scope namespaces are used to find the prefix.
 /// Nodes that don't have a name return an empty string.
 fn to_prefixed_name(n: &RNode) -> String {
-    eprintln!(
-        "smite: to_prefixed_name \"{:?}\"\nin-scope namespaces:",
-        n.name().map_or("--none--".to_string(), |nm| nm.to_string())
-    );
-    n.namespace_iter().for_each(|nsd| {
-        eprintln!(
-            "nsd prefix {:?} uri {}",
-            nsd.name()
-                .map_or("--none--".to_string(), |nm| nm.to_string()),
-            nsd.value().to_string()
-        )
-    });
     match &n.0 {
         NodeInner::Element(_, qn, _, _, _) | NodeInner::Attribute(_, qn, _) => {
             let ns = qn.namespace_uri();
@@ -1287,11 +1274,6 @@ fn to_xml_int(
         NodeInner::Element(_, qn, _, _, ns) => {
             let mut new_in_scope = ns_in_scope.clone();
             let mut result = String::from("<");
-            eprintln!(
-                "serialising element \"{}\" attached? {}",
-                qn.to_string(),
-                node.is_attached()
-            );
             result.push_str(to_prefixed_name(node).as_str());
 
             // Namespace declarations
@@ -1426,7 +1408,6 @@ impl Iterator for Ancestors {
     type Item = RNode;
 
     fn next(&mut self) -> Option<RNode> {
-        eprintln!("anc_iter: cur={:?}", self.cur);
         let parent = match &self.cur.0 {
             NodeInner::Document(_, _, _, _) => None,
             NodeInner::Element(p, _, _, _, _)
@@ -1436,7 +1417,6 @@ impl Iterator for Ancestors {
             | NodeInner::ProcessingInstruction(p, _, _)
             | NodeInner::Namespace(p, _, _, _) => Weak::upgrade(&p.borrow()),
         };
-        eprintln!("parent: {:?}", parent);
         parent.map(|q| {
             self.cur = q.clone();
             q
