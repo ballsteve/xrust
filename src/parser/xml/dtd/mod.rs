@@ -52,7 +52,6 @@ where
     )(input, ss)
     {
         Ok(((input1, mut state1), (_, _, n, _, _, _, _inss, _))) => {
-            eprintln!("doctypedecl");
             if n.contains(':') {
                 let mut nameparts = n.split(':');
                 let prefix = nameparts.next().unwrap();
@@ -68,7 +67,6 @@ where
                 Some(s) => match ss.resolve(state1.docloc.clone(), s) {
                     Err(_) => return Err(ParseError::ExtDTDLoadError),
                     Ok(s) => {
-                        eprintln!("have external entity to parse:\n{}", s);
                         if let Err(e) = extsubset()((s.as_str(), state1.clone()), ss) {
                             return Err(e);
                         }
@@ -159,8 +157,6 @@ where
                     }
                 }
             }
-            //println!("{:?}", patternrefs);
-            eprintln!("doctypedecl done");
             Ok(((input1, state1), ()))
         }
         Err(err) => Err(err),

@@ -1597,8 +1597,8 @@ where
     G: Fn() -> N,
     H: Fn() -> Item<N>,
 {
-    let rd = make_empty_doc();
     let mut sd = make_empty_doc();
+    //let rd = make_empty_doc();
     let mut top = sd
         .new_element(QName::from_local_name(NcName::try_from("root").unwrap()))
         .expect("unable to create root element");
@@ -1633,18 +1633,21 @@ where
     top.push(e2).expect("unable to add element 2");
 
     let xform = parse("/root/element[position() = 1]", None, None).expect("parsing failed");
+    eprintln!("xform=={:?}", xform);
     let mut stctxt = StaticContextBuilder::new()
         .message(|_| Ok(()))
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .build();
     let s = ContextBuilder::new()
-        .context(vec![Item::Node(sd)])
-        .result_document(rd)
+        .context(vec![Item::Node(sd.clone())])
+        //        .result_document(rd)
+        .result_document(sd)
         .build()
         .dispatch(&mut stctxt, &xform)
         .expect("transform failed");
     assert_eq!(s.len(), 1);
+    eprintln!("final check");
     assert_eq!(s.to_xml(), "<element attr='val1'>text1</element>");
     Ok(())
 }
