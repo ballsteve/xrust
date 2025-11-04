@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::rc::Rc;
 
 use criterion::{Criterion, criterion_group, criterion_main};
@@ -56,11 +57,71 @@ fn parse_doc(n: u64) -> RNode {
     doc
 }
 
+/// Create N nodes with M distinct names repeated R times (N = M*R) and each name at least L characters in length
+fn make_m_r_b(s: (usize, usize, &str)) -> RNode {
+    let (m, r, base) = s;
+    // base is the prefix to use when creating a name. An integer will be appended to make a name at least L characters in length.
+    let mut names = HashMap::new();
+    let mut doc = RNode::new_document();
+    let mut top = doc
+        .new_element(QName::from_local_name(NcName::try_from("top").unwrap()))
+        .unwrap();
+    doc.push(top.clone()).unwrap();
+    for i in 0..m {
+        names.insert(
+            format!("{}{}", base, i),
+            QName::from_local_name(NcName::try_from(format!("{}{}", base, i).as_str()).unwrap()),
+        );
+    }
+    for _j in 0..r {
+        for i in 0..m {
+            let nd = doc
+                .new_element(names.get(&format!("{}{}", base, i)).unwrap().clone())
+                .unwrap();
+            top.push(nd).unwrap();
+        }
+    }
+    doc
+}
+
+/// Search through a list of nodes looking for a particular named node
+fn search_nodes(s: (RNode, QName)) -> usize {
+    let (parent, name) = s;
+    parent
+        .child_iter()
+        .filter(|c| c.name().is_some_and(|nm| nm == name))
+        .collect::<Vec<RNode>>()
+        .len()
+}
+
 fn rnode(c: &mut Criterion) {
     c.bench_function("rnode 1000", |b| b.iter(|| make_rnode(black_box(1000))));
     c.bench_function("parse 100", |b| b.iter(|| parse_doc(black_box(100))));
     c.bench_function("parse 1000", |b| b.iter(|| parse_doc(black_box(1000))));
 }
 
-criterion_group!(benches, rnode);
+fn qname(c: &mut Criterion) {
+    c.bench_function("make_m_r_b", |b| {
+        b.iter(|| make_m_r_b(black_box((100, 100, "basebasebasebase"))))
+    });
+    c.bench_function("search1", |b| {
+        b.iter(|| {
+            search_nodes(black_box((
+                make_m_r_b((100, 100, "basebasebasebase")),
+                QName::from_local_name(NcName::try_from("basebasebasebase1").unwrap()),
+            )))
+        })
+    });
+    c.bench_function("search2", |b| {
+        b.iter(|| {
+            search_nodes(black_box((
+                make_m_r_b((1000, 100, "basebasebasebase")),
+                QName::from_local_name(NcName::try_from("basebasebasebase1").unwrap()),
+            )))
+        })
+    });
+}
+
+//criterion_group!(benches, rnode);
+criterion_group!(benches, qname);
 criterion_main!(benches);
