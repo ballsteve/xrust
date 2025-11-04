@@ -1271,7 +1271,7 @@ fn to_xml_int(
                 result
             })
         }
-        NodeInner::Element(_, qn, _, _, ns) => {
+        NodeInner::Element(_, _qn, _, _, ns) => {
             let mut new_in_scope = ns_in_scope.clone();
             let mut result = String::from("<");
             result.push_str(to_prefixed_name(node).as_str());

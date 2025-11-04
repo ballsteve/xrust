@@ -1,41 +1,31 @@
 use std::rc::Rc;
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{Criterion, criterion_group, criterion_main};
+use std::hint::black_box;
 
+use qualname::{NcName, QName};
 use xrust::item::Node;
+use xrust::parser::ParseError;
 use xrust::parser::xml::parse;
-use xrust::qname::QualifiedName;
-use xrust::trees::smite::{Node as SmiteNode, RNode};
+use xrust::trees::smite::RNode;
 use xrust::value::Value;
 
 fn make_rnode(n: u64) -> RNode {
     let mut a = RNode::new_document();
     let mut b = a
-        .new_element(Rc::new(QualifiedName::new(
-            None,
-            None,
-            String::from("Test"),
-        )))
+        .new_element(QName::from_local_name(NcName::try_from("Test").unwrap()))
         .expect("unable to create element");
     a.push(b.clone()).expect("unable to add node");
+    let l1name = QName::from_local_name(NcName::try_from("Level-1").unwrap());
+    let l2name = QName::from_local_name(NcName::try_from("Level-2").unwrap());
     (1..n).for_each(|i| {
-        let l1name = Rc::new(Value::from("Level-1"));
         let mut l1 = a
-            .new_element(Rc::new(QualifiedName::new_from_values(
-                None,
-                None,
-                l1name.clone(),
-            )))
+            .new_element(l1name.clone())
             .expect("unable to create element");
         b.push(l1.clone()).expect("unable to add node");
-        let l2name = Rc::new(Value::from("Level-2"));
         (1..n).for_each(|k| {
             let mut l2 = a
-                .new_element(Rc::new(QualifiedName::new_from_values(
-                    None,
-                    None,
-                    l2name.clone(),
-                )))
+                .new_element(l2name.clone())
                 .expect("unable to create element");
             l1.push(l2.clone()).expect("unable to add node");
             l2.push(
@@ -57,7 +47,12 @@ fn parse_doc(n: u64) -> RNode {
     });
     a.push_str("</pre:top_level>\n");
     let doc = RNode::new_document();
-    parse(doc.clone(), a.as_str(), None).expect("failed to parse XML");
+    parse(
+        doc.clone(),
+        a.as_str(),
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+    )
+    .expect("failed to parse XML");
     doc
 }
 
