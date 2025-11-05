@@ -1,3 +1,5 @@
+/* Benchmark use of qualname::QName  */
+
 use std::collections::HashMap;
 use std::rc::Rc;
 use std::sync::LazyLock;
@@ -104,20 +106,26 @@ fn search_nodes(s: (RNode, QName)) -> usize {
         .len()
 }
 
-fn rnode(c: &mut Criterion) {
-    c.bench_function("rnode 1000", |b| b.iter(|| make_rnode(black_box(1000))));
-    c.bench_function("parse 100", |b| b.iter(|| parse_doc(black_box(100))));
-    c.bench_function("parse 1000", |b| b.iter(|| parse_doc(black_box(1000))));
-}
-
 fn qname(c: &mut Criterion) {
-    c.bench_function("make_m_r_b", |b| {
+    let mut group = c.benchmark_group("smite");
+    group.bench_with_input(BenchmarkId::from_parameter("rnode1000"), &1000, |b, _| {
+        b.iter(|| make_rnode(black_box(1000)))
+    });
+    group.bench_with_input(BenchmarkId::from_parameter("parse100"), &100, |b, _| {
+        b.iter(|| parse_doc(black_box(100)))
+    });
+    group.bench_with_input(BenchmarkId::from_parameter("parse1000"), &1000, |b, _| {
+        b.iter(|| parse_doc(black_box(1000)))
+    });
+    group.bench_with_input(BenchmarkId::from_parameter("make100"), &100, |b, _| {
         b.iter(|| make_m_r_b(black_box((100, 100, "basebasebasebase"))))
+    });
+    group.bench_with_input(BenchmarkId::from_parameter("make1000"), &1000, |b, _| {
+        b.iter(|| make_m_r_b(black_box((1000, 100, "basebasebasebase"))))
     });
     let doc100 = make_m_r_b((100, 100, "basebasebasebase"));
     let doc1000 = make_m_r_b((1000, 100, "basebasebasebase"));
-    let mut group = c.benchmark_group("search");
-    group.bench_with_input(BenchmarkId::from_parameter(100), &100, |b, _| {
+    group.bench_with_input(BenchmarkId::from_parameter("search100"), &100, |b, _| {
         b.iter(|| {
             search_nodes(black_box((
                 doc100.clone(),
@@ -128,7 +136,7 @@ fn qname(c: &mut Criterion) {
             )))
         })
     });
-    group.bench_with_input(BenchmarkId::from_parameter(1000), &1000, |b, _| {
+    group.bench_with_input(BenchmarkId::from_parameter("search1000"), &1000, |b, _| {
         b.iter(|| {
             search_nodes(black_box((
                 doc1000.clone(),
@@ -141,6 +149,5 @@ fn qname(c: &mut Criterion) {
     });
 }
 
-//criterion_group!(benches, rnode);
 criterion_group!(benches, qname);
 criterion_main!(benches);
