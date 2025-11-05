@@ -1,15 +1,19 @@
 use std::collections::HashMap;
 use std::rc::Rc;
+use std::sync::LazyLock;
 
-use criterion::{Criterion, criterion_group, criterion_main};
+use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
 use std::hint::black_box;
 
-use qualname::{NcName, QName};
+use qualname::{NamespaceUri, NcName, QName};
 use xrust::item::Node;
 use xrust::parser::ParseError;
 use xrust::parser::xml::parse;
 use xrust::trees::smite::RNode;
 use xrust::value::Value;
+
+static NSURI: LazyLock<Option<NamespaceUri>> =
+    LazyLock::new(|| Some(NamespaceUri::try_from("http://www.example.com/namespace").unwrap()));
 
 fn make_rnode(n: u64) -> RNode {
     let mut a = RNode::new_document();
@@ -64,13 +68,19 @@ fn make_m_r_b(s: (usize, usize, &str)) -> RNode {
     let mut names = HashMap::new();
     let mut doc = RNode::new_document();
     let mut top = doc
-        .new_element(QName::from_local_name(NcName::try_from("top").unwrap()))
+        .new_element(QName::new_from_parts(
+            NcName::try_from("top").unwrap(),
+            NSURI.clone(),
+        ))
         .unwrap();
     doc.push(top.clone()).unwrap();
     for i in 0..m {
         names.insert(
             format!("{}{}", base, i),
-            QName::from_local_name(NcName::try_from(format!("{}{}", base, i).as_str()).unwrap()),
+            QName::new_from_parts(
+                NcName::try_from(format!("{}{}", base, i).as_str()).unwrap(),
+                NSURI.clone(),
+            ),
         );
     }
     for _j in 0..r {
@@ -104,19 +114,28 @@ fn qname(c: &mut Criterion) {
     c.bench_function("make_m_r_b", |b| {
         b.iter(|| make_m_r_b(black_box((100, 100, "basebasebasebase"))))
     });
-    c.bench_function("search1", |b| {
+    let doc100 = make_m_r_b((100, 100, "basebasebasebase"));
+    let doc1000 = make_m_r_b((1000, 100, "basebasebasebase"));
+    let mut group = c.benchmark_group("search");
+    group.bench_with_input(BenchmarkId::from_parameter(100), &100, |b, _| {
         b.iter(|| {
             search_nodes(black_box((
-                make_m_r_b((100, 100, "basebasebasebase")),
-                QName::from_local_name(NcName::try_from("basebasebasebase1").unwrap()),
+                doc100.clone(),
+                QName::new_from_parts(
+                    NcName::try_from("basebasebasebase1").unwrap(),
+                    NSURI.clone(),
+                ),
             )))
         })
     });
-    c.bench_function("search2", |b| {
+    group.bench_with_input(BenchmarkId::from_parameter(1000), &1000, |b, _| {
         b.iter(|| {
             search_nodes(black_box((
-                make_m_r_b((1000, 100, "basebasebasebase")),
-                QName::from_local_name(NcName::try_from("basebasebasebase1").unwrap()),
+                doc1000.clone(),
+                QName::new_from_parts(
+                    NcName::try_from("basebasebasebase1").unwrap(),
+                    NSURI.clone(),
+                ),
             )))
         })
     });
