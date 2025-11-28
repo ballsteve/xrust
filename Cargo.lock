@@ -916,6 +916,8 @@ dependencies = [
 [[package]]
 name = "qualname"
 version = "0.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f7ca141ff6dd6af1bf241aa43eac7491d69c9be5059574708495e61948ab4bac"
 
 [[package]]
 name = "quick-xml"
