@@ -31,8 +31,8 @@ where
 
     // NB. attributes could be returned in a different order
     assert!(
-        sd.to_xml() == "<Test role='testing' phase='one'></Test>"
-            || sd.to_xml() == "<Test phase='one' role='testing'></Test>"
+        sd.to_xml() == "<Test role='testing' phase='one'/>"
+            || sd.to_xml() == "<Test phase='one' role='testing'/>"
     );
 
     match t.get_attribute_node(&QualifiedName::new(None, None, "role")) {
