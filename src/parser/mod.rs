@@ -98,6 +98,16 @@ pub struct StaticStateBuilder<L: FnMut(&NamespacePrefix) -> Result<NamespaceUri,
     StaticState<L>,
 );
 
+impl<L> Default for StaticStateBuilder<L>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+
 impl<L> StaticStateBuilder<L>
 where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
@@ -165,6 +175,12 @@ pub struct ParserState<N: Node> {
     currentlyexternal: bool,
 }
 
+impl<N: Node> Default for ParserState<N> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<N: Node> ParserState<N> {
     pub fn new() -> Self {
         ParserState {
@@ -211,6 +227,12 @@ impl<N: Node> fmt::Debug for ParserState<N> {
 }
 
 pub struct ParserStateBuilder<N: Node>(ParserState<N>);
+
+impl<N: Node> Default for ParserStateBuilder<N> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl<N: Node> ParserStateBuilder<N> {
     pub fn new() -> Self {

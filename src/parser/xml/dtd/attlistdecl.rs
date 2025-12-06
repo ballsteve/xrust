@@ -186,16 +186,15 @@ where
                     _ => {}
                 }
                 //xml:id datatype checking
-                match (&qn.0.as_deref(), qn.1.as_str()) {
-                    (Some("xml"), "id") => {
-                        if att != AttType::ID {
-                            return Err(ParseError::IDError(
-                                "xml:id declaration in the DTD does not have type ID".to_string(),
-                            ));
-                        }
+
+                if let (Some("xml"), "id") = (&qn.0.as_deref(), qn.1.as_str()) {
+                    if att != AttType::ID {
+                        return Err(ParseError::IDError(
+                            "xml:id declaration in the DTD does not have type ID".to_string(),
+                        ));
                     }
-                    _ => {}
                 }
+
                 atts.insert(qn, (att, dfd, replaceable));
             }
             if count_id_attrs > 1 {

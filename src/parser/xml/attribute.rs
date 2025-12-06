@@ -38,11 +38,7 @@ where
             ) = attrs
                 .into_iter()
                 .partition(|((prefix, local_part), value)| {
-                    match (prefix.as_deref(), local_part.as_str(), value) {
-                        (Some("xmlns"), _, _) => true,
-                        (None, "xmlns", _) => true,
-                        _ => false,
-                    }
+                    matches!((prefix.as_deref(), local_part.as_str(), value), (Some("xmlns"), _, _) | (None, "xmlns", _))
                 });
 
             let doc = state1.doc.clone().unwrap().clone();
@@ -51,7 +47,7 @@ where
             // and update in-scope namespace map
             // TODO: use try_collect()
             let mut nsd_vec: Vec<N> = vec![];
-            let _ = ns_decls
+            ns_decls
                 .iter()
                 .try_for_each(|((prefix, local_part), value)| {
                     match (prefix.as_deref(), local_part.as_str(), value.as_str()) {
@@ -219,7 +215,7 @@ where
             // Now process the normal attributes
             // TODO: use try_collect()
             let mut attr_vec: Vec<N> = vec![];
-            let _ = attr_list
+            attr_list
                 .iter()
                 .try_for_each(|((prefix, local_part), value)| {
                     match (prefix.as_deref(), local_part.as_str(), value.as_str()) {
@@ -430,14 +426,14 @@ where
                 let r = if state1.xmlversion.as_str() == "1.1" {
                     rn.concat()
                         .replace(['\u{85}', '\u{2028}', '\n', '\r', '\t', '\n'], " ")
-                        .trim()
+                        //.trim()
                         .split_whitespace()
                         .collect::<Vec<&str>>()
                         .join(" ")
                 } else {
                     rn.concat()
                         .replace(['\n', '\r', '\t', '\n'], " ")
-                        .trim()
+                        //.trim()
                         .split_whitespace()
                         .collect::<Vec<&str>>()
                         .join(" ")

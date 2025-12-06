@@ -104,7 +104,13 @@ pub struct ValueBuilder {
     output: OutputSpec,
 }
 
+impl Default for ValueBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 impl ValueBuilder {
+
     pub fn new() -> Self {
         ValueBuilder {
             value: None,

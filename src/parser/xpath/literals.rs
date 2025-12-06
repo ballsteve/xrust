@@ -100,7 +100,7 @@ where
         let i = match n {
             Ok(m) => Value::from(m),
             Err(_) => {
-                f.insert_str(0, "0");
+                f.insert(0, '0');
                 Value::from(Decimal::from_str(&f).unwrap())
             }
         };

@@ -146,6 +146,7 @@ static XSLXSDVERSION: LazyLock<QName> = LazyLock::new(|| {
 });
 
 /// XSLT system-property function.
+#[allow(clippy::if_same_then_else)]
 pub fn system_property<
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,

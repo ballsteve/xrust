@@ -149,8 +149,7 @@ pub(crate) fn child_deriv(pat: DTDPattern, n: impl Node, dtd: DTD) -> DTDPattern
             let mut pat1 = start_tag_open_deriv(pat, n.name().unwrap(), dtd.clone());
             //at this stage, we check if the DTD is for DTDPattern::Any. If it is present, we build a pattern
             //based on the child nodes, so that they are all validated individually.
-            match pat1.clone() {
-                DTDPattern::After(a, p) => {
+                if let DTDPattern::After(a, p) = pat1.clone() {
                     match *a {
                         DTDPattern::Any => {
                             let mut newpat = DTDPattern::Empty;
@@ -232,8 +231,8 @@ pub(crate) fn child_deriv(pat: DTDPattern, n: impl Node, dtd: DTD) -> DTDPattern
                         _ => {}
                     }
                 }
-                _ => {}
-            }
+
+
 
             for attribute in n.attribute_iter() {
                 pat1 = att_deriv(pat1, attribute)

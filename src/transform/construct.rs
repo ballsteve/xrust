@@ -264,7 +264,7 @@ pub(crate) fn namespace_declaration<
 
     let np = if let Some(pp) = p {
         Some(
-            NamespacePrefix::try_from(ctxt.dispatch(stctxt, &pp)?.to_string().as_str())
+            NamespacePrefix::try_from(ctxt.dispatch(stctxt, pp)?.to_string().as_str())
                 .map_err(|_| Error::new(ErrorKind::ParseError, "invalid namespapce prefix"))?,
         )
     } else {
@@ -383,9 +383,8 @@ pub(crate) fn copy<
     for k in sel {
         let cp = k.shallow_copy()?;
         result.push(cp.clone());
-        match cp {
-            Item::Node(mut im) => {
-                for j in ctxt.dispatch(stctxt, c)? {
+        if let Item::Node(mut im) = cp {
+            for j in ctxt.dispatch(stctxt, c)? {
                     match &j {
                         Item::Value(v) => im.push(im.new_text(v.clone())?)?,
                         Item::Node(n) => match n.node_type() {
@@ -401,8 +400,6 @@ pub(crate) fn copy<
                     }
                 }
             }
-            _ => {}
-        }
     }
     Ok(result)
 }

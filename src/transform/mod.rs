@@ -876,7 +876,7 @@ impl Debug for WildcardOrName {
         match self {
             WildcardOrName::Wildcard => f.write_str("WildcardOrNamespaceUri::Wildcard"),
             WildcardOrName::Name(n) => {
-                f.write_str(format!("WildcardOrName::Name({})", n.to_string()).as_str())
+                f.write_str(format!("WildcardOrName::Name({})", n).as_str())
             }
         }
     }

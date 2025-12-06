@@ -125,13 +125,11 @@ where
                 match attlist {
                     None => {
                         // No Attribute DTD, just insert all attributes.
-                        if let Err(e) = av.into_iter().try_for_each(|a| {
+                        av.into_iter().try_for_each(|a| {
                             e.add_attribute(a).map_err(|_| {
                                 ParseError::NotWellFormed(String::from("unable to add attribute"))
                             })
-                        }) {
-                            return Err(e);
-                        }
+                        })?
                         /*for (attname, attval) in av.into_iter() {
                             //Ordinarily, you'll just treat attributes as CDATA and not normalize, however we need to check xml:id
                             let avalue: String;
@@ -193,7 +191,7 @@ where
                                         let a = d
                                             .new_attribute(qn.clone(), Rc::new(Value::from(attval)))
                                             .expect("unable to create attribute");
-                                        if let Err(_) = e.add_attribute(a) {
+                                        if e.add_attribute(a).is_err() {
                                             return Err(ParseError::DuplicateAttribute(
                                                 qn.to_string(),
                                             ));
@@ -209,14 +207,14 @@ where
                                 let a = d
                                     .new_attribute(attnode.name().unwrap(), attnode.value())
                                     .expect("unable to create xml:id attribute");
-                                if let Err(_) = e.add_attribute(a) {
+                                if e.add_attribute(a).is_err() {
                                     return Err(ParseError::DuplicateAttribute(
                                         attnode.name().unwrap().to_string(),
                                     ));
                                 }
                             } else {
                                 let thisatprefix =
-                                    attnode.name().unwrap().namespace_uri().map_or(None, |ns| {
+                                    attnode.name().unwrap().namespace_uri().and_then( |ns| {
                                         state1
                                             .in_scope_namespaces
                                             .prefix(&ns)
@@ -232,7 +230,7 @@ where
                                         let a = d
                                             .new_attribute(attnode.name().unwrap(), attnode.value())
                                             .expect("unable to create attribute");
-                                        if let Err(_) = e.add_attribute(a) {
+                                        if e.add_attribute(a).is_err() {
                                             return Err(ParseError::DuplicateAttribute(
                                                 attnode.name().unwrap().to_string(),
                                             ));
@@ -298,15 +296,15 @@ where
 
                                         if default_attrs
                                             .iter()
-                                            .find(|aqn| **aqn == attnode.name().unwrap())
-                                            .is_some()
+                                            .any(|aqn| *aqn == attnode.name().unwrap())
+
                                         {
                                             //eprintln!("already created this attribute as default")
                                         } else {
                                             let a = d
                                                 .new_attribute(attnode.name().unwrap(), v)
                                                 .expect("unable to create attribute");
-                                            if let Err(_) = e.add_attribute(a) {
+                                            if e.add_attribute(a).is_err() {
                                                 return Err(ParseError::DuplicateAttribute(
                                                     attnode.name().unwrap().to_string(),
                                                 ));
@@ -392,8 +390,8 @@ where
         Ok((state1, (c, v))) => {
             let mut new: Vec<N> = Vec::new();
             let mut notex: Vec<String> = Vec::new();
-            if c.is_some() {
-                notex.push(c.unwrap());
+            if let Some(s) = c {
+                notex.push(s)
             }
             if !v.is_empty() {
                 for (w, d) in v {
@@ -416,8 +414,8 @@ where
                             }
                         }
                     }
-                    if d.is_some() {
-                        notex.push(d.unwrap())
+                    if let Some(s) = d {
+                        notex.push(s)
                     }
                 }
             }

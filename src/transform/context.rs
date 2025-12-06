@@ -79,6 +79,11 @@ pub struct Context<N: Node> {
     // The search order is: Namespace declarations in the source document; namespace declarations in the result document; this NamespaceMap.
     pub(crate) namespaces: Option<Rc<NamespaceMap>>,
 }
+impl<N: Node> Default for Context<N> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl<N: Node> Context<N> {
     pub fn new() -> Self {
@@ -231,7 +236,7 @@ impl<N: Node> Context<N> {
                     // There may be 0, 1, or more matching templates.
                     // If there are more than one with the same priority and import level,
                     // then take the one with the higher document order.
-                    let templates = self.find_templates(stctxt, &i, &None)?;
+                    let templates = self.find_templates(stctxt, i, &None)?;
                     match templates.len() {
                         0 => Err(Error::new(
                             ErrorKind::DynamicAbsent,
@@ -316,14 +321,14 @@ impl<N: Node> Context<N> {
         // Define initial (stylesheet) variables by evaluating their transformation with the root node as the context
         if self.context.is_empty() {
             // There is no context item
-            return Ok(Sequence::new());
+            Ok(Sequence::new())
         } else {
             let mut ctxt = self.clone();
             // If the context item is a node then set the new context to the root node
             // otherwise there is no context
             ctxt.context(
                 self.context.get(self.i).map_or_else(
-                    || vec![],
+                    Vec::new,
                     |i| {
                         if let Item::Node(n) = i {
                             vec![Item::Node(n.owner_document())]
@@ -337,24 +342,26 @@ impl<N: Node> Context<N> {
             // Populate the context with stylesheet-level variables.
             // Each variable creates a new context for the evaluation of subsequent variables.
             for (name, x) in &self.pre_vars {
-                ctxt.var_push(name.clone(), ctxt.dispatch(stctxt, &x)?);
+                ctxt.var_push(name.clone(), ctxt.dispatch(stctxt, x)?);
             }
             let result = ctxt.evaluate_internal(stctxt)?;
             // If any of the result items are nodes then add them as children of the result document
             if let Some(mut rd) = ctxt.rd {
                 Ok(result
                     .into_iter()
-                    .filter_map(|i| {
+                    .map(|i| {
                         if let Item::Node(ref n) = i {
                             if n.owner_document().is_same(&rd) {
                                 if n.is_unattached() {
                                     // Attach it and leave it in the result
                                     rd.push(n.clone())
                                         .expect("unable to attach to result document");
-                                    Some(i)
+                                    //Some(i)
+                                    i
                                 } else {
                                     // leave it where it is in the result document
-                                    Some(i)
+                                    //Some(i)
+                                    i
                                 }
                             } else {
                                 // This is a node from the source document.
@@ -363,10 +370,12 @@ impl<N: Node> Context<N> {
                                 let cp = n.deep_copy().expect("unable to copy node");
                                 rd.push(cp.clone())
                                     .expect("unable to attach to result document");
-                                Some(Item::Node(cp))
+                                //Some(Item::Node(cp))
+                                Item::Node(cp)
                             }
                         } else {
-                            Some(i)
+                            //Some(i)
+                            i
                         }
                     })
                     .collect())
@@ -589,6 +598,12 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
 /// Builder for a [Context]
 pub struct ContextBuilder<N: Node>(Context<N>);
 
+impl<N: Node> Default for ContextBuilder<N> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<N: Node> ContextBuilder<N> {
     pub fn new() -> Self {
         ContextBuilder(Context::new())
@@ -708,6 +723,16 @@ where
     pub(crate) parser: Option<G>,
     pub(crate) fetcher: Option<H>,
 }
+impl<N: Node, F, G, H> Default for StaticContext<N, F, G, H>
+where
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+    {
+        fn default() -> Self {
+            Self::new()
+    }
+}
 
 impl<N: Node, F, G, H> StaticContext<N, F, G, H>
 where
@@ -768,6 +793,17 @@ pub struct StaticContextBuilder<
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(StaticContext<N, F, G, H>);
+
+impl<N: Node, F, G, H> Default for StaticContextBuilder<N, F, G, H>
+where
+     F: FnMut(&str) -> Result<(), Error>,
+     G: FnMut(&str) -> Result<N, Error>,
+     H: FnMut(&Url) -> Result<String, Error>,
+    {
+        fn default() -> Self {
+            Self::new()
+    }
+}
 
 impl<N: Node, F, G, H> StaticContextBuilder<N, F, G, H>
 where
