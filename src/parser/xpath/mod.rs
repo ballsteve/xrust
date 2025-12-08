@@ -40,7 +40,7 @@ let context = ContextBuilder::new()
 let sequence = context.dispatch(&mut static_context, &t)
     .expect("evaluation failed");
 assert_eq!(sequence.len(), 2);
-assert_eq!(sequence.to_xml(), "<C></C><C></C>")
+assert_eq!(sequence.to_xml(), "<C/><C/>")
 ```
 */
 

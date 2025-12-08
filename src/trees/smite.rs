@@ -1072,21 +1072,21 @@ fn to_xml_int(
                     .as_str(),
                 )
             });
+
+            // deal with the empty element case and emit a self-closing tag e.g. <tag/> instead of <tag></tag>
+            if node.first_child().is_none() {
+                result.push_str("/>");
+                return result;
+            }
+
             result.push('>');
 
             // Content of the element.
             // If the indent option is enabled, then if no child is a text node then add spacing.
-            let do_indent: bool = od
-                .get_indent()
-                .then(|| {
-                    node.child_iter().fold(true, |mut acc, c| {
-                        if acc && c.node_type() == NodeType::Text {
-                            acc = false
-                        }
-                        acc
-                    })
-                })
-                .map_or(false, |b| b);
+            let do_indent: bool = od.get_indent()
+                && node
+                    .child_iter()
+                    .all(|c| matches!(c.node_type(), NodeType::Text));
 
             node.child_iter().for_each(|c| {
                 if do_indent {
@@ -1474,7 +1474,7 @@ mod tests {
             .new_element(Rc::new(QualifiedName::new(None, None, "Test")))
             .expect("unable to create element node");
         root.push(c).expect("unable to add node");
-        assert_eq!(root.to_xml(), "<Test></Test>")
+        assert_eq!(root.to_xml(), "<Test/>")
     }
     #[test]
     fn smite_element_2() {
@@ -1487,7 +1487,7 @@ mod tests {
             .new_element(Rc::new(QualifiedName::new(None, None, "MoreTest")))
             .expect("unable to create child element");
         child1.push(child2).expect("unable to add node");
-        assert_eq!(root.to_xml(), "<Test><MoreTest></MoreTest></Test>")
+        assert_eq!(root.to_xml(), "<Test><MoreTest/></Test>")
     }
 
     #[test]

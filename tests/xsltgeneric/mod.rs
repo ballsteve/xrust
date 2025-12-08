@@ -683,7 +683,7 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_xml() == "one<L></L>two<L></L>three<L></L>four<L></L>" {
+    if result.to_xml() == "one<L/>two<L/>three<L/>four<L/>" {
         if msgs.len() == 4 {
             if msgs[0] == "here is a level 1 element" {
                 Ok(())
@@ -991,7 +991,7 @@ where
     )?;
     assert_eq!(
         result.to_xml(),
-        "<Level1 bar='from set foo'></Level1><Level1 bar='from set foo'></Level1>"
+        "<Level1 bar='from set foo'/><Level1 bar='from set foo'/>"
     );
     Ok(())
 }
@@ -1494,7 +1494,7 @@ where
 
     assert_eq!(
         result.to_xml(),
-        "<HTML><TITLE>A really exciting document</TITLE><BODY BGCOLOR='#FFFFCC'></BODY></HTML>"
+        "<HTML><TITLE>A really exciting document</TITLE><BODY BGCOLOR='#FFFFCC'/></HTML>"
     );
     Ok(())
 }
