@@ -6,7 +6,7 @@ OASIS/NIST test cases
 
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::xml;
+use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
@@ -25,7 +25,7 @@ fn op01pass2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p01pass2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -50,7 +50,7 @@ fn op06pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p06pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -75,7 +75,7 @@ fn op07pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p07pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -100,7 +100,7 @@ fn op08pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p08pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -126,7 +126,7 @@ fn op09pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p09pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -151,7 +151,7 @@ fn op12pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p12pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -176,7 +176,7 @@ fn op22pass4() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p22pass4.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -201,7 +201,7 @@ fn op22pass5() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p22pass5.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -226,7 +226,7 @@ fn op22pass6() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p22pass6.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -251,7 +251,7 @@ fn op28pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p28pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -277,7 +277,7 @@ fn op28pass3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p28pass3.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -303,7 +303,7 @@ fn op28pass4() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p28pass4.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -329,7 +329,7 @@ fn op28pass5() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p28pass5.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -354,7 +354,7 @@ fn op29pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p29pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -380,7 +380,7 @@ fn op30pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p30pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -406,7 +406,7 @@ fn op30pass2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p30pass2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -432,7 +432,7 @@ fn op31pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p31pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -458,7 +458,7 @@ fn op31pass2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p31pass2.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -484,7 +484,7 @@ fn op43pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p43pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -509,7 +509,7 @@ fn op45pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p45pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -534,7 +534,7 @@ fn op46pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p46pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -559,7 +559,7 @@ fn op47pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p47pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -584,7 +584,7 @@ fn op48pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p48pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -609,7 +609,7 @@ fn op49pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p49pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -634,7 +634,7 @@ fn op50pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p50pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -659,7 +659,7 @@ fn op51pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p51pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -685,7 +685,7 @@ fn op52pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p52pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -710,7 +710,7 @@ fn op53pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p53pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -735,7 +735,7 @@ fn op54pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p54pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -760,7 +760,7 @@ fn op55pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p55pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -785,7 +785,7 @@ fn op56pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p56pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -810,7 +810,7 @@ fn op57pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p57pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -835,7 +835,7 @@ fn op58pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p58pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -860,7 +860,7 @@ fn op59pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p59pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -885,7 +885,7 @@ fn op60pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p60pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -911,7 +911,7 @@ fn op61pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p61pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -937,7 +937,7 @@ fn op62pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p62pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -963,7 +963,7 @@ fn op63pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p63pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -989,7 +989,7 @@ fn op64pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p64pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1014,7 +1014,7 @@ fn op68pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p68pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1039,7 +1039,7 @@ fn op69pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p69pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1064,7 +1064,7 @@ fn op70pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p70pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1089,7 +1089,7 @@ fn op71pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p71pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1114,7 +1114,7 @@ fn op72pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p72pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1140,7 +1140,7 @@ fn op73pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p73pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -1166,7 +1166,7 @@ fn op76pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p76pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());

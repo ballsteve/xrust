@@ -6,7 +6,7 @@ OASIS/NIST test cases
 
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::xml;
+use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 
 #[test]
@@ -28,7 +28,7 @@ fn op11pass1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p11pass1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());

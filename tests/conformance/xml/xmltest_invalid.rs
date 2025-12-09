@@ -9,7 +9,7 @@ James Clark XMLTEST cases
 use crate::conformance::dtdfileresolve;
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::{ParserConfig, xml};
+use xrust::parser::{ParseError, ParserStateBuilder, StaticStateBuilder, xml};
 use xrust::trees::smite::RNode;
 
 #[test]
@@ -22,17 +22,22 @@ fn invalid002() {
         Description:Tests the "Proper Group/PE Nesting" validity constraint by fragmenting a content model between two parameter entities.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/invalid/002.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -47,17 +52,22 @@ fn invalid005() {
         Description:Tests the "Proper Declaration/PE Nesting" validity constraint by fragmenting an element declaration between two parameter entities.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/invalid/005.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -73,17 +83,22 @@ fn invalid006() {
         Description:Tests the "Proper Declaration/PE Nesting" validity constraint by fragmenting an element declaration between two parameter entities.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/invalid/006.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -98,17 +113,22 @@ fn invalidnotsa022() {
         Description:Test the "Proper Conditional Section/ PE Nesting" validity constraint.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/invalid/not-sa/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/invalid/not-sa/022.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());

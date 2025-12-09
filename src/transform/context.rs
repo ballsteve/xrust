@@ -14,7 +14,6 @@ use crate::item::{Node, Sequence};
 use crate::output::OutputDefinition;
 #[allow(unused_imports)]
 use crate::pattern::Pattern;
-use crate::qname::QualifiedName;
 use crate::transform::Transform;
 use crate::transform::booleans::*;
 use crate::transform::callable::{Callable, invoke};
@@ -33,12 +32,11 @@ use crate::transform::template::{Template, apply_imports, apply_templates, next_
 use crate::transform::variables::{declare_variable, reference_variable};
 use crate::xdmerror::Error;
 use crate::{ErrorKind, Item, SequenceTrait, Value};
+use qualname::{NamespaceMap, QName};
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::rc::Rc;
 use url::Url;
-
-//pub type Message = FnMut(&str) -> Result<(), Error>;
 
 /// The transformation context. This is the dynamic context.
 /// The static parts of the context are in a separate structure.
@@ -58,7 +56,7 @@ pub struct Context<N: Node> {
     pub(crate) templates: Vec<Rc<Template<N>>>,
     pub(crate) current_templates: Vec<Rc<Template<N>>>,
     // Named templates and functions
-    pub(crate) callables: HashMap<QualifiedName, Callable<N>>,
+    pub(crate) callables: HashMap<QName, Callable<N>>,
     // Variables, with scoping
     pub(crate) vars: HashMap<String, Vec<Sequence<N>>>,
     // Stylesheet variables, to be evaluated before template processing.
@@ -77,8 +75,9 @@ pub struct Context<N: Node> {
     pub(crate) od: OutputDefinition,
     pub(crate) base_url: Option<Url>,
     // Namespace resolution. If any transforms contain a QName that needs to be resolved to an EQName,
-    // then these prefix -> URI mappings are used. These are usually derived from the stylesheet document.
-    //pub(crate) namespaces: Vec<HashMap<Option<String>, String>>,
+    // then these URI -> prefix mappings may be used. These are usually derived from the stylesheet document.
+    // The search order is: Namespace declarations in the source document; namespace declarations in the result document; this NamespaceMap.
+    pub(crate) namespaces: Option<Rc<NamespaceMap>>,
 }
 
 impl<N: Node> Context<N> {
@@ -102,6 +101,7 @@ impl<N: Node> Context<N> {
             key_values: HashMap::new(),
             od: OutputDefinition::new(),
             base_url: None,
+            namespaces: None,
         }
     }
     /// Sets the outer context and the context item.
@@ -160,7 +160,7 @@ impl<N: Node> Context<N> {
         })
     }
     /// Add a named attribute set. This replaces any previously declared attribute set with the same name
-    pub fn attribute_set(&mut self, _name: QualifiedName, _body: Vec<Transform<N>>) {}
+    pub fn attribute_set(&mut self, _name: QName, _body: Vec<Transform<N>>) {}
     /// Set the value of a variable. If the variable already exists, then this creates a new inner scope.
     pub fn var_push(&mut self, name: String, value: Sequence<N>) {
         match self.vars.get_mut(name.as_str()) {
@@ -192,7 +192,7 @@ impl<N: Node> Context<N> {
     }
 
     /// Callable components: named templates and user-defined functions
-    pub fn callable_push(&mut self, qn: QualifiedName, c: Callable<N>) {
+    pub fn callable_push(&mut self, qn: QName, c: Callable<N>) {
         self.callables.insert(qn, c);
     }
 
@@ -276,13 +276,15 @@ impl<N: Node> Context<N> {
     /// use xrust::transform::Transform;
     /// use xrust::transform::context::{Context, StaticContext, StaticContextBuilder};
     /// use xrust::trees::smite::RNode;
+    /// use xrust::parser::ParseError;
     /// use xrust::parser::xml::parse;
     /// use xrust::xslt::from_document;
     ///
     /// // A little helper function to parse a string to a Document Node
     /// fn make_from_str(s: &str) -> RNode {
     ///   let mut d = RNode::new_document();
-    ///   parse(d.clone(), s, None)
+    ///   parse(d.clone(), s,
+    ///     Some(|_: &_| Err(ParseError::MissingNameSpace)))
     ///     .expect("failed to parse XML");
     ///   d
     /// }
@@ -337,26 +339,40 @@ impl<N: Node> Context<N> {
             for (name, x) in &self.pre_vars {
                 ctxt.var_push(name.clone(), ctxt.dispatch(stctxt, &x)?);
             }
-            let result = ctxt.evaluate_internal(stctxt);
-            // If the returned items are nodes
-            // then if they are in the unattached list of the result doc
-            // then attached them
-            if ctxt.rd.is_some() {
-                if let Ok(r) = result.clone() {
-                    r.iter().for_each(|i| {
-                        if let Item::Node(n) = i {
-                            if !n.is_attached() {
-                                ctxt.rd
-                                    .clone()
-                                    .unwrap()
-                                    .push(n.clone())
-                                    .expect("unable to attach node to result document");
+            let result = ctxt.evaluate_internal(stctxt)?;
+            // If any of the result items are nodes then add them as children of the result document
+            if let Some(mut rd) = ctxt.rd {
+                Ok(result
+                    .into_iter()
+                    .filter_map(|i| {
+                        if let Item::Node(ref n) = i {
+                            if n.owner_document().is_same(&rd) {
+                                if n.is_unattached() {
+                                    // Attach it and leave it in the result
+                                    rd.push(n.clone())
+                                        .expect("unable to attach to result document");
+                                    Some(i)
+                                } else {
+                                    // leave it where it is in the result document
+                                    Some(i)
+                                }
+                            } else {
+                                // This is a node from the source document.
+                                // Copy it to the result document
+                                // and replace the node in the result with the copy
+                                let cp = n.deep_copy().expect("unable to copy node");
+                                rd.push(cp.clone())
+                                    .expect("unable to attach to result document");
+                                Some(Item::Node(cp))
                             }
+                        } else {
+                            Some(i)
                         }
-                    });
-                }
+                    })
+                    .collect())
+            } else {
+                Ok(result)
             }
-            result
         }
     }
 
@@ -369,7 +385,7 @@ impl<N: Node> Context<N> {
         &self,
         stctxt: &mut StaticContext<N, F, G, H>,
         i: &Item<N>,
-        m: &Option<Rc<QualifiedName>>,
+        m: &Option<QName>,
     ) -> Result<Vec<Rc<Template<N>>>, Error> {
         let mut candidates =
             self.templates
@@ -404,12 +420,13 @@ impl<N: Node> Context<N> {
     /// use xrust::transform::{Transform, NodeMatch, NodeTest, KindTest,  Axis};
     /// use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticContextBuilder};
     /// use xrust::trees::smite::RNode;
+    /// use xrust::parser::ParseError;
     /// use xrust::parser::xml::parse;
     ///
     /// // A little helper function to parse a string to a Document Node
     /// fn make_from_str(s: &str) -> RNode {
     ///   let mut d = RNode::new_document();
-    ///   parse(d.clone(), s, None)
+    ///   parse(d.clone(), s, Some(|_: &_| Err(ParseError::MissingNameSpace)))
     ///     .expect("failed to parse XML");
     ///   d
     /// }
@@ -432,6 +449,7 @@ impl<N: Node> Context<N> {
         F: FnMut(&str) -> Result<(), Error>,
         G: FnMut(&str) -> Result<N, Error>,
         H: FnMut(&Url) -> Result<String, Error>,
+        //L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
     >(
         &self,
         stctxt: &mut StaticContext<N, F, G, H>,
@@ -453,6 +471,9 @@ impl<N: Node> Context<N> {
             Transform::LiteralComment(t) => literal_comment(self, stctxt, t),
             Transform::LiteralProcessingInstruction(n, t) => {
                 literal_processing_instruction(self, stctxt, n, t)
+            }
+            Transform::NamespaceDeclaration(p, u, s) => {
+                namespace_declaration(self, stctxt, p, u, s)
             }
             Transform::SetAttribute(qn, v) => set_attribute(self, stctxt, qn, v),
             Transform::SequenceItems(v) => make_sequence(self, stctxt, v),
@@ -560,6 +581,7 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
             current_group: Sequence::new(),
             od: OutputDefinition::new(),
             base_url: None,
+            namespaces: None,
         }
     }
 }
@@ -646,8 +668,12 @@ impl<N: Node> ContextBuilder<N> {
         self.0.base_url = Some(b);
         self
     }
-    pub fn callable(mut self, qn: QualifiedName, c: Callable<N>) -> Self {
+    pub fn callable(mut self, qn: QName, c: Callable<N>) -> Self {
         self.0.callables.insert(qn, c);
+        self
+    }
+    pub fn namespaces(mut self, nm: NamespaceMap) -> Self {
+        self.0.namespaces = Some(Rc::new(nm));
         self
     }
     pub fn build(self) -> Context<N> {
@@ -702,8 +728,8 @@ where
 /// The main feature of the static context is the ability to set up a callback for messages.
 /// ```rust
 /// use std::rc::Rc;
+/// use qualname::{QName, NcName};
 /// use xrust::{Error, ErrorKind};
-/// use xrust::qname::QualifiedName;
 /// use xrust::value::Value;
 /// use xrust::item::{Item, Sequence, SequenceTrait, Node, NodeType};
 /// use xrust::trees::smite::RNode;
@@ -712,7 +738,7 @@ where
 ///
 /// let mut message = String::from("no message received");
 /// let xform = Transform::LiteralElement(
-///   Rc::new(QualifiedName::new(None, None, String::from("Example"))),
+///   QName::from_local_name(NcName::try_from("Example").unwrap()),
 ///   Box::new(Transform::SequenceItems(vec![
 ///    Transform::Message(
 ///        Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("a message from the transformation"))))),

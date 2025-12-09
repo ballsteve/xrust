@@ -1,11 +1,12 @@
 //! Tests for XPath defined generically
 
 use pkg_version::{pkg_version_major, pkg_version_minor, pkg_version_patch};
+use qualname::{NamespaceDeclaration, NamespaceMap, NamespacePrefix, NamespaceUri, NcName, QName};
+use std::ops::Deref;
 use std::rc::Rc;
 use xrust::item::{Item, Node, NodeType, Sequence, SequenceTrait};
 use xrust::parser::xpath::parse;
 use xrust::pattern::Pattern;
-use xrust::qname::QualifiedName;
 use xrust::transform::callable::ActualParameters;
 use xrust::transform::context::{Context, ContextBuilder, StaticContextBuilder};
 use xrust::transform::{Axis, KindTest, NodeMatch, NodeTest, Transform};
@@ -18,7 +19,7 @@ fn no_src_no_result<N: Node>(e: impl AsRef<str>) -> Result<Sequence<N>, Error> {
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .build();
-    Context::new().dispatch(&mut stctxt, &parse(e.as_ref(), None)?)
+    Context::new().dispatch(&mut stctxt, &parse(e.as_ref(), None, None)?)
 }
 
 fn dispatch_rig<N: Node, G, H>(
@@ -40,7 +41,7 @@ where
         .context(vec![make_doc()])
         .result_document(rd)
         .build()
-        .dispatch(&mut stctxt, &parse(e.as_ref(), None)?)
+        .dispatch(&mut stctxt, &parse(e.as_ref(), None, None)?)
 }
 
 pub fn generic_empty<N: Node>() -> Result<(), Error> {
@@ -63,13 +64,18 @@ where
     let result: Sequence<N> = dispatch_rig("child::a", make_empty_doc, make_doc)?;
     if result.len() == 1 {
         match &result[0] {
-            Item::Node(n) => match (n.node_type(), n.name().to_string().as_str()) {
+            Item::Node(n) => match (
+                n.node_type(),
+                n.name().map_or("".to_string(), |m| m.to_string()).deref(),
+            ) {
                 (NodeType::Element, "a") => Ok(()),
                 (NodeType::Element, _) => Err(Error::new(
                     ErrorKind::Unknown,
                     format!(
                         "got element named \"{}\", expected \"a\"",
-                        result[0].name().to_string()
+                        result[0]
+                            .name()
+                            .map_or("--None--".to_string(), |m| m.to_string())
                     ),
                 )),
                 _ => Err(Error::new(ErrorKind::Unknown, "not an element type node")),
@@ -92,13 +98,18 @@ where
     let result: Sequence<N> = dispatch_rig("a", make_empty_doc, make_doc)?;
     if result.len() == 1 {
         match &result[0] {
-            Item::Node(n) => match (n.node_type(), n.name().to_string().as_str()) {
+            Item::Node(n) => match (
+                n.node_type(),
+                n.name().map_or("".to_string(), |m| m.to_string()).deref(),
+            ) {
                 (NodeType::Element, "a") => Ok(()),
                 (NodeType::Element, _) => Err(Error::new(
                     ErrorKind::Unknown,
                     format!(
                         "got element named \"{}\", expected \"a\"",
-                        result[0].name().to_string()
+                        result[0]
+                            .name()
+                            .map_or("--None--".to_string(), |m| m.to_string())
                     ),
                 )),
                 _ => Err(Error::new(ErrorKind::Unknown, "not an element type node")),
@@ -121,13 +132,16 @@ where
     let result: Sequence<N> = dispatch_rig("/child::a", make_empty_doc, make_doc)?;
     if result.len() == 1 {
         match &result[0] {
-            Item::Node(n) => match (n.node_type(), n.name().to_string().as_str()) {
+            Item::Node(n) => match (
+                n.node_type(),
+                n.name().map_or("".to_string(), |m| m.to_string()).deref(),
+            ) {
                 (NodeType::Element, "a") => Ok(()),
                 (NodeType::Element, _) => Err(Error::new(
                     ErrorKind::Unknown,
                     format!(
                         "got element named \"{}\", expected \"a\"",
-                        result[0].name().to_string()
+                        result[0].name().map_or("".to_string(), |m| m.to_string())
                     ),
                 )),
                 _ => Err(Error::new(ErrorKind::Unknown, "not an element type node")),
@@ -149,13 +163,16 @@ where
     let result: Sequence<N> = dispatch_rig("/a", make_empty_doc, make_doc)?;
     if result.len() == 1 {
         match &result[0] {
-            Item::Node(n) => match (n.node_type(), n.name().to_string().as_str()) {
+            Item::Node(n) => match (
+                n.node_type(),
+                n.name().map_or("".to_string(), |m| m.to_string()).deref(),
+            ) {
                 (NodeType::Element, "a") => Ok(()),
                 (NodeType::Element, _) => Err(Error::new(
                     ErrorKind::Unknown,
                     format!(
                         "got element named \"{}\", expected \"a\"",
-                        result[0].name().to_string()
+                        result[0].name().map_or("".to_string(), |m| m.to_string())
                     ),
                 )),
                 _ => Err(Error::new(ErrorKind::Unknown, "not an element type node")),
@@ -194,13 +211,16 @@ where
     let result: Sequence<N> = dispatch_rig("/child::a/child::b", make_empty_doc, make_doc)?;
     if result.len() == 2 {
         match &result[0] {
-            Item::Node(n) => match (n.node_type(), n.name().to_string().as_str()) {
+            Item::Node(n) => match (
+                n.node_type(),
+                n.name().map_or("".to_string(), |m| m.to_string()).deref(),
+            ) {
                 (NodeType::Element, "b") => Ok(()),
                 (NodeType::Element, _) => Err(Error::new(
                     ErrorKind::Unknown,
                     format!(
                         "got element named \"{}\", expected \"a\"",
-                        result[0].name().to_string()
+                        result[0].name().map_or("".to_string(), |m| m.to_string())
                     ),
                 )),
                 _ => Err(Error::new(ErrorKind::Unknown, "not an element type node")),
@@ -222,13 +242,16 @@ where
     let result: Sequence<N> = dispatch_rig("/a/b", make_empty_doc, make_doc)?;
     if result.len() == 2 {
         match &result[0] {
-            Item::Node(n) => match (n.node_type(), n.name().to_string().as_str()) {
+            Item::Node(n) => match (
+                n.node_type(),
+                n.name().map_or("".to_string(), |m| m.to_string()).deref(),
+            ) {
                 (NodeType::Element, "b") => Ok(()),
                 (NodeType::Element, _) => Err(Error::new(
                     ErrorKind::Unknown,
                     format!(
                         "got element named \"{}\", expected \"a\"",
-                        result[0].name().to_string()
+                        result[0].name().map_or("".to_string(), |m| m.to_string())
                     ),
                 )),
                 _ => Err(Error::new(ErrorKind::Unknown, "not an element type node")),
@@ -257,7 +280,7 @@ where
         match &t {
             Item::Node(n) => {
                 assert_eq!(n.node_type(), NodeType::Element);
-                assert_eq!(n.name().to_string(), "a")
+                assert_eq!(n.name().map_or("".to_string(), |m| m.to_string()), "a")
             }
             _ => panic!("not a node"),
         }
@@ -279,7 +302,7 @@ where
         match &t {
             Item::Node(n) => {
                 assert_eq!(n.node_type(), NodeType::Element);
-                assert_eq!(n.name().to_string(), "b")
+                assert_eq!(n.name().map_or("".to_string(), |m| m.to_string()), "b")
             }
             _ => panic!("not a node"),
         }
@@ -301,7 +324,7 @@ where
         match &t {
             Item::Node(n) => {
                 assert_eq!(n.node_type(), NodeType::Element);
-                assert_eq!(n.name().to_string(), "b")
+                assert_eq!(n.name().map_or("".to_string(), |m| m.to_string()), "b")
             }
             _ => panic!("not a node"),
         }
@@ -320,7 +343,7 @@ where
         match &t {
             Item::Node(n) => {
                 assert_eq!(n.node_type(), NodeType::Element);
-                assert_eq!(n.name().to_string(), "b")
+                assert_eq!(n.name().map_or("".to_string(), |m| m.to_string()), "b")
             }
             _ => panic!("not a node"),
         }
@@ -339,7 +362,7 @@ where
         match &t {
             Item::Node(n) => {
                 assert_eq!(n.node_type(), NodeType::Element);
-                assert_eq!(n.name().to_string(), "b")
+                assert_eq!(n.name().map_or("".to_string(), |m| m.to_string()), "b")
             }
             _ => panic!("not a node"),
         }
@@ -368,7 +391,7 @@ where
         match &t {
             Item::Node(n) => {
                 assert_eq!(n.node_type(), NodeType::Element);
-                assert_eq!(n.name().to_string(), "a")
+                assert_eq!(n.name().map_or("".to_string(), |m| m.to_string()), "a")
             }
             _ => panic!("not a node"),
         }
@@ -387,7 +410,7 @@ where
         match &t {
             Item::Node(n) => {
                 assert_eq!(n.node_type(), NodeType::Attribute);
-                assert_eq!(n.name().to_string(), "id");
+                assert_eq!(n.name().map_or("".to_string(), |m| m.to_string()), "id");
                 assert_eq!(n.value().to_string(), "a1")
             }
             _ => panic!("not a node"),
@@ -406,7 +429,7 @@ where
         match &t {
             Item::Node(n) => {
                 assert_eq!(n.node_type(), NodeType::Attribute);
-                assert_eq!(n.name().to_string(), "id");
+                assert_eq!(n.name().map_or("".to_string(), |m| m.to_string()), "id");
                 assert_eq!(n.value().to_string(), "a1")
             }
             _ => panic!("not a node"),
@@ -434,9 +457,9 @@ where
                 .context(vec![Item::Node(l)])
                 .result_document(rd)
                 .build()
-                .dispatch(&mut stctxt, &parse("parent::a", None)?)?;
+                .dispatch(&mut stctxt, &parse("parent::a", None, None)?)?;
             assert_eq!(s.len(), 1);
-            assert_eq!(s[0].name().to_string(), "a")
+            assert_eq!(s[0].name().map_or("".to_string(), |m| m.to_string()), "a")
         }
         _ => panic!("unable to unpack node"),
     }
@@ -461,9 +484,9 @@ where
                 .context(vec![Item::Node(l)])
                 .result_document(rd)
                 .build()
-                .dispatch(&mut stctxt, &parse("..", None)?)?;
+                .dispatch(&mut stctxt, &parse("..", None, None)?)?;
             assert_eq!(s.len(), 1);
-            assert_eq!(s[0].name().to_string(), "a")
+            assert_eq!(s[0].name().map_or("".to_string(), |m| m.to_string()), "a")
         }
         _ => panic!("unable to unpack node"),
     }
@@ -489,7 +512,7 @@ where
                 .context(vec![Item::Node(l)])
                 .result_document(rd)
                 .build()
-                .dispatch(&mut stctxt, &parse("ancestor::*", None)?)?;
+                .dispatch(&mut stctxt, &parse("ancestor::*", None, None)?)?;
             assert_eq!(s.len(), 3);
         }
         _ => panic!("unable to unpack node"),
@@ -537,7 +560,7 @@ where
         .context(vec![Item::Value(Rc::new(Value::from("foobar")))])
         .result_document(rd)
         .build()
-        .dispatch(&mut stctxt, &parse(".", None)?)?;
+        .dispatch(&mut stctxt, &parse(".", None, None)?)?;
     assert_eq!(s.len(), 1);
     assert_eq!(s[0].to_string(), "foobar");
     Ok(())
@@ -558,7 +581,7 @@ where
         .context(vec![Item::Value(Rc::new(Value::from("foobar")))])
         .result_document(rd)
         .build()
-        .dispatch(&mut stctxt, &parse("(1)", None)?)?;
+        .dispatch(&mut stctxt, &parse("(1)", None, None)?)?;
     assert_eq!(s.len(), 1);
     assert_eq!(s[0].to_int().unwrap(), 1);
     Ok(())
@@ -863,7 +886,7 @@ where
             .context(vec![Item::Node(top)])
             .context_item(Some(sd))
             .build()
-            .dispatch(&mut stctxt, &parse("current()/child::a", None)?)
+            .dispatch(&mut stctxt, &parse("current()/child::a", None, None)?)
             .expect("evaluation failed");
         assert_eq!(s.len(), 1)
     } else {
@@ -1318,7 +1341,7 @@ where
             .context(vec![Item::Node(l)])
             .context_item(Some(sd))
             .build()
-            .dispatch(&mut stctxt, &parse("count(ancestor::*)", None)?)
+            .dispatch(&mut stctxt, &parse("count(ancestor::*)", None, None)?)
             .expect("evaluation failed");
         assert_eq!(s.len(), 1);
         assert_eq!(s.to_int().expect("unable to get int from sequence"), 3)
@@ -1350,18 +1373,25 @@ where
     G: Fn() -> N,
     H: Fn() -> Item<N>,
 {
-    let e: Transform<N> =
-        parse("test:my_func(123)", None).expect("failed to parse expression \"test:my_func(123)\"");
+    let mut namemap = NamespaceMap::new();
+    namemap.push(
+        NamespaceDeclaration::new(
+            Some(NamespacePrefix::try_from("test").unwrap()),
+            NamespaceUri::try_from("urn:my_test").unwrap(),
+        )
+        .unwrap(),
+    );
+    let e: Transform<N> = parse("test:my_func(123)", None, Some(namemap))
+        .expect("failed to parse expression \"test:my_func(123)\"");
     if let Transform::Compose(f) = e {
         match &f[0] {
             Transform::Invoke(qn, ap, _) => {
                 assert_eq!(
                     *qn,
-                    Rc::new(QualifiedName::new(
-                        None,
-                        Some("test".to_string()),
-                        "my_func".to_string()
-                    ))
+                    QName::new_from_parts(
+                        NcName::try_from("my_func").unwrap(),
+                        Some(NamespaceUri::try_from("urn:my_test").unwrap())
+                    )
                 );
                 match ap {
                     ActualParameters::Positional(v) => {
@@ -1464,13 +1494,16 @@ where
     let result: Sequence<N> = dispatch_rig("@*|node()", make_empty_doc, make_doc)?;
     if result.len() == 1 {
         match &result[0] {
-            Item::Node(n) => match (n.node_type(), n.name().to_string().as_str()) {
+            Item::Node(n) => match (
+                n.node_type(),
+                n.name().map_or("".to_string(), |m| m.to_string()).deref(),
+            ) {
                 (NodeType::Element, "a") => Ok(()),
                 (NodeType::Element, _) => Err(Error::new(
                     ErrorKind::Unknown,
                     format!(
                         "got element named \"{}\", expected \"a\"",
-                        result[0].name().to_string()
+                        result[0].name().map_or("".to_string(), |m| m.to_string())
                     ),
                 )),
                 _ => Err(Error::new(ErrorKind::Unknown, "not an element type node")),
@@ -1496,7 +1529,7 @@ where
     let rd = make_empty_doc();
     let sd = make_doc();
     if let Item::Node(d) = sd {
-        let xform = parse("../*[@id eq 'b6']", None).expect("parsing failed");
+        let xform = parse("../*[@id eq 'b6']", None, None).expect("parsing failed");
         let mut stctxt = StaticContextBuilder::new()
             .message(|_| Ok(()))
             .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
@@ -1511,7 +1544,7 @@ where
             .dispatch(&mut stctxt, &xform)
             .expect("transform failed");
         assert_eq!(s.len(), 1);
-        assert_eq!(s[0].name().to_string(), "b");
+        assert_eq!(s[0].name().map_or("".to_string(), |m| m.to_string()), "b");
         Ok(())
     } else {
         panic!("unable to unpack node")
@@ -1526,7 +1559,7 @@ where
     let rd = make_empty_doc();
     let sd = make_doc();
     if let Item::Node(d) = sd.clone() {
-        let xform = parse("$v[position() eq 1]", None).expect("parsing failed");
+        let xform = parse("$v[position() eq 1]", None, None).expect("parsing failed");
         let mut stctxt = StaticContextBuilder::new()
             .message(|_| Ok(()))
             .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
@@ -1543,10 +1576,10 @@ where
             .dispatch(&mut stctxt, &xform)
             .expect("transform failed");
         assert_eq!(s.len(), 1);
-        assert_eq!(s[0].name().to_string(), "b");
+        assert_eq!(s[0].name().unwrap().to_string(), "b");
         if let Item::Node(r) = &s[0] {
             assert_eq!(
-                r.get_attribute(&QualifiedName::new(None, None, "id"))
+                r.get_attribute(&QName::from_local_name(NcName::try_from("id").unwrap()))
                     .to_string(),
                 "b1"
             );
@@ -1564,14 +1597,14 @@ where
     G: Fn() -> N,
     H: Fn() -> Item<N>,
 {
-    let rd = make_empty_doc();
     let mut sd = make_empty_doc();
+    //let rd = make_empty_doc();
     let mut top = sd
-        .new_element(Rc::new(QualifiedName::new(None, None, "root")))
+        .new_element(QName::from_local_name(NcName::try_from("root").unwrap()))
         .expect("unable to create root element");
     sd.push(top.clone()).expect("unable to add root element");
-    let e_name = Rc::new(QualifiedName::new(None, None, "element"));
-    let at_name = Rc::new(QualifiedName::new(None, None, "attr"));
+    let e_name = QName::from_local_name(NcName::try_from("element").unwrap());
+    let at_name = QName::from_local_name(NcName::try_from("attr").unwrap());
     // <element attr="val1">text1</element>
     let mut e1 = sd
         .new_element(e_name.clone())
@@ -1599,15 +1632,16 @@ where
     e2.push(t2).expect("unable to add text 2");
     top.push(e2).expect("unable to add element 2");
 
-    let xform = parse("/root/element[position() = 1]", None).expect("parsing failed");
+    let xform = parse("/root/element[position() = 1]", None, None).expect("parsing failed");
     let mut stctxt = StaticContextBuilder::new()
         .message(|_| Ok(()))
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .build();
     let s = ContextBuilder::new()
-        .context(vec![Item::Node(sd)])
-        .result_document(rd)
+        .context(vec![Item::Node(sd.clone())])
+        //        .result_document(rd)
+        .result_document(sd)
         .build()
         .dispatch(&mut stctxt, &xform)
         .expect("transform failed");
@@ -1624,11 +1658,11 @@ where
     let rd = make_empty_doc();
     let mut sd = make_empty_doc();
     let mut top = sd
-        .new_element(Rc::new(QualifiedName::new(None, None, "root")))
+        .new_element(QName::from_local_name(NcName::try_from("root").unwrap()))
         .expect("unable to create root element");
     sd.push(top.clone()).expect("unable to add root element");
-    let e_name = Rc::new(QualifiedName::new(None, None, "element"));
-    let at_name = Rc::new(QualifiedName::new(None, None, "attr"));
+    let e_name = QName::from_local_name(NcName::try_from("element").unwrap());
+    let at_name = QName::from_local_name(NcName::try_from("attr").unwrap());
     // <element attr="val1">text1</element>
     let mut e1 = sd
         .new_element(e_name.clone())
@@ -1656,7 +1690,7 @@ where
     e2.push(t2).expect("unable to add text 2");
     top.push(e2).expect("unable to add element 2");
 
-    let xform = parse("/root/element[position() = 2]", None).expect("parsing failed");
+    let xform = parse("/root/element[position() = 2]", None, None).expect("parsing failed");
     let mut stctxt = StaticContextBuilder::new()
         .message(|_| Ok(()))
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
@@ -1733,7 +1767,7 @@ where
         .build()
         .dispatch(
             &mut stctxt,
-            &parse("document('urn:example.org/test')", None)
+            &parse("document('urn:example.org/test')", None, None)
                 .expect("unable to parse XPath expression"),
         )
         .expect("evaluation failed");
@@ -1749,15 +1783,15 @@ where
     G: Fn() -> N,
     H: Fn() -> Item<N>,
 {
-    let e: Transform<N> = parse("key('mykey', 'blue')", None)
+    let e: Transform<N> = parse("key('mykey', 'blue')", None, None)
         .expect("failed to parse expression \"key('mykey', 'blue'))\"");
     let mut sd = make_empty_doc();
     let mut top = sd
-        .new_element(Rc::new(QualifiedName::new(None, None, String::from("Top"))))
+        .new_element(QName::from_local_name(NcName::try_from("Top").unwrap()))
         .expect("unable to create element");
     sd.push(top.clone()).expect("unable to add node");
     let mut red1 = sd
-        .new_element(Rc::new(QualifiedName::new(None, None, String::from("one"))))
+        .new_element(QName::from_local_name(NcName::try_from("one").unwrap()))
         .expect("unable to create element");
     red1.push(
         sd.new_text(Rc::new(Value::from("red")))
@@ -1766,7 +1800,7 @@ where
     .expect("unable to create element");
     top.push(red1).expect("unable to add node");
     let mut blue1 = sd
-        .new_element(Rc::new(QualifiedName::new(None, None, String::from("two"))))
+        .new_element(QName::from_local_name(NcName::try_from("two").unwrap()))
         .expect("unable to create element");
     blue1
         .push(
@@ -1776,11 +1810,7 @@ where
         .expect("unable to create element");
     top.push(blue1).expect("unable to add node");
     let mut yellow1 = sd
-        .new_element(Rc::new(QualifiedName::new(
-            None,
-            None,
-            String::from("three"),
-        )))
+        .new_element(QName::from_local_name(NcName::try_from("three").unwrap()))
         .expect("unable to create element");
     yellow1
         .push(
@@ -1811,7 +1841,10 @@ where
     let seq = ctxt.dispatch(&mut stctxt, &e).expect("evaluation failed");
 
     assert_eq!(seq.len(), 1);
-    assert_eq!(seq[0].name().to_string(), "two");
+    assert_eq!(
+        seq[0].name().map_or("".to_string(), |m| m.to_string()),
+        "two"
+    );
     Ok(())
 }
 

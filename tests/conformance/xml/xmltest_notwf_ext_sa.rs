@@ -8,7 +8,7 @@ James Clark XMLTEST cases
 
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::xml;
+use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 
 #[test]
@@ -27,7 +27,7 @@ fn notwfextsa001() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/ext-sa/001.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -49,7 +49,7 @@ fn notwfextsa002() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/ext-sa/002.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -71,7 +71,7 @@ fn notwfextsa003() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/ext-sa/003.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());

@@ -8,16 +8,25 @@ use crate::parser::combinators::tag::anytag;
 use crate::parser::combinators::tuple::tuple3;
 use crate::parser::combinators::whitespace::xpwhitespace;
 use crate::parser::xpath::strings::stringconcat_expr;
-use crate::parser::{ParseError, ParseInput};
+use crate::parser::{ParseError, ParseInput, StaticState};
 use crate::transform::Transform;
 use crate::value::Operator;
+use qualname::{NamespacePrefix, NamespaceUri};
 
 // ComparisonExpr ::= StringConcatExpr ( (ValueComp | GeneralComp | NodeComp) StringConcatExpr)?
-pub(crate) fn comparison_expr<'a, N: Node + 'a>()
--> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+pub(crate) fn comparison_expr<'a, N: Node + 'a, L>() -> Box<
+    dyn Fn(
+            ParseInput<'a, N>,
+            &mut StaticState<L>,
+        ) -> Result<(ParseInput<'a, N>, Transform<N>), ParseError>
+        + 'a,
+>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError> + 'a,
+{
     Box::new(map(
         pair(
-            stringconcat_expr::<N>(),
+            stringconcat_expr::<N, L>(),
             opt(pair(
                 tuple3(
                     xpwhitespace(),
@@ -27,7 +36,7 @@ pub(crate) fn comparison_expr<'a, N: Node + 'a>()
                     ]),
                     xpwhitespace(),
                 ),
-                stringconcat_expr::<N>(),
+                stringconcat_expr::<N, L>(),
             )),
         ),
         |(v, o)| match o {

@@ -7,7 +7,7 @@ University of Edinburgh XML 1.0 4th edition errata test suite.
 use crate::conformance::dtdfileresolve;
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::{ParserConfig, xml};
+use xrust::parser::{ParseError, ParserStateBuilder, StaticStateBuilder, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
@@ -20,17 +20,22 @@ fn invalidbo1() {
         Spec Sections:4.3.3
         Description:Byte order mark in general entity should go away (big-endian)
     */
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/eduni/errata-4e/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/eduni/errata-4e/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbom_be.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_ok());
@@ -50,17 +55,22 @@ fn invalidbo2() {
         Spec Sections:4.3.3
         Description:Byte order mark in general entity should go away (little-endian)
     */
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/eduni/errata-4e/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/eduni/errata-4e/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbom_le.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
     assert!(parseresult.is_ok());
 
@@ -86,7 +96,7 @@ fn invalidbo3() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/incl8bom.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -113,7 +123,7 @@ fn invalidbo4() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbombom_be.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -140,7 +150,7 @@ fn invalidbo5() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbombom_le.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -167,7 +177,7 @@ fn invalidbo6() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/incl8bombom.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -201,7 +211,7 @@ fn invalidsa140() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/140.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -231,7 +241,7 @@ fn invalidsa141() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/141.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -261,7 +271,7 @@ fn xrmt5014() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/014.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -291,7 +301,7 @@ fn xrmt5016() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/016.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -321,7 +331,7 @@ fn xrmt5019() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/019.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(testxml.is_err());
@@ -343,7 +353,7 @@ fn ibminvalid_p89ibm89n06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -369,7 +379,7 @@ fn ibminvalid_p89ibm89n07xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n07.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -395,7 +405,7 @@ fn ibminvalid_p89ibm89n08xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n08.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -421,7 +431,7 @@ fn ibminvalid_p89ibm89n09xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n09.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -447,7 +457,7 @@ fn ibminvalid_p89ibm89n10xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n10.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -473,7 +483,7 @@ fn ibminvalid_p89ibm89n11xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n11.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -499,7 +509,7 @@ fn ibminvalid_p89ibm89n12xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n12.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());

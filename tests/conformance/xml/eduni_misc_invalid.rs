@@ -6,7 +6,7 @@ Bjoern Hoehrmann via HST 2013-09-18
 
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::xml;
+use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
@@ -26,7 +26,7 @@ fn hstbh005() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/005.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -53,7 +53,7 @@ fn hstbh006() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/006.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());

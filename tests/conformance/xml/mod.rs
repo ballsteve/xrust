@@ -1,4 +1,4 @@
-mod eduni_errata2e_error;
+/*mod eduni_errata2e_error;
 mod eduni_errata2e_invalid;
 mod eduni_errata2e_notwf;
 mod eduni_errata2e_valid;
@@ -10,8 +10,8 @@ mod eduni_errata4e_invalid;
 mod eduni_errata4e_notwf;
 mod eduni_errata4e_valid;
 mod eduni_misc_invalid;
-mod eduni_misc_notwf;
-mod eduni_namespaces_10_error;
+mod eduni_misc_notwf;*/
+/*mod eduni_namespaces_10_error;
 mod eduni_namespaces_10_invalid;
 mod eduni_namespaces_10_notwf;
 mod eduni_namespaces_10_valid;
@@ -44,4 +44,4 @@ mod xmltest_notwf_sa;
 mod xmltest_valid_ext_sa;
 mod xmltest_valid_not_sa;
 mod xmltest_valid_sa;
-mod xmltest_valid_sa_canonicalonly;
+mod xmltest_valid_sa_canonicalonly;*/

@@ -7,7 +7,7 @@ Richard Tobin's XML 1.0 2nd edition errata test suite.
 use crate::conformance::dtdfileresolve;
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::{ParserConfig, xml};
+use xrust::parser::{ParseError, ParserStateBuilder, StaticStateBuilder, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
@@ -27,7 +27,7 @@ fn rmte2e9a() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E9a.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -53,7 +53,7 @@ fn rmte2e15e() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15e.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -79,7 +79,7 @@ fn rmte2e15f() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15f.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -105,7 +105,7 @@ fn rmte2e15i() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15i.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -131,7 +131,7 @@ fn rmte2e15j() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15j.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -157,7 +157,7 @@ fn rmte2e15k() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15k.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -183,7 +183,7 @@ fn rmte2e15l() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15l.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -210,7 +210,7 @@ fn rmte2e18() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E18.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -218,7 +218,7 @@ fn rmte2e18() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E18.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -248,7 +248,7 @@ fn rmte2e19() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E19.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -256,7 +256,7 @@ fn rmte2e19() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E19.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -286,7 +286,7 @@ fn rmte2e22() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E22.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -312,7 +312,7 @@ fn rmte2e24() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E24.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -338,7 +338,7 @@ fn rmte2e29() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E29.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -365,7 +365,7 @@ fn rmte2e36() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E36.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -391,7 +391,7 @@ fn rmte2e41() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E41.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -417,7 +417,7 @@ fn rmte2e48() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E48.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -444,7 +444,7 @@ fn rmte2e50() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E50.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -464,17 +464,22 @@ fn rmte2e60() {
         Description:Conditional sections are allowed in external parameter entities referred to from the internal subset.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/eduni/errata-2e/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/eduni/errata-2e/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E60.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_ok());

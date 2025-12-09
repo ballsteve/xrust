@@ -6,7 +6,7 @@ University of Edinburgh XML 1.0 4th edition errata test suite.
 
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::xml;
+use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 
 #[test]
@@ -24,7 +24,7 @@ fn invalidbo7() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbomboom_be.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -45,7 +45,7 @@ fn invalidbo8() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbomboom_le.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -66,7 +66,7 @@ fn invalidbo9() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/incl8bomboom.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -93,7 +93,7 @@ fn xrmt008() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/008.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());

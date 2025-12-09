@@ -9,7 +9,7 @@ James Clark XMLTEST cases - Standalone
 use crate::conformance::dtdfileresolve;
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::{ParserConfig, xml};
+use xrust::parser::{ParseError, ParserStateBuilder, StaticStateBuilder, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
@@ -22,17 +22,22 @@ fn validextsa001() {
         Description:A combination of carriage return line feed in an external entity must be normalized to a single newline.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/001.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -40,7 +45,7 @@ fn validextsa001() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/001.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -63,17 +68,22 @@ fn validextsa002() {
         Description:A carriage return (also CRLF) in an external entity mustbe normalized to a single newline.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/002.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -81,7 +91,7 @@ fn validextsa002() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/002.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -104,17 +114,22 @@ fn validextsa003() {
         Description:Test demonstrates that the content of an element can be empty. In this case the external entity is an empty file.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/003.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -122,7 +137,7 @@ fn validextsa003() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/003.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -145,17 +160,22 @@ fn validextsa004() {
         Description:A carriage return (also CRLF) in an external entity mustbe normalized to a single newline.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/004.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -163,7 +183,7 @@ fn validextsa004() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/004.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -186,17 +206,22 @@ fn validextsa005() {
         Description:Test demonstrates the use of optional character and content particles within an element content.  The test also show the use of external entity.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/005.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -204,7 +229,7 @@ fn validextsa005() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/005.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -228,17 +253,22 @@ fn validextsa006() {
         Description:Test demonstrates the use of optional character and content particles within mixed element content.  The test also shows the use of an external entity and that a carriage control line feed in an external entity must be normalized to a single newline.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/006.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -246,7 +276,7 @@ fn validextsa006() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/006.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -270,17 +300,22 @@ fn validextsa007() {
         Description:Test demonstrates the use of external entity and how replacementtext is retrieved and processed.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/007.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -288,7 +323,7 @@ fn validextsa007() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/007.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -312,17 +347,22 @@ fn validextsa008() {
         Description: Test demonstrates the use of externalentity and how replacement text is retrieved and processed.  Also tests the use of anEncodingDecl of UTF-16.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/008.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -330,7 +370,7 @@ fn validextsa008() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/008.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -353,17 +393,22 @@ fn validextsa009() {
         Description:A carriage return (also CRLF) in an external entity mustbe normalized to a single newline.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/009.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -371,7 +416,7 @@ fn validextsa009() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/009.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -394,17 +439,22 @@ fn validextsa011() {
         Description:Test demonstrates the use of a public identifier with and external entity.The test also show that a carriage control line feed combination in an externalentity must be normalized to a single newline.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/011.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -412,7 +462,7 @@ fn validextsa011() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/011.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -435,17 +485,22 @@ fn validextsa012() {
         Description:Test demonstrates both internal and external entities and that processing of entity references may be required to produce the correct replacement text.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/012.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -453,7 +508,7 @@ fn validextsa012() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/012.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -477,17 +532,22 @@ fn validextsa013() {
         Description:Test demonstrates that whitespace is handled by adding a single whitespace to the normalized value in the attribute list.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/013.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -495,7 +555,7 @@ fn validextsa013() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/013.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -519,17 +579,22 @@ fn validextsa014() {
         Description:Test demonstrates use of characters outside of normal ASCII range.
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string());
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/014.xml")
             .unwrap()
             .as_str(),
-        Some(pc),
+        ps,
+        ss,
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -537,7 +602,7 @@ fn validextsa014() {
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/014.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());

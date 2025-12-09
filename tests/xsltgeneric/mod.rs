@@ -1,10 +1,9 @@
 //! Tests for XSLT defined generically
 
 use pkg_version::{pkg_version_major, pkg_version_minor, pkg_version_patch};
-use std::rc::Rc;
+use qualname::NamespaceMap;
 use url::Url;
 use xrust::item::{Item, Node, Sequence, SequenceTrait};
-use xrust::namespace::NamespaceMap;
 use xrust::transform::context::StaticContextBuilder;
 use xrust::xdmerror::{Error, ErrorKind};
 use xrust::xslt::from_document;
@@ -15,11 +14,11 @@ fn test_rig<N: Node, G, H, J>(
     parse_from_str: G,
     _parse_from_str_with_ns: J,
     make_doc: H,
-) -> Result<Sequence<N>, Error>
+) -> Result<(Sequence<N>, N), Error>
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let srcdoc = parse_from_str(src.as_ref()).map_err(|e| {
         Error::new(
@@ -36,9 +35,12 @@ where
         .build();
     let mut ctxt = from_document(styledoc, None, |s| parse_from_str(s), |_| Ok(String::new()))?;
     ctxt.context(vec![Item::Node(srcdoc.clone())], 0);
-    ctxt.result_document(make_doc()?);
+    // Make sure the document lives until the end of the function's scope
+    let rd = make_doc()?;
+    ctxt.result_document(rd.clone());
     ctxt.populate_key_values(&mut stctxt, srcdoc.clone())?;
-    ctxt.evaluate(&mut stctxt)
+    let result = ctxt.evaluate(&mut stctxt);
+    result.map(|r| (r, rd))
 }
 
 fn test_msg_rig<N: Node, G, H, J>(
@@ -47,11 +49,11 @@ fn test_msg_rig<N: Node, G, H, J>(
     parse_from_str: G,
     _parse_from_str_with_ns: J,
     make_doc: H,
-) -> Result<(Sequence<N>, Vec<String>), Error>
+) -> Result<(Sequence<N>, Vec<String>, N), Error>
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let srcdoc = parse_from_str(src.as_ref())?;
     let styledoc = parse_from_str(style.as_ref())?;
@@ -66,9 +68,10 @@ where
         .build();
     let mut ctxt = from_document(styledoc, None, |s| parse_from_str(s), |_| Ok(String::new()))?;
     ctxt.context(vec![Item::Node(srcdoc.clone())], 0);
-    ctxt.result_document(make_doc()?);
+    let rd = make_doc()?;
+    ctxt.result_document(rd.clone());
     let seq = ctxt.evaluate(&mut stctxt)?;
-    Ok((seq, msgs))
+    Ok((seq, msgs, rd))
 }
 
 pub fn generic_literal_text<N: Node, G, H, J>(
@@ -79,7 +82,7 @@ pub fn generic_literal_text<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
         "<Test><Level1>one</Level1><Level1>two</Level1></Test>",
@@ -90,14 +93,14 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_string() == "Found the document" {
+    if result.0.to_string() == "Found the document" {
         Ok(())
     } else {
         Err(Error::new(
             ErrorKind::Unknown,
             format!(
                 "got result \"{}\", expected \"Found the document\"",
-                result.to_string()
+                result.0.to_string()
             ),
         ))
     }
@@ -111,7 +114,7 @@ pub fn generic_sys_prop<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
         "<Test><Level1>one</Level1><Level1>two</Level1></Test>",
@@ -122,7 +125,7 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_string()
+    if result.0.to_string()
         == format!(
             "0.9-{}.{}.{}",
             pkg_version_major!(),
@@ -136,7 +139,7 @@ where
             ErrorKind::Unknown,
             format!(
                 "got result \"{}\", expected \"{}\"",
-                result.to_string(),
+                result.0.to_string(),
                 format!(
                     "0.9-{}.{}.{}",
                     pkg_version_major!(),
@@ -156,7 +159,7 @@ pub fn generic_value_of_1<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
         "<Test>special &lt; less than</Test>",
@@ -167,14 +170,14 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_string() == "special < less than" {
+    if result.0.to_string() == "special < less than" {
         Ok(())
     } else {
         Err(Error::new(
             ErrorKind::Unknown,
             format!(
-                "got result \"{}\", expected \"special < less than\"",
-                result.to_string()
+                "got result \"{}\", expected \"special &lt; less than\"",
+                result.0.to_string()
             ),
         ))
     }
@@ -188,7 +191,7 @@ pub fn generic_value_of_2<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
         "<Test>special &lt; less than</Test>",
@@ -199,14 +202,14 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_string() == "special < less than" {
+    if result.0.to_string() == "special < less than" {
         Ok(())
     } else {
         Err(Error::new(
             ErrorKind::Unknown,
             format!(
                 "got result \"{}\", expected \"special < less than\"",
-                result.to_string()
+                result.0.to_string()
             ),
         ))
     }
@@ -220,7 +223,7 @@ pub fn generic_literal_element<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
         "<Test><Level1>one</Level1><Level1>two</Level1></Test>",
@@ -231,14 +234,14 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_xml() == "<answer>Made an element</answer>" {
+    if result.0.to_xml() == "<answer>Made an element</answer>" {
         Ok(())
     } else {
         Err(Error::new(
             ErrorKind::Unknown,
             format!(
                 "got result \"{}\", expected \"<answer>Made an element</answer>\"",
-                result.to_string()
+                result.0.to_string()
             ),
         ))
     }
@@ -252,7 +255,7 @@ pub fn generic_element<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
         "<Test><Level1>one</Level1><Level1>two</Level1></Test>",
@@ -263,14 +266,14 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_xml() == "<answer0>Made an element</answer0>" {
+    if result.0.to_xml() == "<answer0>Made an element</answer0>" {
         Ok(())
     } else {
         Err(Error::new(
             ErrorKind::Unknown,
             format!(
                 "got result \"{}\", expected \"<answer0>Made an element</answer0>\"",
-                result.to_string()
+                result.0.to_string()
             ),
         ))
     }
@@ -284,7 +287,7 @@ pub fn generic_apply_templates_1<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
         "<Test><Level1>one</Level1><Level1>two</Level1></Test>",
@@ -297,14 +300,14 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_xml() == "found textfound text" {
+    if result.0.to_xml() == "found textfound text" {
         Ok(())
     } else {
         Err(Error::new(
             ErrorKind::Unknown,
             format!(
                 "got result \"{}\", expected \"found textfound text\"",
-                result.to_string()
+                result.0.to_string()
             ),
         ))
     }
@@ -318,7 +321,7 @@ pub fn generic_apply_templates_2<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
         "<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>",
@@ -332,14 +335,14 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_xml() == "onetwothreefour" {
+    if result.0.to_xml() == "onetwothreefour" {
         Ok(())
     } else {
         Err(Error::new(
             ErrorKind::Unknown,
             format!(
                 "got result \"{}\", expected \"onetwothreefour\"",
-                result.to_string()
+                result.0.to_string()
             ),
         ))
     }
@@ -353,7 +356,7 @@ pub fn generic_apply_templates_mode<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
         "<Test>one<Level1>a</Level1>two<Level1>b</Level1>three<Level1>c</Level1>four<Level1>d</Level1></Test>",
@@ -368,7 +371,7 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_xml()
+    if result.0.to_xml()
         == "<HEAD><h1>a</h1><h1>b</h1><h1>c</h1><h1>d</h1></HEAD><BODY><p>a</p><p>b</p><p>c</p><p>d</p></BODY>"
     {
         Ok(())
@@ -377,7 +380,7 @@ where
             ErrorKind::Unknown,
             format!(
                 "got result \"{}\", expected \"<HEAD><h1>a</h1><h1>b</h1><h1>c</h1><h1>d</h1></HEAD><BODY><p>a</p><p>b</p><p>c</p><p>d</p></BODY>\"",
-                result.to_xml()
+                result.0.to_xml()
             ),
         ))
     }
@@ -391,7 +394,7 @@ pub fn generic_apply_templates_sort<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
         "<Test>one<Level1>a</Level1>two<Level1>b</Level1>three<Level1>c</Level1>four<Level1>d</Level1></Test>",
@@ -405,7 +408,7 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_xml()
+    if result.0.to_xml()
         == "<L>a</L><L>b</L><L>c</L><L>d</L><p>four</p><p>one</p><p>three</p><p>two</p>"
     {
         Ok(())
@@ -414,7 +417,7 @@ where
             ErrorKind::Unknown,
             format!(
                 "got result \"{}\", expected \"<L>a</L><L>b</L><L>c</L><L>d</L><p>four</p><p>one</p><p>three</p><p>two</p>\"",
-                result.to_xml()
+                result.0.to_xml()
             ),
         ))
     }
@@ -428,7 +431,7 @@ pub fn generic_comment<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
         "<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>",
@@ -442,7 +445,7 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_xml()
+    if result.0.to_xml()
         == "one<!-- this is a level 1 element -->two<!-- this is a level 1 element -->three<!-- this is a level 1 element -->four<!-- this is a level 1 element -->"
     {
         Ok(())
@@ -451,7 +454,7 @@ where
             ErrorKind::Unknown,
             format!(
                 "got result \"{}\", expected \"one<!-- this is a level 1 element -->two<!-- this is a level 1 element -->three<!-- this is a level 1 element -->four<!-- this is a level 1 element -->\"",
-                result.to_string()
+                result.0.to_string()
             ),
         ))
     }
@@ -465,7 +468,7 @@ pub fn generic_pi<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
         "<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>",
@@ -479,7 +482,7 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_xml()
+    if result.0.to_xml()
         == "one<?piL1 this is a level 1 element?>two<?piL1 this is a level 1 element?>three<?piL1 this is a level 1 element?>four<?piL1 this is a level 1 element?>"
     {
         Ok(())
@@ -488,7 +491,7 @@ where
             ErrorKind::Unknown,
             format!(
                 "got result \"{}\", expected \"one<?piL1 this is a level 1 element?>two<?piL1 this is a level 1 element?>three<?piL1 this is a level 1 element?>four<?piL1 this is a level 1 element?>\"",
-                result.to_string()
+                result.0.to_string()
             ),
         ))
     }
@@ -502,7 +505,7 @@ pub fn generic_current<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
         "<Test ref='one'><second name='foo'>I am foo</second><second name='one'>I am one</second></Test>",
@@ -515,14 +518,15 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_xml() == "<second name='one'>I am one</second>" {
+
+    if result.0.to_xml() == "<second name='one'>I am one</second>" {
         Ok(())
     } else {
         Err(Error::new(
             ErrorKind::Unknown,
             format!(
                 "got result \"{}\", expected \"<second name='one'>I am one</second>\"",
-                result.to_string()
+                result.0.to_string()
             ),
         ))
     }
@@ -536,7 +540,7 @@ pub fn generic_key_1<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
         "<Test><one>blue</one><two>yellow</two><three>green</three><four>blue</four></Test>",
@@ -551,14 +555,14 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_xml() == "#blue = 2" {
+    if result.0.to_xml() == "#blue = 2" {
         Ok(())
     } else {
         Err(Error::new(
             ErrorKind::Unknown,
             format!(
                 "got result \"{}\", expected \"#blue = 2\"",
-                result.to_string()
+                result.0.to_string()
             ),
         ))
     }
@@ -574,7 +578,7 @@ pub fn generic_issue_58<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
         r#"<Example>
@@ -611,7 +615,7 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_xml()
+    if result.0.to_xml()
         == r#"<dat:dataPack xmlns:dat='http://www.stormware.cz/schema/version_2/data.xsd'>
     <int:head xmlns:int='http://www.stormware.cz/schema/version_2/intDoc.xsd'>XSLT in Rust</int:head>
     <int:body xmlns:int='http://www.stormware.cz/schema/version_2/intDoc.xsd'>A simple document.</int:body>
@@ -633,7 +637,7 @@ pub fn generic_issue_95<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
         "<Test><Level1>one</Level1><Level1>two</Level1></Test>",
@@ -648,14 +652,14 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_xml() == "<Test><Level1>one</Level1><Level1>two</Level1></Test>" {
+    if result.0.to_xml() == "<Test><Level1>one</Level1><Level1>two</Level1></Test>" {
         Ok(())
     } else {
         Err(Error::new(
             ErrorKind::Unknown,
             format!(
                 "got result \"{}\", expected \"Found the document\"",
-                result.to_xml()
+                result.0.to_xml()
             ),
         ))
     }
@@ -669,9 +673,9 @@ pub fn generic_message_1<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
-    let (result, msgs) = test_msg_rig(
+    let (result, msgs, _rd) = test_msg_rig(
         "<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>",
         r#"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='/'><xsl:apply-templates/></xsl:template>
@@ -721,7 +725,7 @@ pub fn generic_message_term<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     match test_msg_rig(
         "<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>",
@@ -738,7 +742,7 @@ where
         Err(e) => {
             if e.kind == ErrorKind::Terminated
                 && e.message == "here is a level 1 element"
-                && e.code.unwrap().to_string() == "XTMM9000"
+                && e.code.is_some_and(|f| f.local_name() == *"XTMM9000")
             {
                 Ok(())
             } else {
@@ -759,7 +763,7 @@ pub fn generic_callable_named_1<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
         "<Test><one>blue</one><two>yellow</two><three>green</three><four>blue</four></Test>",
@@ -781,14 +785,14 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_string() == "There are 4 child elements" {
+    if result.0.to_string() == "There are 4 child elements" {
         Ok(())
     } else {
         Err(Error::new(
             ErrorKind::Unknown,
             format!(
                 "got result \"{}\", expected \"There are 4 child elements\"",
-                result.to_string()
+                result.0.to_string()
             ),
         ))
     }
@@ -801,7 +805,7 @@ pub fn generic_callable_posn_1<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
         "<Test><one>blue</one><two>yellow</two><three>green</three><four>blue</four></Test>",
@@ -821,14 +825,14 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_string() == "There are 4 child elements" {
+    if result.0.to_string() == "There are 4 child elements" {
         Ok(())
     } else {
         Err(Error::new(
             ErrorKind::Unknown,
             format!(
                 "got result \"{}\", expected \"There are 4 child elements\"",
-                result.to_string()
+                result.0.to_string()
             ),
         ))
     }
@@ -842,7 +846,7 @@ pub fn generic_include<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let srcdoc =
         parse_from_str("<Test>one<Level1/>two<Level2/>three<Level3/>four<Level4/></Test>")?;
@@ -899,7 +903,7 @@ pub fn generic_document_1<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let srcdoc = parse_from_str("<Test><internal>on the inside</internal></Test>")?;
     let styledoc = parse_from_str(
@@ -944,7 +948,7 @@ pub fn generic_number_1<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let srcdoc = parse_from_str("<Test><t>one</t><t>two</t><t>three</t></Test>")?;
     let styledoc = parse_from_str(
@@ -975,7 +979,7 @@ pub fn attr_set_1<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
         "<Test><Level1>one</Level1><Level1>two</Level1></Test>",
@@ -1004,7 +1008,7 @@ pub fn attr_set_2<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
         "<Test><Level1>one</Level1><Level1>two</Level1></Test>",
@@ -1019,7 +1023,7 @@ where
         make_doc,
     )?;
     assert_eq!(
-        result.to_xml(),
+        result.0.to_xml(),
         "<MyElement bar='from set foo'>one</MyElement><MyElement bar='from set foo'>two</MyElement>"
     );
     Ok(())
@@ -1033,7 +1037,7 @@ pub fn attr_set_3<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
         "<Test><Level1>one</Level1><Level1>two</Level1></Test>",
@@ -1048,7 +1052,7 @@ where
         make_doc,
     )?;
     assert_eq!(
-        result.to_xml(),
+        result.0.to_xml(),
         "<Element bar='from set foo'>one</Element><Element bar='from set foo'>two</Element>"
     );
     Ok(())
@@ -1062,9 +1066,9 @@ pub fn feg_starting_with_1<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
-    let result = test_rig(
+    let (result, _rd) = test_rig(
         "<Test><a>one</a><b>two</b><c>three</c><a>four</a><b>five</b><c>six</c><a>seven</a><b>eight</b><c>nine</c></Test>",
         r#"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='Test'>
@@ -1101,9 +1105,9 @@ pub fn feg_starting_with_2<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
-    let result = test_rig(
+    let (result, _rd) = test_rig(
         "<Test><a>one</a><b>two</b><c>three</c><a>four</a><b>five</b><c>six</c><a>seven</a><b>eight</b><c>nine</c></Test>",
         r#"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='Test'>
@@ -1145,7 +1149,7 @@ pub fn issue_96_abs<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
         "<Example><Level1>one</Level1><Level1>two</Level1></Example>",
@@ -1156,7 +1160,7 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    assert_eq!(result.to_xml(), "found an Example element");
+    assert_eq!(result.0.to_xml(), "found an Example element");
     Ok(())
 }
 
@@ -1168,7 +1172,7 @@ pub fn issue_96_rel<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
         "<Example><Level1>one</Level1><Level1>two</Level1></Example>",
@@ -1179,7 +1183,7 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    assert_eq!(result.to_xml(), "found an Example element");
+    assert_eq!(result.0.to_xml(), "found an Example element");
     Ok(())
 }
 
@@ -1191,7 +1195,7 @@ pub fn issue_96_mixed<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
         "<Example><Level1>one</Level1><Level1>two</Level1></Example>",
@@ -1203,7 +1207,7 @@ where
         make_doc,
     )?;
     assert_eq!(
-        result.to_xml(),
+        result.0.to_xml(),
         "found a Level1 elementfound a Level1 element"
     );
     Ok(())
@@ -1217,7 +1221,7 @@ pub fn issue_126<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
         "<catalog>
@@ -1459,7 +1463,7 @@ where
         make_doc,
     )?;
     assert_eq!(
-        result.to_xml(),
+        result.0.to_xml(),
         r###"<html><body><h2>My CD Collection</h2><table border='1'><ts bgcolor='#9acd32'><th>Title</th><th>Artist</th></ts><tr><td>Empire Burlesque</td><td>Bob Dylan</td></tr><tr><td>Hide your heart</td><td>Bonnie Tyler</td></tr><tr><td>Greatest Hits</td><td>Dolly Parton</td></tr><tr><td>Still got the blues</td><td>Gary Moore</td></tr><tr><td>Eros</td><td>Eros Ramazzotti</td></tr><tr><td>One night only</td><td>Bee Gees</td></tr><tr><td>Sylvias Mother</td><td>Dr.Hook</td></tr><tr><td>Maggie May</td><td>Rod Stewart</td></tr><tr><td>Romanza</td><td>Andrea Bocelli</td></tr><tr><td>When a man loves a woman</td><td>Percy Sledge</td></tr><tr><td>Black angel</td><td>Savage Rose</td></tr><tr><td>1999 Grammy Nominees</td><td>Many</td></tr><tr><td>For the good times</td><td>Kenny Rogers</td></tr><tr><td>Big Willie style</td><td>Will Smith</td></tr><tr><td>Tupelo Honey</td><td>Van Morrison</td></tr><tr><td>Soulsville</td><td>Jorn Hoel</td></tr><tr><td>The very best of</td><td>Cat Stevens</td></tr><tr><td>Stop</td><td>Sam Brown</td></tr><tr><td>Bridge of Spies</td><td>T`Pau</td></tr><tr><td>Private Dancer</td><td>Tina Turner</td></tr><tr><td>Midt om natten</td><td>Kim Larsen</td></tr><tr><td>Pavarotti Gala Concert</td><td>Luciano Pavarotti</td></tr><tr><td>The dock of the bay</td><td>Otis Redding</td></tr><tr><td>Picture book</td><td>Simply Red</td></tr><tr><td>Red</td><td>The Communards</td></tr><tr><td>Unchain my heart</td><td>Joe Cocker</td></tr></table></body></html>"###
     );
     Ok(())
@@ -1473,7 +1477,7 @@ pub fn issue_137_1<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
         "<dummy/>",
@@ -1507,7 +1511,7 @@ pub fn issue_137_2<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
         "<dummy/>",
@@ -1528,7 +1532,7 @@ where
     )?;
 
     assert_eq!(
-        result.to_xml(),
+        result.0.to_xml(),
         "<HTML><TITLE>A really exciting document</TITLE><BODY BGCOLOR='#FFFFCC'><H1>Title: A really exciting document</H1></BODY></HTML>"
     );
     Ok(())
@@ -1542,9 +1546,9 @@ pub fn dbk_1<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
-    let result = test_rig(
+    let (result, _rd) = test_rig(
         "<db:article xmlns:db='http://docbook.org/ns/docbook'>
         <db:sect1 xmlns:db='http://docbook.org/ns/docbook'>
           <db:title xmlns:db='http://docbook.org/ns/docbook'>Level 1 Heading</db:title>
@@ -1641,9 +1645,9 @@ pub fn md_1<N: Node, G, H, J>(
 where
     G: Fn(&str) -> Result<N, Error>,
     H: Fn() -> Result<N, Error>,
-    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
-    let result = test_rig(
+    let (result, _rd) = test_rig(
         "<article>
           <heading1>Level 1 Heading</heading1>
           <para>First paragraph with <emph>emphasised</emph> text, <emph role='strong'>bold</emph> text, and <emph role='underline'>underlined</emph> text</para>

@@ -12,24 +12,27 @@ use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::common::{is_ncnamechar, is_ncnamestartchar};
 use crate::parser::xml::chardata::chardata_unicode_codepoint;
 use crate::parser::xml::dtd::enumerated::enumeratedtype;
-use crate::parser::xml::qname::{name, qualname};
+use crate::parser::xml::qname::{name, qualname_to_parts};
 use crate::parser::xml::reference::textreference;
-use crate::parser::{ParseError, ParseInput};
-use crate::qname::QualifiedName;
+use crate::parser::{ParseError, ParseInput, StaticState};
 use crate::xmldecl::{AttType, DefaultDecl};
+use qualname::{NamespacePrefix, NamespaceUri};
 use std::collections::HashMap;
 
 //AttlistDecl ::= '<!ATTLIST' S Name AttDef* S? '>'
-pub(crate) fn attlistdecl<N: Node>()
--> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
-    move |(input, state)| match tuple6(
+pub(crate) fn attlistdecl<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, ()), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
+    move |(input, state), ss| match tuple6(
         tag("<!ATTLIST"),
         whitespace1(),
-        qualname(),
+        qualname_to_parts(),
         many0(attdef()),
         whitespace0(),
         tag(">"),
-    )((input, state))
+    )((input, state), ss)
     {
         Ok(((input2, mut state2), (_, _, n, ats, _, _))) => {
             /*
@@ -183,12 +186,15 @@ pub(crate) fn attlistdecl<N: Node>()
                     _ => {}
                 }
                 //xml:id datatype checking
-                if qn == QualifiedName::new(None, Some("xml".to_string()), "id".to_string())
-                    && att != AttType::ID
-                {
-                    return Err(ParseError::IDError(
-                        "xml:id declaration in the DTD does not have type ID".to_string(),
-                    ));
+                match (&qn.0.as_deref(), qn.1.as_str()) {
+                    (Some("xml"), "id") => {
+                        if att != AttType::ID {
+                            return Err(ParseError::IDError(
+                                "xml:id declaration in the DTD does not have type ID".to_string(),
+                            ));
+                        }
+                    }
+                    _ => {}
                 }
                 atts.insert(qn, (att, dfd, replaceable));
             }
@@ -235,8 +241,19 @@ pub(crate) fn attlistdecl<N: Node>()
 }
 
 //AttDef ::= S Name S AttType S DefaultDecl
-fn attdef<N: Node>()
--> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, (QualifiedName, AttType, DefaultDecl)), ParseError>
+// Returned Name is (prefix, local-part)
+fn attdef<'a, N: Node, L>() -> impl Fn(
+    ParseInput<'a, N>,
+    &mut StaticState<L>,
+) -> Result<
+    (
+        ParseInput<'a, N>,
+        ((Option<String>, String), AttType, DefaultDecl),
+    ),
+    ParseError,
+>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
     map(
         tuple6(
@@ -252,9 +269,9 @@ fn attdef<N: Node>()
                 let mut attnamesplit = an.split(':');
                 let prefix = Some(attnamesplit.next().unwrap().to_string());
                 let local = attnamesplit.collect::<String>();
-                QualifiedName::new(None, prefix, local)
+                (prefix, local)
             } else {
-                QualifiedName::new(None, None, an)
+                (None, an)
             };
             (qn, at, dd)
         },
@@ -262,7 +279,11 @@ fn attdef<N: Node>()
 }
 
 //AttType ::= StringType | TokenizedType | EnumeratedType
-fn atttype<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, AttType), ParseError> {
+fn atttype<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, AttType), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
     alt9(
         //map(petextreference(), |_| {}), //TODO
         value(tag("CDATA"), AttType::CDATA), //Stringtype
@@ -279,8 +300,13 @@ fn atttype<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, AttTyp
 }
 
 //DefaultDecl ::= '#REQUIRED' | '#IMPLIED' | (('#FIXED' S)? AttValue)
-fn defaultdecl<N: Node>()
--> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, DefaultDecl), ParseError> {
+fn defaultdecl<'a, N: Node, L>() -> impl Fn(
+    ParseInput<'a, N>,
+    &mut StaticState<L>,
+) -> Result<(ParseInput<'a, N>, DefaultDecl), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
     alt3(
         value(tag("#REQUIRED"), DefaultDecl::Required),
         value(tag("#IMPLIED"), DefaultDecl::Implied),
@@ -301,7 +327,11 @@ fn defaultdecl<N: Node>()
 }
 
 //AttValue ::= '"' ([^<&"] | Reference)* '"' | "'" ([^<&'] | Reference)* "'"
-fn attvalue<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+fn attvalue<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, String), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
     alt2(
         delimited(
             tag("\'"),

@@ -2,10 +2,10 @@
 
 use crate::ErrorKind;
 use crate::item::{Node, Sequence, SequenceTrait};
-use crate::qname::QualifiedName;
 use crate::transform::Transform;
 use crate::transform::context::{Context, StaticContext};
 use crate::xdmerror::Error;
+use qualname::{NamespaceUri, NcName, QName};
 use url::Url;
 
 /// XSLT current() function.
@@ -50,10 +50,9 @@ pub(crate) fn message<
             Err(Error {
                 kind: ErrorKind::Terminated,
                 message: msg,
-                code: Some(QualifiedName::new(
-                    Some(String::from("http://www.w3.org/2005/xqt-errors")),
-                    None,
-                    String::from("XTMM9000"),
+                code: Some(QName::new_from_parts(
+                    NcName::try_from("XTMM9000").unwrap(),
+                    Some(NamespaceUri::try_from("http://www.w3.org/2005/xqt-errors").unwrap()),
                 )),
             })
         }

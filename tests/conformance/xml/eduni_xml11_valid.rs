@@ -7,7 +7,7 @@ Richard Tobin's XML 1.1 test suite 13 Feb 2003
 use crate::conformance::non_utf8_file_reader;
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::xml;
+use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
@@ -27,7 +27,7 @@ fn rmt006() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/006.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -35,7 +35,7 @@ fn rmt006() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/006.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -64,7 +64,7 @@ fn rmt007() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/007.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -72,7 +72,7 @@ fn rmt007() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/007.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -100,7 +100,7 @@ fn rmt010() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/010.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -108,7 +108,7 @@ fn rmt010() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/010.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -137,7 +137,7 @@ fn rmt012() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/012.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -145,7 +145,7 @@ fn rmt012() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/012.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -173,7 +173,7 @@ fn rmt022() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/022.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -181,7 +181,7 @@ fn rmt022() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/022.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -209,7 +209,7 @@ fn rmt023() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/023.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -217,7 +217,7 @@ fn rmt023() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/023.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -246,7 +246,7 @@ fn rmt024() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/024.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -254,7 +254,7 @@ fn rmt024() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/024.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -284,7 +284,7 @@ fn rmt025() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/025.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -292,7 +292,7 @@ fn rmt025() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/025.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -322,7 +322,7 @@ fn rmt026() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/026.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -330,7 +330,7 @@ fn rmt026() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/026.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -360,7 +360,7 @@ fn rmt027() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/027.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -368,7 +368,7 @@ fn rmt027() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/027.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -398,7 +398,7 @@ fn rmt028() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/028.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -406,7 +406,7 @@ fn rmt028() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/028.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -436,7 +436,7 @@ fn rmt029() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/029.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -444,7 +444,7 @@ fn rmt029() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/029.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -472,7 +472,7 @@ fn rmt031() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/031.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -480,7 +480,7 @@ fn rmt031() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/031.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -509,7 +509,7 @@ fn rmt033() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/033.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -517,7 +517,7 @@ fn rmt033() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/033.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -546,7 +546,7 @@ fn rmt034() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/034.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -554,7 +554,7 @@ fn rmt034() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/034.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -583,7 +583,7 @@ fn rmt035() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/035.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -591,7 +591,7 @@ fn rmt035() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/035.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -619,7 +619,7 @@ fn rmt040() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/040.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -627,7 +627,7 @@ fn rmt040() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/040.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -656,7 +656,7 @@ fn rmt043() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/043.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -664,7 +664,7 @@ fn rmt043() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/043.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -693,7 +693,7 @@ fn rmt044() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/044.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -701,7 +701,7 @@ fn rmt044() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/044.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -730,7 +730,7 @@ fn rmt045() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/045.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -738,7 +738,7 @@ fn rmt045() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/045.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -766,7 +766,7 @@ fn rmt047() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/047.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -774,7 +774,7 @@ fn rmt047() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/047.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -804,7 +804,7 @@ fn rmt049() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/049.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -812,7 +812,7 @@ fn rmt049() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/049.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -842,7 +842,7 @@ fn rmt050() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/050.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -850,7 +850,7 @@ fn rmt050() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/050.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -880,7 +880,7 @@ fn rmt051() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/051.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -888,7 +888,7 @@ fn rmt051() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/051.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -918,7 +918,7 @@ fn rmt054() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/054.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -926,7 +926,7 @@ fn rmt054() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/054.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());

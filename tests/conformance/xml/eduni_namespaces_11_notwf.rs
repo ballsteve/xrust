@@ -6,7 +6,7 @@ Richard Tobin's XML Namespaces 1.1 test suite 14 Feb 2003
 
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::xml;
+use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 
 #[test]
@@ -24,7 +24,7 @@ fn rmtns11005() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/005.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -45,7 +45,7 @@ fn htbhns11007() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/007.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -66,7 +66,7 @@ fn htbhns11008() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/008.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());

@@ -7,7 +7,7 @@ Richard Tobin's XML 1.0 2nd edition errata test suite.
 use crate::conformance::dtdfileresolve;
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::{ParserConfig, xml};
+use xrust::parser::{ParseError, ParserStateBuilder, StaticStateBuilder, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
@@ -27,7 +27,7 @@ fn rmte2e2a() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E2a.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -54,7 +54,7 @@ fn rmte2e2b() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E2b.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -81,7 +81,7 @@ fn rmte2e9b() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E9b.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -101,17 +101,22 @@ fn rmte2e14() {
         Description:Declarations mis-nested wrt parameter entities are just validity errors (but note that some parsers treat some such errors as fatal)
     */
 
-    let mut pc = ParserConfig::new();
-    pc.ext_dtd_resolver = Some(dtdfileresolve());
-    pc.docloc = Some("tests/conformance/xml/xmlconf/eduni/errata-2e/".to_string());
-
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/eduni/errata-2e/".to_string())
+        .build();
+
+    let parseresult = xml::parse_with_state(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E14.xml")
             .unwrap()
             .as_str(),
-        None,
+        ps,
+        ss,
     );
 
     assert!(parseresult.is_err());
@@ -133,7 +138,7 @@ fn rmte2e15a() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15a.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -160,7 +165,7 @@ fn rmte2e15b() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15b.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -187,7 +192,7 @@ fn rmte2e15c() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15c.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -214,7 +219,7 @@ fn rmte2e15d() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15d.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -241,7 +246,7 @@ fn rmte2e15g() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15g.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -268,7 +273,7 @@ fn rmte2e15h() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15h.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());
@@ -295,7 +300,7 @@ fn rmte2e20() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E20.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_ok());

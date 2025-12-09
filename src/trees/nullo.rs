@@ -1,16 +1,18 @@
+//! A null tree implementation
+//!
+//! This tree implementation implements nothing.
+//! The parser combinator is generic in [Node].
+//! Occasionally, a module using the parser, but not needing a [Node],
+//! nevertheless requires a concrete type that has the [Node] trait.
+#![allow(dead_code)]
+
 use crate::item::{Node, NodeType};
 use crate::output::OutputDefinition;
-use crate::qname::QualifiedName;
 use crate::validators::{Schema, ValidationError};
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 use crate::xmldecl::{DTD, XMLDecl, XMLDeclBuilder};
-/// A null tree implementation
-///
-/// This tree implementation implements nothing.
-/// The parser combinator is generic in [Node].
-/// Occasionally, a module using the parser, but not needing a [Node],
-/// nevertheless requires a concrete type that has the [Node] trait.
+use qualname::{NamespacePrefix, NamespaceUri, QName};
 use std::cmp::Ordering;
 use std::fmt;
 use std::rc::Rc;
@@ -27,8 +29,32 @@ impl Node for Nullo {
     fn node_type(&self) -> NodeType {
         NodeType::Unknown
     }
-    fn name(&self) -> Rc<QualifiedName> {
-        Rc::new(QualifiedName::new(None, None, String::new()))
+    fn name(&self) -> Option<QName> {
+        None
+    }
+    fn to_qname(&self, _name: impl AsRef<str>) -> Result<QName, Error> {
+        Err(Error::new(
+            ErrorKind::NotImplemented,
+            String::from("not implemented"),
+        ))
+    }
+    fn to_prefixed_name(&self) -> String {
+        String::new()
+    }
+    fn to_namespace_prefix(&self, _nsuri: &NamespaceUri) -> Result<Option<NamespacePrefix>, Error> {
+        Err(Error::new(ErrorKind::NotImplemented, "not implemented"))
+    }
+    fn to_namespace_uri(&self, _nsuri: &Option<NamespacePrefix>) -> Result<NamespaceUri, Error> {
+        Err(Error::new(ErrorKind::NotImplemented, "not implemented"))
+    }
+    fn as_namespace_prefix(&self) -> Result<Option<&NamespacePrefix>, Error> {
+        Err(Error::new(ErrorKind::NotImplemented, "not implemented"))
+    }
+    fn as_namespace_uri(&self) -> Result<&NamespaceUri, Error> {
+        Err(Error::new(ErrorKind::NotImplemented, "not implemented"))
+    }
+    fn is_in_scope(&self) -> bool {
+        false
     }
     fn value(&self) -> Rc<Value> {
         Rc::new(Value::from(""))
@@ -84,10 +110,10 @@ impl Node for Nullo {
     fn attribute_iter(&self) -> Self::NodeIterator {
         Box::new(NulloIter::new())
     }
-    fn get_attribute(&self, _: &QualifiedName) -> Rc<Value> {
+    fn get_attribute(&self, _: &QName) -> Rc<Value> {
         Rc::new(Value::from(""))
     }
-    fn get_attribute_node(&self, _: &QualifiedName) -> Option<Self> {
+    fn get_attribute_node(&self, _: &QName) -> Option<Self> {
         None
     }
     fn owner_document(&self) -> Self {
@@ -99,7 +125,7 @@ impl Node for Nullo {
             String::from("not implemented"),
         ))
     }
-    fn new_element(&self, _: Rc<QualifiedName>) -> Result<Self, Error> {
+    fn new_element(&self, _: QName) -> Result<Self, Error> {
         Err(Error::new(
             ErrorKind::NotImplemented,
             String::from("not implemented"),
@@ -111,7 +137,7 @@ impl Node for Nullo {
             String::from("not implemented"),
         ))
     }
-    fn new_attribute(&self, _: Rc<QualifiedName>, _: Rc<Value>) -> Result<Self, Error> {
+    fn new_attribute(&self, _: QName, _: Rc<Value>) -> Result<Self, Error> {
         Err(Error::new(
             ErrorKind::NotImplemented,
             String::from("not implemented"),
@@ -123,17 +149,18 @@ impl Node for Nullo {
             String::from("not implemented"),
         ))
     }
-    fn new_processing_instruction(
-        &self,
-        _: Rc<QualifiedName>,
-        _: Rc<Value>,
-    ) -> Result<Self, Error> {
+    fn new_processing_instruction(&self, _: Rc<Value>, _: Rc<Value>) -> Result<Self, Error> {
         Err(Error::new(
             ErrorKind::NotImplemented,
             String::from("not implemented"),
         ))
     }
-    fn new_namespace(&self, _ns: Rc<Value>, _prefix: Option<Rc<Value>>) -> Result<Self, Error> {
+    fn new_namespace(
+        &self,
+        _ns: NamespaceUri,
+        _prefix: Option<NamespacePrefix>,
+        _in_scope: bool,
+    ) -> Result<Self, Error> {
         Err(Error::new(ErrorKind::NotImplemented, "not implemented"))
     }
     fn push(&mut self, _: Self) -> Result<(), Error> {
@@ -209,6 +236,12 @@ impl Node for Nullo {
     fn validate(&self, _sch: Schema) -> Result<(), ValidationError> {
         Err(ValidationError::SchemaError("Not Implemented".to_string()))
     }
+    fn unattached(&self) -> Vec<Self> {
+        vec![]
+    }
+    fn is_unattached(&self) -> bool {
+        false
+    }
 }
 
 pub struct NulloIter();
@@ -232,5 +265,16 @@ impl fmt::Debug for Nullo {
 impl PartialEq for Nullo {
     fn eq(&self, other: &Self) -> bool {
         Node::eq(self, other)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn nullo_new() {
+        let _ = Nullo::new_document();
+        assert!(true)
     }
 }

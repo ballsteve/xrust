@@ -26,6 +26,8 @@ harness = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+#qualname = { path = "../qualname" }
+qualname = "0.0.1"
 rust_decimal = "1.38.0"
 rust_decimal_macros = "1.38.0"
 lexers = "0.1.4"

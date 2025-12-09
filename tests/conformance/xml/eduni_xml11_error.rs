@@ -7,7 +7,7 @@ Richard Tobin's XML 1.1 test suite 13 Feb 2003
 use crate::conformance::non_utf8_file_reader;
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::xml;
+use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 
 #[test]
@@ -25,7 +25,7 @@ fn rmt008() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/008.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -46,7 +46,7 @@ fn rmt009() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/009.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -65,7 +65,7 @@ fn rmt055() {
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/055.xml").as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -86,7 +86,7 @@ fn rmt056() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/056.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());
@@ -107,7 +107,7 @@ fn rmt057() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/057.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
     assert!(parseresult.is_err());

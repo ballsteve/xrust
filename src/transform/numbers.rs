@@ -1,5 +1,6 @@
 //! These functions are for features defined in XPath Functions 1.0 and 2.0.
 
+use qualname::{NcName, QName};
 use std::rc::Rc;
 use url::Url;
 
@@ -9,11 +10,10 @@ use italian_numbers::roman_converter;
 
 use crate::item::{Item, Node, NodeType, Sequence, SequenceTrait};
 use crate::pattern::{Branch, Pattern, Step};
-use crate::qname::QualifiedName;
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::{
     ArithmeticOperand, ArithmeticOperator, Axis, KindTest, NameTest, NodeTest, Transform,
-    WildcardOrName,
+    WildcardOrName, WildcardOrNamespaceUri,
 };
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
@@ -74,9 +74,12 @@ pub fn generate_integers<
                             Axis::SelfAxis,
                             Axis::SelfAxis,
                             NodeTest::Name(NameTest::new(
-                                m.name().namespace_uri().map(WildcardOrName::Name),
-                                None,
-                                Some(WildcardOrName::Name(m.name().localname())),
+                                m.name()
+                                    .unwrap()
+                                    .namespace_uri()
+                                    .map(|ns| WildcardOrNamespaceUri::NamespaceUri(ns)),
+                                //None,
+                                Some(WildcardOrName::Name(m.name().unwrap())),
                             )),
                         ),
                         NodeType::Text => Step::new(
@@ -146,14 +149,18 @@ pub fn generate_integers<
             Err(Error::new_with_code(
                 ErrorKind::TypeError,
                 "not a singleton node",
-                Some(QualifiedName::new(None, None, "XTTE1000")),
+                Some(QName::from_local_name(
+                    NcName::try_from("XTTE1000").unwrap(),
+                )),
             ))
         }
     } else {
         Err(Error::new_with_code(
             ErrorKind::TypeError,
             "not a singleton node",
-            Some(QualifiedName::new(None, None, "XTTE1000")),
+            Some(QName::from_local_name(
+                NcName::try_from("XTTE1000").unwrap(),
+            )),
         ))
     }
 }

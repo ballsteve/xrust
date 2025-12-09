@@ -1,7 +1,7 @@
+use qualname::QName;
 use xrust::item::{Node, NodeType};
 use xrust::item_node_tests;
 use xrust::item_value_tests;
-use xrust::qname::QualifiedName;
 use xrust::trees::smite::RNode;
 
 mod node;

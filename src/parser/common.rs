@@ -35,7 +35,7 @@ pub(crate) fn is_namestartchar(ch: &char) -> bool {
     }
 }
 pub(crate) fn is_ncnamestartchar(ch: &char) -> bool {
-    matches!(ch,
+    let result = matches!(ch,
           '\u{0041}'..='\u{005A}' // A-Z
         | '\u{005F}' // _
         | '\u{0061}'..='\u{007A}' // a-z
@@ -51,7 +51,8 @@ pub(crate) fn is_ncnamestartchar(ch: &char) -> bool {
         | '\u{F900}'..='\u{FDCF}' //  [#xF900-#xFDCF]
         | '\u{FDF0}'..='\u{FFFD}' //  [#xFDF0-#xFFFD]
         | '\u{10000}'..='\u{EFFFF}' //  [#x10000-#xEFFFF]
-    )
+    );
+    result
 }
 
 pub fn is_char10(ch: &char) -> bool {

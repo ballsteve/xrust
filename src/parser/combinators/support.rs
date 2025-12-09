@@ -1,21 +1,25 @@
 //! Supporting functions.
 
 use crate::item::Node;
-use crate::parser::{ParseError, ParseInput};
+use crate::parser::{ParseError, ParseInput, StaticState};
+use qualname::{NamespacePrefix, NamespaceUri};
 
 /// Return zero or more digits from the input stream. Be careful not to consume non-digit input.
-pub(crate) fn digit0<N: Node>()
--> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
-    move |(input, state)| {
+pub(crate) fn digit0<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, String), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
+    move |(input, state), _ss| {
         match input.find(|c| !('0'..='9').contains(&c)) {
-            Some(0) => Err(ParseError::Combinator),
+            Some(0) => Err(ParseError::Combinator(String::from("digit0: no digits"))),
             Some(pos) => {
                 //let result = (&mut input).take(pos).collect::<String>();
                 Ok(((&input[pos..], state), input[..pos].to_string()))
             }
             None => {
                 if input.is_empty() {
-                    Err(ParseError::Combinator)
+                    Err(ParseError::Combinator(String::from("digit0: no input")))
                 } else {
                     Ok((("", state), input.to_string()))
                 }
@@ -24,9 +28,12 @@ pub(crate) fn digit0<N: Node>()
     }
 }
 /// Return one or more digits from the input stream.
-pub(crate) fn digit1<N: Node>()
--> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
-    move |(input, state)| {
+pub(crate) fn digit1<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, String), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
+    move |(input, state), _ss| {
         if input.starts_with(|c| ('0'..='9').contains(&c)) {
             match input.find(|c| !('0'..='9').contains(&c)) {
                 Some(0) => Ok(((&input[1..], state), input[..1].to_string())),
@@ -34,22 +41,27 @@ pub(crate) fn digit1<N: Node>()
                 None => Ok((("", state), input.to_string())),
             }
         } else {
-            Err(ParseError::Combinator)
+            Err(ParseError::Combinator(String::from("digit1: no digits")))
         }
     }
 }
 
 /// Return the next character if it is not from the given set
-pub(crate) fn none_of<N: Node>(
+pub(crate) fn none_of<'a, N: Node, L>(
     s: &str,
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, char), ParseError> + '_ {
-    move |(input, state)| {
+) -> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, char), ParseError> + '_
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
+    move |(input, state), _ss| {
         if input.is_empty() {
-            Err(ParseError::Combinator)
+            Err(ParseError::Combinator(String::from("none_of: no input")))
         } else {
             let a = input.chars().next().unwrap();
             match s.find(|b| a == b) {
-                Some(_) => Err(ParseError::Combinator),
+                Some(_) => Err(ParseError::Combinator(String::from(
+                    "none_of: found characters",
+                ))),
                 None => Ok(((&input[1..], state), a)),
             }
         }
