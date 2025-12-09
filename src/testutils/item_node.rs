@@ -68,7 +68,7 @@ macro_rules! item_node_tests (
 	    d.push(new.clone())
 		.expect("unable to add node");
 	    assert_eq!(d.to_xml(), "<Test/>");
-	    let mut e = d.new_element(Rc::new(QualifiedName::new(None, None, String::from("Foo"))))
+	    let mut e = d.new_element(QName::from_local_name(NcName::try_from("Foo").unwrap()))
 		.expect("unable to create element node");
 	    new.push(e.clone())
 		.expect("unable to add node");
@@ -90,7 +90,7 @@ macro_rules! item_node_tests (
 	    d.push(new.clone())
 		.expect("unable to add node");
 	    assert_eq!(d.to_xml(), "<Test/>");
-	    let mut e = d.new_element(Rc::new(QualifiedName::new(None, None, String::from("Foo"))))
+	    let mut e = d.new_element(QName::from_local_name(NcName::try_from("Foo").unwrap()))
 		.expect("unable to create element node");
 	    new.push(e.clone())
 		.expect("unable to add node");
@@ -99,7 +99,7 @@ macro_rules! item_node_tests (
 	    e.push(f.clone())
 		.expect("unable to add node");
 	    assert_eq!(d.to_xml(), "<Test><Foo><Bar/></Foo></Test>");
-	    let g = d.new_element(Rc::new(QualifiedName::new(None, None, String::from("Inserted"))))
+	    let g = d.new_element(QName::from_local_name(NcName::try_from("Inserted").unwrap()))
 		.expect("unable to create element node");
 	    f.insert_before(g)
 		.expect("unable to insert element");

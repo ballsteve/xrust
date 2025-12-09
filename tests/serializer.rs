@@ -150,7 +150,12 @@ fn serializer_self_closing_tags() {
         We wish to ensure that self closing tags are properly serialized.
     */
     let s = "<doc/>";
-    let d = xml::parse(RNode::new_document(), s, None).unwrap();
+    let d = xml::parse(
+        RNode::new_document(),
+        s,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+    )
+    .unwrap();
 
     assert_eq!(d.to_xml().to_string(), "<doc/>");
 }

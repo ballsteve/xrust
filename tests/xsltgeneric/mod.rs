@@ -994,7 +994,7 @@ where
         make_doc,
     )?;
     assert_eq!(
-        result.to_xml(),
+        result.0.to_xml(),
         "<Level1 bar='from set foo'/><Level1 bar='from set foo'/>"
     );
     Ok(())
@@ -1497,7 +1497,7 @@ where
     )?;
 
     assert_eq!(
-        result.to_xml(),
+        result.0.to_xml(),
         "<HTML><TITLE>A really exciting document</TITLE><BODY BGCOLOR='#FFFFCC'/></HTML>"
     );
     Ok(())
