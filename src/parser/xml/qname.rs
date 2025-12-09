@@ -133,7 +133,8 @@ where
                     .expect("namespace resolver failed");
                 QName::new_from_parts(
                     NcName::try_from(localpart.as_str()).expect("not a valid QName"),
-                    Some(NamespaceUri::try_from(uri).expect("not a valid Namespace URI")),
+                    //Some(NamespaceUri::try_from(uri).expect("not a valid Namespace URI")),
+                    Some(uri),
                 )
             } else {
                 // No closure to resolve prefix

@@ -298,10 +298,7 @@ impl<N: Node> Item<N> {
 
     /// Is this item a node?
     pub fn is_node(&self) -> bool {
-        match self {
-            Item::Node(_) => true,
-            _ => false,
-        }
+        matches!(self, Item::Node(_))
     }
 
     /// Is this item an element-type node?

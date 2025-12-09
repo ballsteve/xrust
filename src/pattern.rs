@@ -274,7 +274,7 @@ fn is_match<N: Node>(a: &Axis, nt: &NodeTest, i: &Item<N>) -> bool {
         Axis::Parent => {
             // Select the parent node
             match i {
-                Item::Node(n) => n.parent().map_or(false, |p| nt.matches(&Item::Node(p))),
+                Item::Node(n) => n.parent().is_some_and( |p| nt.matches(&Item::Node(p))),
                 _ => false,
             }
         }

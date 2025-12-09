@@ -285,7 +285,7 @@ where
                     }
                 }
                 "avg" => {
-                    if a.len() == 0 {
+                    if a.is_empty() {
                         Transform::Empty
                     } else if a.len() == 1 {
                         Transform::Avg(Box::new(a.pop().unwrap()))
@@ -295,7 +295,7 @@ where
                     }
                 }
                 "min" => {
-                    if a.len() == 0 {
+                    if a.is_empty() {
                         Transform::Empty
                     } else if a.len() == 1 {
                         Transform::Min(Box::new(a.pop().unwrap()))
@@ -305,7 +305,7 @@ where
                     }
                 }
                 "max" => {
-                    if a.len() == 0 {
+                    if a.is_empty() {
                         Transform::Empty
                     } else if a.len() == 1 {
                         Transform::Max(Box::new(a.pop().unwrap()))

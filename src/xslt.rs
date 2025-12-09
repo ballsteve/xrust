@@ -338,7 +338,7 @@ where
         .find(|c| !(c.is_element() && c.name().is_some_and(|cn| cn == *XSLOUTPUT)))
     {
         let b: bool = matches!(
-            c.get_attribute(&*ATTRINDENT).to_string().as_str(),
+            c.get_attribute(&ATTRINDENT).to_string().as_str(),
             "yes" | "true" | "1"
         );
 
@@ -354,7 +354,7 @@ where
         .child_iter()
         .filter(|c| c.is_element() && c.name().is_some_and(|cn| cn == *XSLINCLUDE))
         .try_for_each(|mut c| {
-            let h = c.get_attribute(&*ATTRHREF);
+            let h = c.get_attribute(&ATTRHREF);
             let url = match base.clone().map_or_else(
                 || Url::parse(h.to_string().as_str()),
                 |full| full.join(h.to_string().as_str()),
@@ -396,7 +396,7 @@ where
         .child_iter()
         .filter(|c| c.is_element() && c.name().is_some_and(|cn| cn == *XSLIMPORT))
         .try_for_each(|mut c| {
-            let h = c.get_attribute(&*ATTRHREF);
+            let h = c.get_attribute(&ATTRHREF);
             let url = match base.clone().map_or_else(
                 || Url::parse(h.to_string().as_str()),
                 |full| full.join(h.to_string().as_str()),
@@ -449,7 +449,7 @@ where
         .child_iter()
         .filter(|c| c.is_element() && c.name().is_some_and(|cn| cn == *XSLATTRIBUTESET))
         .try_for_each(|c| {
-            let name = c.get_attribute(&*ATTRNAME);
+            let name = c.get_attribute(&ATTRNAME);
             let eqname = c.to_qname(name.to_string())?;
             if eqname.to_string().is_empty() {
                 return Err(Error::new(
@@ -478,9 +478,9 @@ where
     stylenode
         .child_iter()
         .filter(|c| c.is_element() && c.name().is_some_and(|cn| cn == *XSLTEMPLATE))
-        .filter(|c| c.get_attribute_node(&*ATTRMATCH).is_some())
+        .filter(|c| c.get_attribute_node(&ATTRMATCH).is_some())
         .try_for_each(|c| {
-            let m = c.get_attribute(&*ATTRMATCH);
+            let m = c.get_attribute(&ATTRMATCH);
             let pat = Pattern::try_from((m.to_string(), c.clone())).map_err(|e| {
                 Error::new(
                     e.kind,
@@ -498,7 +498,7 @@ where
                 return Err(e.clone());
             }
             let mut body = vec![];
-            let mode = c.get_attribute_node(&*ATTRMODE);
+            let mode = c.get_attribute_node(&ATTRMODE);
             c.child_iter().try_for_each(|d| {
                 body.push(to_transform(d, &attr_sets)?);
                 Ok::<(), Error>(())
@@ -506,7 +506,7 @@ where
             //sc.static_analysis(&mut pat);
             //sc.static_analysis(&mut body);
             // Determine the priority of the template
-            let pr = c.get_attribute(&*ATTRPRIORITY);
+            let pr = c.get_attribute(&ATTRPRIORITY);
             let prio: f64 = match pr.to_string().as_str() {
                 "" => {
                     // Calculate the default priority
@@ -545,7 +545,7 @@ where
             };
             // Set the import precedence
             let mut import: usize = 0;
-            let im = c.get_attribute(&*XRUSTIMPORT);
+            let im = c.get_attribute(&XRUSTIMPORT);
             if im.to_string() != "" {
                 import = im.to_int()? as usize
             }
@@ -571,10 +571,10 @@ where
         .child_iter()
         .filter(|c| c.is_element() && c.name().is_some_and(|cn| cn == *XSLKEY))
         .try_for_each(|c| {
-            let name = c.get_attribute(&*ATTRNAME);
-            let m = c.get_attribute(&*ATTRMATCH);
+            let name = c.get_attribute(&ATTRNAME);
+            let m = c.get_attribute(&ATTRMATCH);
             let pat = Pattern::try_from(m.to_string())?;
-            let u = c.get_attribute(&*ATTRUSE);
+            let u = c.get_attribute(&ATTRUSE);
             keys.push((
                 name,
                 pat,
@@ -642,9 +642,9 @@ where
     stylenode
         .child_iter()
         .filter(|c| c.is_element() && c.name().is_some_and(|cn| cn == *XSLTEMPLATE))
-        .filter(|c| !c.get_attribute(&*ATTRNAME).to_string().is_empty())
+        .filter(|c| !c.get_attribute(&ATTRNAME).to_string().is_empty())
         .try_for_each(|c| {
-            let name = c.get_attribute(&*ATTRNAME);
+            let name = c.get_attribute(&ATTRNAME);
             // xsl:param for formal parameters
             // TODO: validate that xsl:param elements come first in the child list
             // TODO: validate that xsl:param elements have unique name attributes
@@ -652,14 +652,14 @@ where
             c.child_iter()
                 .filter(|c| c.is_element() && c.name().is_some_and(|cn| cn == *XSLPARAM))
                 .try_for_each(|c| {
-                    let p_name = c.get_attribute(&*ATTRNAME);
+                    let p_name = c.get_attribute(&ATTRNAME);
                     if p_name.to_string().is_empty() {
                         Err(Error::new(
                             ErrorKind::StaticAbsent,
                             "name attribute is missing",
                         ))
                     } else {
-                        let sel = c.get_attribute(&*ATTRSELECT);
+                        let sel = c.get_attribute(&ATTRSELECT);
                         if sel.to_string().is_empty() {
                             // xsl:param content is the sequence constructor
                             let mut body = vec![];
@@ -716,7 +716,7 @@ where
         .child_iter()
         .filter(|c| c.is_element() && c.name().is_some_and(|cn| cn == *XSLFUNCTION))
         .try_for_each(|c| {
-            let name = c.get_attribute(&*ATTRNAME);
+            let name = c.get_attribute(&ATTRNAME);
             // Name must have a namespace. See XSLT 10.3.1.
             let eqname = c.to_qname(name.to_string())?;
             if eqname.namespace_uri().is_none() {
@@ -735,7 +735,7 @@ where
             c.child_iter()
                 .filter(|c| c.is_element() && c.name().is_some_and(|cn| cn == *XSLPARAM))
                 .try_for_each(|c| {
-                    let p_name = c.get_attribute(&*ATTRNAME);
+                    let p_name = c.get_attribute(&ATTRNAME);
                     if p_name.to_string().is_empty() {
                         Err(Error::new(
                             ErrorKind::StaticAbsent,
@@ -774,14 +774,14 @@ where
         .child_iter()
         .filter(|c| c.is_element() && c.name().is_some_and(|cn| cn == *XSLVARIABLE))
         .try_for_each(|c| {
-            let name = c.get_attribute(&*ATTRNAME).to_string();
+            let name = c.get_attribute(&ATTRNAME).to_string();
             if name.is_empty() {
                 return Err(Error::new(
                     ErrorKind::StaticAbsent,
                     "variable must have a name",
                 ));
             }
-            let sel = c.get_attribute(&*ATTRSELECT).to_string();
+            let sel = c.get_attribute(&ATTRSELECT).to_string();
             if sel.is_empty() {
                 // Use element content
                 newctxt.pre_var_push(
@@ -817,7 +817,7 @@ fn to_transform<N: Node>(
         NodeType::Element => {
             let qn = n.name().unwrap();
             if qn == *XSLTEXT {
-                let doe = n.get_attribute(&*ATTRDOE);
+                let doe = n.get_attribute(&ATTRDOE);
                 if !doe.to_string().is_empty() {
                     match &doe.to_string()[..] {
                         "yes" => Ok(Transform::Literal(Item::Value(Rc::new(Value::from(
@@ -849,8 +849,8 @@ fn to_transform<N: Node>(
                     Ok(Transform::Literal(Item::Value(Rc::new(Value::from(text)))))
                 }
             } else if qn == *XSLVALUEOF {
-                let sel = n.get_attribute(&*ATTRSELECT);
-                let doe = n.get_attribute(&*ATTRDOE);
+                let sel = n.get_attribute(&ATTRSELECT);
+                let doe = n.get_attribute(&ATTRDOE);
                 if !doe.to_string().is_empty() {
                     match &doe.to_string()[..] {
                         "yes" => Ok(Transform::LiteralText(
@@ -873,8 +873,8 @@ fn to_transform<N: Node>(
                     ))
                 }
             } else if qn == *XSLAPPLYTEMPLATES {
-                let sel = n.get_attribute(&*ATTRSELECT);
-                let m = n.get_attribute_node(&*ATTRMODE);
+                let sel = n.get_attribute(&ATTRSELECT);
+                let m = n.get_attribute_node(&ATTRMODE);
                 let sort_keys = get_sort_keys(&n)?;
                 if !sel.to_string().is_empty() {
                     Ok(Transform::ApplyTemplates(
@@ -902,7 +902,7 @@ fn to_transform<N: Node>(
             } else if qn == *XSLAPPLYIMPORTS {
                 Ok(Transform::ApplyImports)
             } else if qn == *XSLSEQUENCE {
-                let s = n.get_attribute(&*ATTRSELECT);
+                let s = n.get_attribute(&ATTRSELECT);
                 if !s.to_string().is_empty() {
                     Ok(parse::<N>(&s.to_string(), Some(n.clone()), None)?)
                 } else {
@@ -912,7 +912,7 @@ fn to_transform<N: Node>(
                     ))
                 }
             } else if qn == *XSLIF {
-                let t = n.get_attribute(&*ATTRTEST);
+                let t = n.get_attribute(&ATTRTEST);
                 if !t.to_string().is_empty() {
                     Ok(Transform::Switch(
                         vec![(
@@ -946,7 +946,7 @@ fn to_transform<N: Node>(
                             let mn = m.name().unwrap();
                             if mn == *XSLWHEN {
                                 if otherwise.is_none() {
-                                    let t = m.get_attribute(&*ATTRTEST);
+                                    let t = m.get_attribute(&ATTRTEST);
                                     if !t.to_string().is_empty() {
                                         clauses.push((
                                             parse::<N>(&t.to_string(), Some(n.clone()), None)?,
@@ -1019,7 +1019,7 @@ fn to_transform<N: Node>(
                     )),
                 }
             } else if qn == *XSLFOREACH {
-                let s = n.get_attribute(&*ATTRSELECT);
+                let s = n.get_attribute(&ATTRSELECT);
                 if !s.to_string().is_empty() {
                     Ok(Transform::ForEach(
                         None,
@@ -1041,15 +1041,15 @@ fn to_transform<N: Node>(
                 }
             } else if qn == *XSLFOREACHGROUP {
                 let ord = get_sort_keys(&n)?;
-                let s = n.get_attribute(&*ATTRSELECT);
+                let s = n.get_attribute(&ATTRSELECT);
                 if !s.to_string().is_empty() {
                     match (
-                        n.get_attribute(&*ATTRGROUPBY).to_string().as_str(),
-                        n.get_attribute(&*ATTRGROUPADJACENT).to_string().as_str(),
-                        n.get_attribute(&*ATTRGROUPSTARTINGWITH)
+                        n.get_attribute(&ATTRGROUPBY).to_string().as_str(),
+                        n.get_attribute(&ATTRGROUPADJACENT).to_string().as_str(),
+                        n.get_attribute(&ATTRGROUPSTARTINGWITH)
                             .to_string()
                             .as_str(),
-                        n.get_attribute(&*ATTRGROUPENDINGWITH).to_string().as_str(),
+                        n.get_attribute(&ATTRGROUPENDINGWITH).to_string().as_str(),
                     ) {
                         (by, "", "", "") => Ok(Transform::ForEach(
                             Some(Grouping::By(vec![parse::<N>(by, Some(n.clone()), None)?])),
@@ -1111,7 +1111,7 @@ fn to_transform<N: Node>(
                         Ok(body)
                     })?;
                 // Process @xsl:use-attribute-sets
-                let use_atts = n.get_attribute(&*XSLATTRUSEATTRIBUTESETS);
+                let use_atts = n.get_attribute(&XSLATTRUSEATTRIBUTESETS);
                 let mut attrs = vec![];
                 use_atts.to_string().split_whitespace().try_for_each(|a| {
                     let eqa = n.to_qname(a)?;
@@ -1134,7 +1134,7 @@ fn to_transform<N: Node>(
                     }),
                 ))
             } else if qn == *XSLCOPYOF {
-                let s = n.get_attribute(&*ATTRSELECT);
+                let s = n.get_attribute(&ATTRSELECT);
                 if !s.to_string().is_empty() {
                     Ok(Transform::DeepCopy(Box::new(parse::<N>(
                         &s.to_string(),
@@ -1145,7 +1145,7 @@ fn to_transform<N: Node>(
                     Ok(Transform::DeepCopy(Box::new(Transform::ContextItem)))
                 }
             } else if qn == *XSLCALLTEMPLATE {
-                let name = n.get_attribute(&*ATTRNAME);
+                let name = n.get_attribute(&ATTRNAME);
                 if !name.to_string().is_empty() {
                     // Iterate over the xsl:with-param elements to get the actual parameters
                     // TODO: validate that the children are only xsl:with-param elements
@@ -1153,9 +1153,9 @@ fn to_transform<N: Node>(
                     n.child_iter()
                         .filter(|c| c.is_element() && c.name().unwrap() == *XSLWITHPARAM)
                         .try_for_each(|c| {
-                            let wp_name = c.get_attribute(&*ATTRNAME);
+                            let wp_name = c.get_attribute(&ATTRNAME);
                             if !wp_name.to_string().is_empty() {
-                                let sel = c.get_attribute(&*ATTRSELECT);
+                                let sel = c.get_attribute(&ATTRSELECT);
                                 if sel.to_string().is_empty() {
                                     // xsl:with-param content is the sequence constructor
                                     let mut body = vec![];
@@ -1209,7 +1209,7 @@ fn to_transform<N: Node>(
                 }
             } else if qn == *XSLELEMENT {
                 // TODO: insert namespace declaration if element's name is prefixed
-                let m = n.get_attribute(&*ATTRNAME);
+                let m = n.get_attribute(&ATTRNAME);
                 if m.to_string().is_empty() {
                     return Err(Error::new(ErrorKind::TypeError, "missing name attribute"));
                 }
@@ -1218,7 +1218,7 @@ fn to_transform<N: Node>(
                     Ok(body)
                 })?;
                 // Process @xsl:use-attribute-sets
-                let use_atts = n.get_attribute(&*XSLATTRUSEATTRIBUTESETS);
+                let use_atts = n.get_attribute(&XSLATTRUSEATTRIBUTESETS);
                 let mut attrs = vec![];
                 use_atts.to_string().split_whitespace().try_for_each(|a| {
                     let eqa = n.to_qname(a)?;
@@ -1241,7 +1241,7 @@ fn to_transform<N: Node>(
                     }),
                 ))
             } else if qn == *XSLATTRIBUTE {
-                let m = n.get_attribute(&*ATTRNAME);
+                let m = n.get_attribute(&ATTRNAME);
                 if !m.to_string().is_empty() {
                     Ok(Transform::LiteralAttribute(
                         QName::from_local_name(
@@ -1267,7 +1267,7 @@ fn to_transform<N: Node>(
                     })?),
                 )))
             } else if qn == *XSLPROCESSINGINSTRUCTION {
-                let m = n.get_attribute(&*ATTRNAME);
+                let m = n.get_attribute(&ATTRNAME);
                 if m.to_string().is_empty() {
                     return Result::Err(Error::new(ErrorKind::TypeError, "missing name attribute"));
                 }
@@ -1282,7 +1282,7 @@ fn to_transform<N: Node>(
                     )?)),
                 ))
             } else if qn == *XSLMESSAGE {
-                let t = n.get_attribute(&*ATTRTERMINATE);
+                let t = n.get_attribute(&ATTRTERMINATE);
                 Ok(Transform::Message(
                     Box::new(Transform::SequenceItems(n.child_iter().try_fold(
                         vec![],
@@ -1300,18 +1300,18 @@ fn to_transform<N: Node>(
                     }),
                 ))
             } else if qn == *XSLNUMBER {
-                let value = n.get_attribute(&*ATTRVALUE);
-                let sel = n.get_attribute(&*ATTRSELECT);
-                let level = n.get_attribute(&*ATTRLEVEL);
+                let value = n.get_attribute(&ATTRVALUE);
+                let sel = n.get_attribute(&ATTRSELECT);
+                let level = n.get_attribute(&ATTRLEVEL);
                 if level.to_string() != "" && level.to_string() != "single" {
                     return Err(Error::new(
                         ErrorKind::NotImplemented,
                         "only single level numbering is supported",
                     ));
                 }
-                let count = n.get_attribute(&*ATTRCOUNT);
-                let from = n.get_attribute(&*ATTRFROM);
-                let format = n.get_attribute(&*ATTRFORMAT);
+                let count = n.get_attribute(&ATTRCOUNT);
+                let from = n.get_attribute(&ATTRFROM);
+                let format = n.get_attribute(&ATTRFORMAT);
                 // TODO: lang, letter-value, ordinal, start-at, grouping-separator, grouping-size
                 if value.to_string().is_empty() {
                     // Compute place marker
@@ -1387,7 +1387,7 @@ fn to_transform<N: Node>(
                 });
 
                 // Process @xsl:use-attribute-sets
-                let use_atts = n.get_attribute(&*XSLATTRUSEATTRIBUTESETS);
+                let use_atts = n.get_attribute(&XSLATTRUSEATTRIBUTESETS);
                 let mut attrs = vec![];
                 use_atts.to_string().split_whitespace().try_for_each(|a| {
                     let eqa = n.to_qname(a)?; //QName::try_from((a, ns.clone()))?;
@@ -1463,12 +1463,12 @@ fn get_sort_keys<N: Node>(n: &N) -> Result<Vec<(Order, Transform<N>)>, Error> {
             Some(c) => match c.node_type() {
                 NodeType::Element => {
                     if c.name().is_some_and(|d| d == *XSLSORT) {
-                        let ordval = c.get_attribute(&*ATTRORDER);
+                        let ordval = c.get_attribute(&ATTRORDER);
                         let ord = match ordval.to_string().as_str() {
                             "descending" => Order::Descending,
                             _ => Order::Ascending,
                         };
-                        let sortsel = c.get_attribute(&*ATTRSELECT);
+                        let sortsel = c.get_attribute(&ATTRSELECT);
                         result.push((
                             ord,
                             parse::<N>(&sortsel.to_string(), Some(n.clone()), None)?,
@@ -1494,11 +1494,7 @@ fn get_sort_keys<N: Node>(n: &N) -> Result<Vec<(Order, Transform<N>)>, Error> {
     }
     // Check that there are no more sort elements
     if nit.any(|c| {
-        if c.node_type() == NodeType::Element && c.name().is_some_and(|d| d == *XSLSORT) {
-            true
-        } else {
-            false
-        }
+        c.node_type() == NodeType::Element && c.name().is_some_and(|d| d == *XSLSORT)
     }) {
         Err(Error::new(ErrorKind::TypeError, "sort elements in body"))
     } else {
@@ -1534,7 +1530,7 @@ pub fn strip_source_document<N: Node>(src: N, style: N) -> Result<(), Error> {
         n.child_iter().try_for_each(|m| {
             let nm = m.name();
             if nm.as_ref().is_some_and(|nms| *nms == *XSLSTRIPSPACE) {
-                let v = m.get_attribute(&*ATTRELEMENTS);
+                let v = m.get_attribute(&ATTRELEMENTS);
                 if !v.to_string().is_empty() {
                     v.to_string().split_whitespace().try_for_each(|t| {
                         ss.push(NodeTest::try_from(t)?);
@@ -1547,7 +1543,7 @@ pub fn strip_source_document<N: Node>(src: N, style: N) -> Result<(), Error> {
                     ));
                 }
             } else if nm.as_ref().is_some_and(|nms| *nms == *XSLPRESERVESPACE) {
-                let v = m.get_attribute(&*ATTRELEMENTS);
+                let v = m.get_attribute(&ATTRELEMENTS);
                 if !v.to_string().is_empty() {
                     v.to_string().split_whitespace().try_for_each(|t| {
                         ps.push(NodeTest::try_from(t)?);

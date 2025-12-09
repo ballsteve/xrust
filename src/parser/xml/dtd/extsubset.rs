@@ -33,7 +33,7 @@ where
                     if !input2.is_empty() {
                         Err(ParseError::NotWellFormed(format!(
                             "unexpected text in external subset \"{}\"",
-                            input2.to_string()
+                            input2
                         )))
                     } else if td.is_some_and(|xd| xd.encoding.is_none()) {
                         Err(ParseError::ExtDTDLoadError)

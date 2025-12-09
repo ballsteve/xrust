@@ -23,18 +23,13 @@ pub(crate) fn tr_or<
     // Future: Evaluate every operand to check for dynamic errors
     let mut b = false;
     let mut i = 0;
-    loop {
-        match v.get(i) {
-            Some(a) => {
+    while let Some(a) = v.get(i) {
                 if ctxt.dispatch(stctxt, a)?.to_bool() {
                     b = true;
                     break;
                 }
                 i += 1;
             }
-            None => break,
-        }
-    }
     Ok(vec![Item::Value(Rc::new(Value::from(b)))])
 }
 
@@ -52,18 +47,13 @@ pub(crate) fn tr_and<
     // Future: Evaluate every operand to check for dynamic errors
     let mut b = true;
     let mut i = 0;
-    loop {
-        match v.get(i) {
-            Some(a) => {
-                if !ctxt.dispatch(stctxt, a)?.to_bool() {
-                    b = false;
-                    break;
-                }
-                i += 1;
+    while let Some(a) = v.get(i) {
+            if !ctxt.dispatch(stctxt, a)?.to_bool() {
+                b = false;
+                break;
             }
-            None => break,
+            i += 1;
         }
-    }
     Ok(vec![Item::Value(Rc::new(Value::from(b)))])
 }
 

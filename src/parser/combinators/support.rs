@@ -11,7 +11,7 @@ where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
     move |(input, state), _ss| {
-        match input.find(|c| !('0'..='9').contains(&c)) {
+        match input.find(|c:char| !c.is_ascii_digit()) {
             Some(0) => Err(ParseError::Combinator(String::from("digit0: no digits"))),
             Some(pos) => {
                 //let result = (&mut input).take(pos).collect::<String>();
@@ -34,8 +34,8 @@ where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
     move |(input, state), _ss| {
-        if input.starts_with(|c| ('0'..='9').contains(&c)) {
-            match input.find(|c| !('0'..='9').contains(&c)) {
+        if input.starts_with(|c: char| c.is_ascii_digit()) {
+            match input.find(|c: char| !c.is_ascii_digit()) {
                 Some(0) => Ok(((&input[1..], state), input[..1].to_string())),
                 Some(pos) => Ok(((&input[pos..], state), input[..pos].to_string())),
                 None => Ok((("", state), input.to_string())),
@@ -58,7 +58,7 @@ where
             Err(ParseError::Combinator(String::from("none_of: no input")))
         } else {
             let a = input.chars().next().unwrap();
-            match s.find(|b| a == b) {
+            match s.find(a) {
                 Some(_) => Err(ParseError::Combinator(String::from(
                     "none_of: found characters",
                 ))),
