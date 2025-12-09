@@ -9,7 +9,7 @@ authors = [
     "Daniel Murphy <daniel@devasta.ie>",
 ]
 license = "Apache-2.0"
-repository = "https://gitlab.gnome.org/balls/xrust.git"
+repository = "https://gitlab.gnome.org/World/Rust/markup-rs/xrust.git"
 documentation = "https://docs.rs/xrust/"
 readme = "README.md"
 edition = "2024"

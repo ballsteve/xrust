@@ -11,7 +11,7 @@ macro_rules! item_node_tests (
 		.expect("unable to create element node");
 	    d.push(n)
 		.expect("unable to add node");
-	    assert_eq!(d.to_xml(), "<Test></Test>")
+	    assert_eq!(d.to_xml(), "<Test/>")
 	}
 
 	// This test expects the document to have a single toplevel element
@@ -67,8 +67,8 @@ macro_rules! item_node_tests (
 		.expect("unable to create element node");
 	    d.push(new.clone())
 		.expect("unable to add node");
-	    assert_eq!(d.to_xml(), "<Test></Test>");
-	    let mut e = d.new_element(QName::from_local_name(NcName::try_from("Foo").unwrap()))
+	    assert_eq!(d.to_xml(), "<Test/>");
+	    let mut e = d.new_element(Rc::new(QualifiedName::new(None, None, String::from("Foo"))))
 		.expect("unable to create element node");
 	    new.push(e.clone())
 		.expect("unable to add node");
@@ -76,10 +76,10 @@ macro_rules! item_node_tests (
 		.expect("unable to create element node");
 	    e.push(f)
 		.expect("unable to add node");
-	    assert_eq!(d.to_xml(), "<Test><Foo><Bar></Bar></Foo></Test>");
+	    assert_eq!(d.to_xml(), "<Test><Foo><Bar/></Foo></Test>");
 	    e.pop()
 		.expect("unable to remove node");
-	    assert_eq!(d.to_xml(), "<Test></Test>")
+	    assert_eq!(d.to_xml(), "<Test/>")
 	}
 
 	#[test]
@@ -89,8 +89,8 @@ macro_rules! item_node_tests (
 		.expect("unable to create element node");
 	    d.push(new.clone())
 		.expect("unable to add node");
-	    assert_eq!(d.to_xml(), "<Test></Test>");
-	    let mut e = d.new_element(QName::from_local_name(NcName::try_from("Foo").unwrap()))
+	    assert_eq!(d.to_xml(), "<Test/>");
+	    let mut e = d.new_element(Rc::new(QualifiedName::new(None, None, String::from("Foo"))))
 		.expect("unable to create element node");
 	    new.push(e.clone())
 		.expect("unable to add node");
@@ -98,12 +98,12 @@ macro_rules! item_node_tests (
 		.expect("unable to create element node");
 	    e.push(f.clone())
 		.expect("unable to add node");
-	    assert_eq!(d.to_xml(), "<Test><Foo><Bar></Bar></Foo></Test>");
-	    let g = d.new_element(QName::from_local_name(NcName::try_from("Inserted").unwrap()))
+	    assert_eq!(d.to_xml(), "<Test><Foo><Bar/></Foo></Test>");
+	    let g = d.new_element(Rc::new(QualifiedName::new(None, None, String::from("Inserted"))))
 		.expect("unable to create element node");
 	    f.insert_before(g)
 		.expect("unable to insert element");
-	    assert_eq!(d.to_xml(), "<Test><Foo><Inserted></Inserted><Bar></Bar></Foo></Test>")
+	    assert_eq!(d.to_xml(), "<Test><Foo><Inserted/><Bar/></Foo></Test>")
 	}
 
 	#[test]
@@ -410,8 +410,8 @@ macro_rules! item_node_tests (
 
 	    // NB. attributes could be returned in a different order
 	    assert!(
-		sd.to_xml() == "<Test role='testing' phase='one'></Test>" ||
-		    sd.to_xml() == "<Test phase='one' role='testing'></Test>"
+		sd.to_xml() == "<Test role='testing' phase='one'/>" ||
+		    sd.to_xml() == "<Test phase='one' role='testing'/>"
 	    );
 	    let mut aiter = t.attribute_iter();
 	    let v = aiter.next().unwrap().name().unwrap().local_name().to_string();
@@ -441,8 +441,8 @@ macro_rules! item_node_tests (
 		.expect("unable to append child");
 	    let it = Item::Node(t.clone());
 	    let u = it.shallow_copy().expect("unable to shallow copy element");
-	    assert_eq!(t.to_xml(), "<Test><content></content></Test>");
-	    assert_eq!(u.to_xml(), "<Test></Test>");
+	    assert_eq!(t.to_xml(), "<Test><content/></Test>");
+	    assert_eq!(u.to_xml(), "<Test/>");
 	}
 		#[test]
 		fn item_node_cmp_doc_order_1() {
