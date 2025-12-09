@@ -452,7 +452,7 @@ impl<N: Node> Context<N> {
     ///   .context(vec![sd])
     ///   .build();
     /// let sequence = context.dispatch(&mut stctxt, &t).expect("evaluation failed");
-    /// assert_eq!(sequence.to_xml(), "<Example></Example>")
+    /// assert_eq!(sequence.to_xml(), "<Example/>")
     /// ```
     pub fn dispatch<
         F: FnMut(&str) -> Result<(), Error>,

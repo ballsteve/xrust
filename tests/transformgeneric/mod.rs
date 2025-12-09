@@ -483,7 +483,7 @@ where
         .context(vec![Item::Node(n)])
         .build();
     let _ = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
-    assert_eq!(sd.to_xml(), "<Test foo='bar'></Test>");
+    assert_eq!(sd.to_xml(), "<Test foo='bar'/>");
     Ok(())
 }
 
@@ -927,7 +927,7 @@ where
         .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
-    assert_eq!(seq.to_xml(), "<Test><Level-1></Level-1></Test>");
+    assert_eq!(seq.to_xml(), "<Test><Level-1/></Test>");
     Ok(())
 }
 
@@ -985,7 +985,7 @@ where
         .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
-    assert_eq!(seq.to_xml(), "<Level-1></Level-1>");
+    assert_eq!(seq.to_xml(), "<Level-1/>");
     Ok(())
 }
 
@@ -1097,7 +1097,7 @@ where
     .dispatch(&mut stctxt, &x)
     .expect("evaluation failed");
     assert_eq!(seq.len(), 2);
-    assert_eq!(seq.to_xml(), "<Level-1></Level-1><Level-1></Level-1>");
+    assert_eq!(seq.to_xml(), "<Level-1/><Level-1/>");
     Ok(())
 }
 
