@@ -112,7 +112,7 @@ fn serializer_4() {
     )
     .unwrap();
     let xml_output = doc.to_xml();
-    assert_eq!(xml_output, "<content xmlns='somenamespace' xmlns:a='someothernamespace' att1='val1' att2='val2' other='valx' someatt='val5' a:att4='val4'>
+    assert_eq!(xml_output, "<content xmlns='somenamespace' xmlns:a='someothernamespace' att1='val1' att2='val2' a:att4='val4' other='valx' someatt='val5'>
     <content2>text</content2>
     <content3/>
     <content4 xmlns='thirdnamespace' a:something='test'>text3</content4>
