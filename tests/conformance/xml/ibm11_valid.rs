@@ -11,7 +11,7 @@ use xrust::parser::{ParseError, ParserStateBuilder, StaticStateBuilder, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
-fn test_ibm11_valid(xmldoc:&str, xmlcanondoc: Option<&str>, docloc:&str){
+fn test_ibm11_valid(xmldoc: &str, xmlcanondoc: Option<&str>, docloc: &str) {
     let ss = StaticStateBuilder::new()
         .dtd_resolver(dtdfileresolve())
         .namespace(|_: &_| Err(ParseError::MissingNameSpace))
@@ -23,11 +23,7 @@ fn test_ibm11_valid(xmldoc:&str, xmlcanondoc: Option<&str>, docloc:&str){
         .document_location(docloc.to_string())
         .build();
 
-    let parseresult = xml::parse_with_state(
-        xmldoc,
-        ps,
-        ss,
-        );
+    let parseresult = xml::parse_with_state(xmldoc, ps, ss);
     assert!(parseresult.is_ok());
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
@@ -53,12 +49,13 @@ fn ibm11valid_p02ibm02v01xml() {
         Description:This test case covers legal character ranges plus discrete legal characters for production 02 of the XML1.1 sepcification.
     */
 
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/ibm02v01.xml")
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/ibm02v01.xml")
             .unwrap()
             .as_str(),
-            None,
-            "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/");
-
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/",
+    );
 }
 
 #[test]
@@ -70,11 +67,13 @@ fn ibm11valid_p02ibm02v02xml() {
         Description:This test case covers control characters x1 to x1F and x7F to x9F which should only appear as character references.
     */
 
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/ibm02v02.xml")
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/ibm02v02.xml")
             .unwrap()
             .as_str(),
-             None,
-             "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/");
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/",
+    );
 }
 
 #[test]
@@ -87,11 +86,13 @@ fn ibm11valid_p02ibm02v03xml() {
         Description:This test case covers control characters x1 to x1F and x7F to x9F which appear as character references as an entity's replacement text.
     */
 
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/ibm02v03.xml")
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/ibm02v03.xml")
             .unwrap()
             .as_str(),
-             None,
-             "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/");
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/",
+    );
 }
 
 #[test]
@@ -103,11 +104,13 @@ fn ibm11valid_p02ibm02v04xml() {
         Description:This test case contains embeded whitespace characters some form the range 1 - 1F.
     */
 
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/ibm02v04.xml")
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/ibm02v04.xml")
             .unwrap()
             .as_str(),
-             None,
-             "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/");
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/",
+    );
 }
 
 #[test]
@@ -119,11 +122,13 @@ fn ibm11valid_p02ibm02v05xml() {
         Description:This test case contains valid char references that match the char production.
     */
 
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/ibm02v05.xml")
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/ibm02v05.xml")
             .unwrap()
             .as_str(),
-            None,
-            "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/");
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/",
+    );
 }
 
 #[test]
@@ -135,11 +140,13 @@ fn ibm11valid_p02ibm02v06xml() {
         Spec Sections:2.2,4.1
         Description:This test case contains valid char references in the CDATA section, comment and processing instruction of an external entity that match the char production.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/ibm02v06.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/");
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/ibm02v06.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/",
+    );
 }
 
 #[test]
@@ -150,14 +157,19 @@ fn ibm11valid_p03ibm03v01xml() {
         Spec Sections:2.11
         Description:The two character sequence #x0D #x85 in an external entity must be normalized to a single newline.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v01.xml")
-                         .unwrap()
-                         .as_str(),
-                     Some(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v01.xml")
-                         .unwrap()
-                         .as_str()),
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v01.xml")
+            .unwrap()
+            .as_str(),
+        Some(
+            fs::read_to_string(
+                "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v01.xml",
+            )
+            .unwrap()
+            .as_str(),
+        ),
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/",
+    );
 }
 
 #[test]
@@ -168,14 +180,19 @@ fn ibm11valid_p03ibm03v02xml() {
         Spec Sections:2.11
         Description:The single character sequence #x85 in an external entity must be normalized to a single newline.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v02.xml")
-                         .unwrap()
-                         .as_str(),
-                     Some(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v02.xml")
-                         .unwrap()
-                         .as_str()),
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v02.xml")
+            .unwrap()
+            .as_str(),
+        Some(
+            fs::read_to_string(
+                "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v02.xml",
+            )
+            .unwrap()
+            .as_str(),
+        ),
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/",
+    );
 }
 
 #[test]
@@ -186,14 +203,19 @@ fn ibm11valid_p03ibm03v03xml() {
         Spec Sections:2.11
         Description:The two character sequence #x0D #x85 in an external entity must be normalized to a single newline.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v03.xml")
-                         .unwrap()
-                         .as_str(),
-                     Some(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v03.xml")
-                         .unwrap()
-                         .as_str()),
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v03.xml")
+            .unwrap()
+            .as_str(),
+        Some(
+            fs::read_to_string(
+                "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v03.xml",
+            )
+            .unwrap()
+            .as_str(),
+        ),
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/",
+    );
 }
 
 #[test]
@@ -204,14 +226,19 @@ fn ibm11valid_p03ibm03v04xml() {
         Spec Sections:2.11
         Description:The single character sequence #x85 in an external entity must be normalized to a single newline.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v04.xml")
-                         .unwrap()
-                         .as_str(),
-                     Some(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v04.xml")
-                         .unwrap()
-                         .as_str()),
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v04.xml")
+            .unwrap()
+            .as_str(),
+        Some(
+            fs::read_to_string(
+                "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v04.xml",
+            )
+            .unwrap()
+            .as_str(),
+        ),
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/",
+    );
 }
 
 #[test]
@@ -222,14 +249,19 @@ fn ibm11valid_p03ibm03v05xml() {
         Spec Sections:2.11
         Description:The two character sequence #x0D #x85 in a document entity must be normalized to a single newline.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v05.xml")
-                         .unwrap()
-                         .as_str(),
-                     Some(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v05.xml")
-                         .unwrap()
-                         .as_str()),
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v05.xml")
+            .unwrap()
+            .as_str(),
+        Some(
+            fs::read_to_string(
+                "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v05.xml",
+            )
+            .unwrap()
+            .as_str(),
+        ),
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/",
+    );
 }
 
 #[test]
@@ -240,14 +272,19 @@ fn ibm11valid_p03ibm03v06xml() {
         Spec Sections:2.11
         Description:The single character sequence #x85 in a document entity must be normalized to a single newline.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v06.xml")
-                         .unwrap()
-                         .as_str(),
-                     Some(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v06.xml")
-                         .unwrap()
-                         .as_str()),
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v06.xml")
+            .unwrap()
+            .as_str(),
+        Some(
+            fs::read_to_string(
+                "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v06.xml",
+            )
+            .unwrap()
+            .as_str(),
+        ),
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/",
+    );
 }
 
 #[test]
@@ -259,14 +296,19 @@ fn ibm11valid_p03ibm03v07xml() {
         Spec Sections:2.11
         Description:The single character sequence #x2028 in a document entity must be normalized to a single newline.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v07.xml")
-                         .unwrap()
-                         .as_str(),
-                     Some(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v07.xml")
-                         .unwrap()
-                         .as_str()),
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v07.xml")
+            .unwrap()
+            .as_str(),
+        Some(
+            fs::read_to_string(
+                "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v07.xml",
+            )
+            .unwrap()
+            .as_str(),
+        ),
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/",
+    );
 }
 
 #[test]
@@ -277,14 +319,19 @@ fn ibm11valid_p03ibm03v08xml() {
         Spec Sections:2.11
         Description:The single character sequence #x85 in the XMLDecl must be normalized to a single newline.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v08.xml")
-                         .unwrap()
-                         .as_str(),
-                     Some(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v08.xml")
-                         .unwrap()
-                         .as_str()),
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v08.xml")
+            .unwrap()
+            .as_str(),
+        Some(
+            fs::read_to_string(
+                "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v08.xml",
+            )
+            .unwrap()
+            .as_str(),
+        ),
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/",
+    );
 }
 
 #[test]
@@ -296,14 +343,19 @@ fn ibm11valid_p03ibm03v09xml() {
         Spec Sections:2.11
         Description:The single character sequence #x2028 in the XMLDecl must be normalized to a single newline. (This test is questionable)
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v09.xml")
-                         .unwrap()
-                         .as_str(),
-                     Some(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v09.xml")
-                         .unwrap()
-                         .as_str()),
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v09.xml")
+            .unwrap()
+            .as_str(),
+        Some(
+            fs::read_to_string(
+                "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v09.xml",
+            )
+            .unwrap()
+            .as_str(),
+        ),
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/",
+    );
 }
 
 /*
@@ -330,7 +382,6 @@ fn ibm11valid_p04ibm04v01xml() {
  }
 */
 
-
 #[test]
 fn ibm11valid_p04ibm04av01xml() {
     /*
@@ -339,11 +390,13 @@ fn ibm11valid_p04ibm04av01xml() {
         Spec Sections:2.3
         Description:This test case covers legal NameChars character ranges plus discrete legal characters for production 04a.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P04a/ibm04av01.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P04a/");
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P04a/ibm04av01.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P04a/",
+    );
 }
 
 /*
@@ -382,12 +435,13 @@ fn ibm11valid_p05ibm05v02xml() {
         Spec Sections:2.3
         Description:This test case covers legal PITarget (Names) as per production 5.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P05/ibm05v02.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P05/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P05/ibm05v02.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P05/",
+    );
 }
 
 /*
@@ -421,12 +475,13 @@ fn ibm11valid_p05ibm05v04xml() {
         Spec Sections:2.3
         Description:This test case covers legal ID/IDREF (Names) as per production 5.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P05/ibm05v04.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P05/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P05/ibm05v04.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P05/",
+    );
 }
 
 /*
@@ -460,12 +515,13 @@ fn ibm11valid_p047ibm07v01xml() {
         Spec Sections:2.3
         Description:This test case covers legal NMTOKEN Name character ranges plus discrete legal characters for production 7.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P07/ibm07v01.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P07/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P07/ibm07v01.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P07/",
+    );
 }
 
 #[test]
@@ -477,12 +533,13 @@ fn ibm11valid_p77ibm77v01xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document entity is 1.1 whereas the VersionNum of the external DTD is 1.0. The character #xC0 which is a valid XML 1.1 but an invalid XML 1.0 character is present in both documents.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v01.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v01.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -494,12 +551,13 @@ fn ibm11valid_p77ibm77v02xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document entity is 1.1 whereas the VersionNum of the external DTD is 1.0. The character #x1FFF which is a valid XML 1.1 but an invalid XML 1.0 character is present in both documents.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v02.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v02.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -511,12 +569,13 @@ fn ibm11valid_p77ibm77v03xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document entity is 1.1 whereas the VersionNum of the external DTD is 1.0. The character #xF901 which is a valid XML 1.1 but an invalid XML 1.0 character is present in both documents.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v03.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v03.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -528,12 +587,13 @@ fn ibm11valid_p77ibm77v04xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document entity is 1.1 whereas the VersionNum of the external entity is 1.0. The character #xD6 which is a valid XML 1.1 but an invalid XML 1.0 character is present in both documents.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v04.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v04.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -545,12 +605,13 @@ fn ibm11valid_p77ibm77v05xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document entity is 1.1 whereas the VersionNum of the external entity is 1.0. The character #x1FFF which is a valid XML 1.1 but an invalid XML 1.0 character is present in both documents.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v05.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v05.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -562,12 +623,13 @@ fn ibm11valid_p77ibm77v06xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document entity is 1.1 whereas the VersionNum of the external entity is 1.0. The character #xF901 which is a valid XML 1.1 but an invalid XML 1.0 character is present in both documents.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v06.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v06.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -579,12 +641,13 @@ fn ibm11valid_p77ibm77v07xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document and external dtd is 1.1 and both contain the valid XML1.1 but invalid XML1.0 character #xD8.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v07.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v07.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -596,12 +659,13 @@ fn ibm11valid_p77ibm77v08xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document and external dtd is 1.1 and both contain the valid XML1.1 but invalid XML1.0 character #x1FFF.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v08.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v08.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -613,12 +677,13 @@ fn ibm11valid_p77ibm77v09xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document and external dtd is 1.1 and both contain the valid XML1.1 but invalid XML1.0 character #xF901.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v09.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v09.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -630,12 +695,13 @@ fn ibm11valid_p77ibm77v10xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document and external entity is 1.1 and both contain the valid XML1.1 but invalid XML1.0 character #xF6.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v10.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v10.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -647,12 +713,13 @@ fn ibm11valid_p77ibm77v11xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document and external entity is 1.1 and both contain the valid XML1.1 but invalid XML1.0 character #x1FFF.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v11.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v11.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -664,12 +731,13 @@ fn ibm11valid_p77ibm77v12xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document and external entity is 1.1 and both contain the valid XML1.1 but invalid XML1.0 character #xF901.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v12.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v12.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -681,12 +749,13 @@ fn ibm11valid_p77ibm77v13xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document entity is 1.1 but the external dtd does not contain a textDecl and both contain the valid XML1.1 but invalid XML1.0 character #xF8.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v13.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v13.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -698,12 +767,13 @@ fn ibm11valid_p77ibm77v14xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document entity is 1.1 but the external dtd does not contain a textDecl and both contain the valid XML1.1 but invalid XML1.0 character #x1FFF.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v14.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v14.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -715,12 +785,13 @@ fn ibm11valid_p77ibm77v15xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document entity is 1.1 but the external dtd does not contain a textDecl and both contain the valid XML1.1 but invalid XML1.0 character #xF901.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v15.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v15.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -732,12 +803,13 @@ fn ibm11valid_p77ibm77v16xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document entity is 1.1 but the external entity does not contain a textDecl and both contain the valid XML1.1 but invalid XML1.0 character #x2FF.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v16.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v16.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -749,12 +821,13 @@ fn ibm11valid_p77ibm77v17xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document entity is 1.1 but the external entity does not contain a textDecl and both contain the valid XML1.1 but invalid XML1.0 character #x1FFF.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v17.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v17.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -766,12 +839,13 @@ fn ibm11valid_p77ibm77v18xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document entity is 1.1 but the external entity does not contain a textDecl and both contain the valid XML1.1 but invalid XML1.0 character #xF901.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v18.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v18.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -783,12 +857,13 @@ fn ibm11valid_p77ibm77v19xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document and external dtd is 1.1. The replacement text of an entity declared in the external DTD contains a reference to the character #x7F. This entity is not referenced in the document entity.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v19.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v19.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -800,12 +875,13 @@ fn ibm11valid_p77ibm77v20xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document and external dtd is 1.1. The replacement text of an entity declared in the external DTD contains a reference to the character #x80. This entity is not referenced in the document entity.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v20.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v20.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -817,12 +893,13 @@ fn ibm11valid_p77ibm77v21xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document and external dtd is 1.1. The replacement text of an entity declared in the external DTD contains a reference to the character #x9F. This entity is not referenced in the document entity.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v21.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v21.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -834,12 +911,13 @@ fn ibm11valid_p77ibm77v22xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document and the external entity is 1.1. The entity contains a reference to the character #x7F.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v22.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v22.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -851,12 +929,13 @@ fn ibm11valid_p77ibm77v23xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document and the external entity is 1.1. The entity contains a reference to the character #x80.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v23.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v23.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -868,12 +947,13 @@ fn ibm11valid_p77ibm77v24xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document and the external entity is 1.1. The entity contains a reference to the character #x9F.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v24.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v24.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -885,12 +965,13 @@ fn ibm11valid_p77ibm77v25xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document is 1.1 and the textDecl is missing in the external DTD. The replacement text of an entity declared in the external DTD contains a reference to the character #x7F, #x8F. This entity is not referenced in the document entity.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v25.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v25.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -902,12 +983,13 @@ fn ibm11valid_p77ibm77v26xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document is 1.1 and the textDecl is missing in the external DTD. The replacement text of an entity declared in the external DTD contains a reference to the character #x80, #x90. This entity is not referenced in the document entity.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v26.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v26.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -919,12 +1001,13 @@ fn ibm11valid_p77ibm77v27xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document is 1.1 and the textDecl is missing in the external DTD. The replacement text of an entity declared in the external DTD contains a reference to the character #x81, #x9F. This entity is not referenced in the document entity.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v27.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v27.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -936,12 +1019,13 @@ fn ibm11valid_p77ibm77v28xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document is 1.1 and the textDecl is missing in the external entity. The replacement text of an entity declared in the external DTD contains a reference to the character #x7F, #x80, #x9F.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v28.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v28.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -953,12 +1037,13 @@ fn ibm11valid_p77ibm77v29xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document is 1.1 and the textDecl is missing in the external entity. The replacement text of an entity declared in the external DTD contains a reference to the character #x85, #x8F.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v29.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v29.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }
 
 #[test]
@@ -970,10 +1055,11 @@ fn ibm11valid_p77ibm77v30xml() {
         Spec Sections:4.3.4
         Description:The VersionNum of the document is 1.1 and the textDecl is missing in the external entity. The replacement text of an entity declared in the external DTD contains a reference to the character #x1, #x7F.
     */
-    test_ibm11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v30.xml")
-                         .unwrap()
-                         .as_str(),
-                     None,
-                     "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/");
-
+    test_ibm11_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v30.xml")
+            .unwrap()
+            .as_str(),
+        None,
+        "tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/",
+    );
 }

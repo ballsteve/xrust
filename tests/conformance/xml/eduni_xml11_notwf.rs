@@ -21,11 +21,7 @@ fn test_eduni_xml11_notwf(xmldoc: &str, docloc: &str) {
         .doc(testxml)
         .document_location(docloc.to_string())
         .build();
-    let parseresult = xml::parse_with_state(
-        xmldoc,
-        ps,
-        ss,
-    );
+    let parseresult = xml::parse_with_state(xmldoc, ps, ss);
 
     assert!(parseresult.is_err());
 }
@@ -41,9 +37,9 @@ fn rmt001() {
 
     test_eduni_xml11_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/001.xml")
-        .unwrap()
-        .as_str(),
-    "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
+            .unwrap()
+            .as_str(),
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/",
     );
 }
 
@@ -59,7 +55,7 @@ fn rmt002() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/002.xml")
             .unwrap()
             .as_str(),
-        "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/",
     );
 }
 
@@ -75,7 +71,7 @@ fn rmt003() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/003.xml")
             .unwrap()
             .as_str(),
-        "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/",
     );
 }
 
@@ -91,7 +87,7 @@ fn rmt004() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/004.xml")
             .unwrap()
             .as_str(),
-        "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/",
     );
 }
 
@@ -107,7 +103,7 @@ fn rmt005() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/005.xml")
             .unwrap()
             .as_str(),
-        "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/",
     );
 }
 
@@ -124,7 +120,7 @@ fn rmt011() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/011.xml")
             .unwrap()
             .as_str(),
-        "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/",
     );
 }
 
@@ -140,7 +136,7 @@ fn rmt013() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/013.xml")
             .unwrap()
             .as_str(),
-        "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/",
     );
 }
 
@@ -225,7 +221,7 @@ fn rmt020() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/020.xml")
             .unwrap()
             .as_str(),
-        "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/",
     );
 }
 
@@ -241,7 +237,7 @@ fn rmt021() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/021.xml")
             .unwrap()
             .as_str(),
-        "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/",
     );
 }
 
@@ -257,7 +253,7 @@ fn rmt038() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/038.xml")
             .unwrap()
             .as_str(),
-        "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/",
     );
 }
 
@@ -273,7 +269,7 @@ fn rmt039() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/039.xml")
             .unwrap()
             .as_str(),
-        "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/",
     );
 }
 
@@ -290,7 +286,7 @@ fn rmt041() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/041.xml")
             .unwrap()
             .as_str(),
-        "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/",
     );
 }
 
@@ -306,6 +302,6 @@ fn rmt042() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/042.xml")
             .unwrap()
             .as_str(),
-        "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/",
     );
 }

@@ -10,8 +10,7 @@ use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
-fn test_eduni_namespaces_10_invalid(xmldoc: &str){
-
+fn test_eduni_namespaces_10_invalid(xmldoc: &str) {
     let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
@@ -36,9 +35,11 @@ fn rmtns10017() {
         Description:Simple legal case: no namespaces
     */
 
-    test_eduni_namespaces_10_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/017.xml")
+    test_eduni_namespaces_10_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/017.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -50,9 +51,11 @@ fn rmtns10018() {
         Description:Simple legal case: default namespace
     */
 
-    test_eduni_namespaces_10_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/018.xml")
+    test_eduni_namespaces_10_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/018.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -64,9 +67,11 @@ fn rmtns10019() {
         Description:Simple legal case: prefixed element
     */
 
-    test_eduni_namespaces_10_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/019.xml")
+    test_eduni_namespaces_10_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/019.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -78,9 +83,11 @@ fn rmtns10020() {
         Description:Simple legal case: prefixed attribute
     */
 
-    test_eduni_namespaces_10_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/020.xml")
+    test_eduni_namespaces_10_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/020.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -92,9 +99,11 @@ fn rmtns10021() {
         Description:Simple legal case: default namespace and unbinding
     */
 
-    test_eduni_namespaces_10_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/021.xml")
+    test_eduni_namespaces_10_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/021.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -106,9 +115,11 @@ fn rmtns10022() {
         Description:Simple legal case: default namespace and rebinding
     */
 
-    test_eduni_namespaces_10_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/022.xml")
+    test_eduni_namespaces_10_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/022.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -120,9 +131,11 @@ fn rmtns10024() {
         Description:Simple legal case: prefix rebinding
     */
 
-    test_eduni_namespaces_10_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/024.xml")
+    test_eduni_namespaces_10_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/024.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -134,9 +147,11 @@ fn rmtns10027() {
         Description:Reserved prefixes and namespaces: using the xml prefix undeclared
     */
 
-    test_eduni_namespaces_10_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/027.xml")
+    test_eduni_namespaces_10_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/027.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -148,9 +163,11 @@ fn rmtns10028() {
         Description:Reserved prefixes and namespaces: declaring the xml prefix correctly
     */
 
-    test_eduni_namespaces_10_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/028.xml")
+    test_eduni_namespaces_10_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/028.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -162,9 +179,11 @@ fn rmtns10034() {
         Description:Reserved prefixes and namespaces: binding a reserved prefix
     */
 
-    test_eduni_namespaces_10_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/034.xml")
+    test_eduni_namespaces_10_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/034.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -176,9 +195,11 @@ fn rmtns10037() {
         Description:Attribute uniqueness: different attributes with same local name
     */
 
-    test_eduni_namespaces_10_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/037.xml")
+    test_eduni_namespaces_10_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/037.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -190,9 +211,11 @@ fn rmtns10038() {
         Description:Attribute uniqueness: prefixed and unprefixed attributes with same local name
     */
 
-    test_eduni_namespaces_10_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/038.xml")
+    test_eduni_namespaces_10_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/038.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -204,9 +227,11 @@ fn rmtns10039() {
         Description:Attribute uniqueness: prefixed and unprefixed attributes with same local name, with default namespace
     */
 
-    test_eduni_namespaces_10_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/039.xml")
+    test_eduni_namespaces_10_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/039.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -218,9 +243,11 @@ fn rmtns10040() {
         Description:Attribute uniqueness: prefixed and unprefixed attributes with same local name, with default namespace and element in default namespace
     */
 
-    test_eduni_namespaces_10_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/040.xml")
+    test_eduni_namespaces_10_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/040.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -232,9 +259,11 @@ fn rmtns10041() {
         Description:Attribute uniqueness: prefixed and unprefixed attributes with same local name, element in same namespace as prefixed attribute
     */
 
-    test_eduni_namespaces_10_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/041.xml")
+    test_eduni_namespaces_10_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/041.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -247,9 +276,11 @@ fn rmtns10045() {
         Description:Colon in ID attribute name
     */
 
-    test_eduni_namespaces_10_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/045.xml")
+    test_eduni_namespaces_10_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/045.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -262,7 +293,9 @@ fn rmtns10046() {
         Description:Colon in ID attribute name
     */
 
-    test_eduni_namespaces_10_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/046.xml")
+    test_eduni_namespaces_10_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/046.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }

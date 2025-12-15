@@ -11,8 +11,7 @@ use xrust::parser::{ParseError, ParserStateBuilder, StaticStateBuilder, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
-fn test_eduni_errata2e_invalid(xmldoc: &str){
-
+fn test_eduni_errata2e_invalid(xmldoc: &str) {
     let ss = StaticStateBuilder::new()
         .dtd_resolver(dtdfileresolve())
         .namespace(|_: &_| Err(ParseError::MissingNameSpace))
@@ -23,11 +22,7 @@ fn test_eduni_errata2e_invalid(xmldoc: &str){
         .document_location("tests/conformance/xml/xmlconf/eduni/errata-2e/".to_string())
         .build();
 
-    let parseresult = xml::parse_with_state(
-        xmldoc,
-        ps,
-        ss,
-    );
+    let parseresult = xml::parse_with_state(xmldoc, ps, ss);
 
     assert!(parseresult.is_ok());
 
@@ -35,7 +30,6 @@ fn test_eduni_errata2e_invalid(xmldoc: &str){
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -50,7 +44,7 @@ fn rmte2e2a() {
     test_eduni_errata2e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E2a.xml")
             .unwrap()
-            .as_str()
+            .as_str(),
     );
 }
 
@@ -66,7 +60,7 @@ fn rmte2e2b() {
     test_eduni_errata2e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E2b.xml")
             .unwrap()
-            .as_str()
+            .as_str(),
     );
 }
 
@@ -82,7 +76,7 @@ fn rmte2e9b() {
     test_eduni_errata2e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E9b.xml")
             .unwrap()
-            .as_str()
+            .as_str(),
     );
 }
 
@@ -97,7 +91,7 @@ fn rmte2e14() {
     test_eduni_errata2e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E14.xml")
             .unwrap()
-            .as_str()
+            .as_str(),
     );
 }
 
@@ -113,7 +107,7 @@ fn rmte2e15a() {
     test_eduni_errata2e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15a.xml")
             .unwrap()
-            .as_str()
+            .as_str(),
     );
 }
 
@@ -129,7 +123,7 @@ fn rmte2e15b() {
     test_eduni_errata2e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15b.xml")
             .unwrap()
-            .as_str()
+            .as_str(),
     );
 }
 
@@ -145,7 +139,7 @@ fn rmte2e15c() {
     test_eduni_errata2e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15c.xml")
             .unwrap()
-            .as_str()
+            .as_str(),
     );
 }
 
@@ -161,7 +155,7 @@ fn rmte2e15d() {
     test_eduni_errata2e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15d.xml")
             .unwrap()
-            .as_str()
+            .as_str(),
     );
 }
 
@@ -177,7 +171,7 @@ fn rmte2e15g() {
     test_eduni_errata2e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15g.xml")
             .unwrap()
-            .as_str()
+            .as_str(),
     );
 }
 
@@ -193,7 +187,7 @@ fn rmte2e15h() {
     test_eduni_errata2e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15h.xml")
             .unwrap()
-            .as_str()
+            .as_str(),
     );
 }
 
@@ -209,6 +203,6 @@ fn rmte2e20() {
     test_eduni_errata2e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E20.xml")
             .unwrap()
-            .as_str()
+            .as_str(),
     );
 }

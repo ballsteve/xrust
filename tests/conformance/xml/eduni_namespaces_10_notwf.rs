@@ -10,8 +10,7 @@ use xrust::item::Node;
 use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 
-fn test_eduni_namespaces_10_notwf(xmldoc: &str){
-
+fn test_eduni_namespaces_10_notwf(xmldoc: &str) {
     let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
@@ -34,9 +33,11 @@ fn rmtns10009() {
         Description:Namespace equality test: plain repetition
     */
 
-    test_eduni_namespaces_10_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/009.xml")
+    test_eduni_namespaces_10_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/009.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -48,9 +49,11 @@ fn rmtns10010() {
         Description:Namespace equality test: use of character reference
     */
 
-    test_eduni_namespaces_10_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/010.xml")
+    test_eduni_namespaces_10_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/010.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -62,9 +65,11 @@ fn rmtns10011() {
         Description:Namespace equality test: use of entity reference
     */
 
-    test_eduni_namespaces_10_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/011.xml")
+    test_eduni_namespaces_10_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/011.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -76,9 +81,11 @@ fn rmtns10012() {
         Description:Namespace inequality test: equal after attribute value normalization
     */
 
-    test_eduni_namespaces_10_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/012.xml")
+    test_eduni_namespaces_10_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/012.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -90,9 +97,11 @@ fn rmtns10013() {
         Description:Bad QName syntax: multiple colons
     */
 
-    test_eduni_namespaces_10_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/013.xml")
+    test_eduni_namespaces_10_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/013.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -104,9 +113,11 @@ fn rmtns10014() {
         Description:Bad QName syntax: colon at end
     */
 
-    test_eduni_namespaces_10_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/014.xml")
+    test_eduni_namespaces_10_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/014.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -118,9 +129,11 @@ fn rmtns10015() {
         Description:Bad QName syntax: colon at start
     */
 
-    test_eduni_namespaces_10_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/015.xml")
+    test_eduni_namespaces_10_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/015.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -132,9 +145,11 @@ fn rmtns10016() {
         Description:Bad QName syntax: xmlns:
     */
 
-    test_eduni_namespaces_10_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/016.xml")
+    test_eduni_namespaces_10_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/016.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -146,9 +161,11 @@ fn rmtns10023() {
         Description:Illegal use of 1.1-style prefix unbinding in 1.0 document
     */
 
-    test_eduni_namespaces_10_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/023.xml")
+    test_eduni_namespaces_10_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/023.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -160,9 +177,11 @@ fn rmtns10025() {
         Description:Unbound element prefix
     */
 
-    test_eduni_namespaces_10_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/025.xml")
+    test_eduni_namespaces_10_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/025.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -174,9 +193,11 @@ fn rmtns10026() {
         Description:Unbound attribute prefix
     */
 
-    test_eduni_namespaces_10_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/026.xml")
+    test_eduni_namespaces_10_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/026.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -188,9 +209,11 @@ fn rmtns10029() {
         Description:Reserved prefixes and namespaces: declaring the xml prefix incorrectly
     */
 
-    test_eduni_namespaces_10_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/029.xml")
+    test_eduni_namespaces_10_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/029.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -202,9 +225,11 @@ fn rmtns10030() {
         Description:Reserved prefixes and namespaces: binding another prefix to the xml namespace
     */
 
-    test_eduni_namespaces_10_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/030.xml")
+    test_eduni_namespaces_10_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/030.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -219,7 +244,8 @@ fn rmtns10031() {
     test_eduni_namespaces_10_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/031.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -231,9 +257,11 @@ fn rmtns10032() {
         Description:Reserved prefixes and namespaces: declaring the xmlns prefix with an incorrect URI
     */
 
-    test_eduni_namespaces_10_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/032.xml")
+    test_eduni_namespaces_10_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/032.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -245,9 +273,11 @@ fn rmtns10033() {
         Description:Reserved prefixes and namespaces: binding another prefix to the xmlns namespace
     */
 
-    test_eduni_namespaces_10_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/033.xml")
+    test_eduni_namespaces_10_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/033.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -259,9 +289,11 @@ fn rmtns10035() {
         Description:Attribute uniqueness: repeated identical attribute
     */
 
-    test_eduni_namespaces_10_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/035.xml")
+    test_eduni_namespaces_10_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/035.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -273,9 +305,11 @@ fn rmtns10036() {
         Description:Attribute uniqueness: repeated attribute with different prefixes
     */
 
-    test_eduni_namespaces_10_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/036.xml")
+    test_eduni_namespaces_10_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/036.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -287,9 +321,11 @@ fn rmtns10042() {
         Description:Colon in PI name
     */
 
-    test_eduni_namespaces_10_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/042.xml")
+    test_eduni_namespaces_10_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/042.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -301,9 +337,11 @@ fn rmtns10043() {
         Description:Colon in entity name
     */
 
-    test_eduni_namespaces_10_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/043.xml")
+    test_eduni_namespaces_10_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/043.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -315,7 +353,9 @@ fn rmtns10044() {
         Description:Colon in entity name
     */
 
-    test_eduni_namespaces_10_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/044.xml")
+    test_eduni_namespaces_10_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/044.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }

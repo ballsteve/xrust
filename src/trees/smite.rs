@@ -421,7 +421,7 @@ impl ItemNode for RNode {
                     match t.cmp(o) {
                         Ordering::Greater => return Ordering::Greater,
                         Ordering::Less => return Ordering::Less,
-                        Ordering::Equal => {  }
+                        Ordering::Equal => {}
                     }
                     // otherwise continue the loop
                 }
@@ -941,7 +941,9 @@ impl ItemNode for RNode {
     fn is_idrefs(&self) -> bool {
         match &self.0 {
             //TODO Add Element XML ID REF support
-            NodeInner::Attribute(_, _, v) => matches!(v.as_ref().value, ValueData::IDREF(_) | ValueData::IDREFS(_)),
+            NodeInner::Attribute(_, _, v) => {
+                matches!(v.as_ref().value, ValueData::IDREF(_) | ValueData::IDREFS(_))
+            }
             _ => false,
         }
     }
@@ -1038,9 +1040,7 @@ fn dump_tree_children(cv: Vec<RNode>, indent: usize) -> String {
                 (0..indent + 4).for_each(|_| result.push(' '));
                 result.push_str("Attributes: ");
                 attrs.borrow().iter().for_each(|(_, a)| {
-                    result.push_str(
-                        format!(" {:?}={}", a.name().unwrap(), a.value()).as_str(),
-                    )
+                    result.push_str(format!(" {:?}={}", a.name().unwrap(), a.value()).as_str())
                 });
                 result.push('\n');
                 (0..indent + 4).for_each(|_| result.push(' '));
@@ -1066,9 +1066,9 @@ fn dump_tree_children(cv: Vec<RNode>, indent: usize) -> String {
             NodeInner::Comment(_parent, val) => {
                 result.push_str(format!("Comment node \"{}\"", val).as_str())
             }
-            NodeInner::ProcessingInstruction(_parent, name, val) => result.push_str(
-                format!("PI node \"{}\"-\"{}\"", name, val).as_str(),
-            ),
+            NodeInner::ProcessingInstruction(_parent, name, val) => {
+                result.push_str(format!("PI node \"{}\"-\"{}\"", name, val).as_str())
+            }
             _ => result.push_str("shouldn't have attribute or namespace nodes here"),
         }
     });
@@ -1274,7 +1274,6 @@ fn to_xml_int(
                 if !ns_in_scope
                     .iter()
                     .any(|insns| insns == nsd.as_namespace_uri().unwrap())
-
                 {
                     let nsd_nsuri = nsd.as_namespace_uri().unwrap();
                     new_in_scope.push(nsd_nsuri.clone());
@@ -1306,7 +1305,7 @@ fn to_xml_int(
                         acc
                     })
                 })
-                .is_some_and( |b| b);
+                .is_some_and(|b| b);
 
             node.child_iter().for_each(|c| {
                 if do_indent {
@@ -1593,7 +1592,7 @@ fn find_ns(nn: &mut NamespaceNodes) -> Option<RNode> {
             match nsiter.next() {
                 Some((p, n)) => {
                     // Is this a descope ns node?
-                    if nn.descoped.iter().any(|nsp| *nsp == p){
+                    if nn.descoped.iter().any(|nsp| *nsp == p) {
                         // This namespace has been descoped, so skip it
                         nn.ns_it = Some(nsiter);
                         find_ns(nn)
@@ -1605,7 +1604,6 @@ fn find_ns(nn: &mut NamespaceNodes) -> Option<RNode> {
                         nn.ns_it = Some(nsiter);
                         find_ns(nn)
                     }
-
                 }
                 None => {
                     // Move to the parent

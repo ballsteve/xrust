@@ -10,7 +10,7 @@ use xrust::item::Node;
 use xrust::parser::{ParseError, ParserStateBuilder, StaticStateBuilder, xml};
 use xrust::trees::smite::RNode;
 
-fn test_ibm_notwf(xmldoc: &str){
+fn test_ibm_notwf(xmldoc: &str) {
     let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
@@ -30,9 +30,11 @@ fn ibmnotwf_p01ibm01n01xml() {
         Description:Tests a document with no element. A well-formed document should have at lease one elements.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P01/ibm01n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P01/ibm01n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -44,9 +46,11 @@ fn ibmnotwf_p01ibm01n02xml() {
         Description:Tests a document with wrong ordering of its prolog and element. The element occurs before the xml declaration and the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P01/ibm01n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P01/ibm01n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -58,9 +62,11 @@ fn ibmnotwf_p01ibm01n03xml() {
         Description:Tests a document with wrong combination of misc and element. One PI occurs between two elements.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P01/ibm01n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P01/ibm01n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -72,9 +78,11 @@ fn ibmnotwf_p02ibm02n01xml() {
         Description:Tests a comment which contains an illegal Char: #x00
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -86,9 +94,11 @@ fn ibmnotwf_p02ibm02n02xml() {
         Description:Tests a comment which contains an illegal Char: #x01
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -100,9 +110,11 @@ fn ibmnotwf_p02ibm02n03xml() {
         Description:Tests a comment which contains an illegal Char: #x02
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -114,9 +126,11 @@ fn ibmnotwf_p02ibm02n04xml() {
         Description:Tests a comment which contains an illegal Char: #x03
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -128,9 +142,11 @@ fn ibmnotwf_p02ibm02n05xml() {
         Description:Tests a comment which contains an illegal Char: #x04
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -142,9 +158,11 @@ fn ibmnotwf_p02ibm02n06xml() {
         Description:Tests a comment which contains an illegal Char: #x05
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -156,9 +174,11 @@ fn ibmnotwf_p02ibm02n07xml() {
         Description:Tests a comment which contains an illegal Char: #x06
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n07.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -170,9 +190,11 @@ fn ibmnotwf_p02ibm02n08xml() {
         Description:Tests a comment which contains an illegal Char: #x07
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n08.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n08.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -184,9 +206,11 @@ fn ibmnotwf_p02ibm02n09xml() {
         Description:Tests a comment which contains an illegal Char: #x08
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n09.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n09.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -198,9 +222,11 @@ fn ibmnotwf_p02ibm02n10xml() {
         Description:Tests a comment which contains an illegal Char: #x0B
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n10.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n10.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -212,9 +238,11 @@ fn ibmnotwf_p02ibm02n11xml() {
         Description:Tests a comment which contains an illegal Char: #x0C
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n11.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n11.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -226,9 +254,11 @@ fn ibmnotwf_p02ibm02n12xml() {
         Description:Tests a comment which contains an illegal Char: #x0E
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n12.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n12.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -240,9 +270,11 @@ fn ibmnotwf_p02ibm02n13xml() {
         Description:Tests a comment which contains an illegal Char: #x0F
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n13.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n13.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -254,9 +286,11 @@ fn ibmnotwf_p02ibm02n14xml() {
         Description:Tests a comment which contains an illegal Char: #x10
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n14.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n14.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -268,9 +302,11 @@ fn ibmnotwf_p02ibm02n15xml() {
         Description:Tests a comment which contains an illegal Char: #x11
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n15.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n15.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -282,9 +318,11 @@ fn ibmnotwf_p02ibm02n16xml() {
         Description:Tests a comment which contains an illegal Char: #x12
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n16.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n16.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -296,9 +334,11 @@ fn ibmnotwf_p02ibm02n17xml() {
         Description:Tests a comment which contains an illegal Char: #x13
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n17.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n17.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -310,9 +350,11 @@ fn ibmnotwf_p02ibm02n18xml() {
         Description:Tests a comment which contains an illegal Char: #x14
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n18.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n18.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -324,9 +366,11 @@ fn ibmnotwf_p02ibm02n19xml() {
         Description:Tests a comment which contains an illegal Char: #x15
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n19.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n19.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -338,9 +382,11 @@ fn ibmnotwf_p02ibm02n20xml() {
         Description:Tests a comment which contains an illegal Char: #x16
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n20.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n20.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -352,9 +398,11 @@ fn ibmnotwf_p02ibm02n21xml() {
         Description:Tests a comment which contains an illegal Char: #x17
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n21.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n21.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -366,9 +414,11 @@ fn ibmnotwf_p02ibm02n22xml() {
         Description:Tests a comment which contains an illegal Char: #x18
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n22.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n22.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -380,9 +430,11 @@ fn ibmnotwf_p02ibm02n23xml() {
         Description:Tests a comment which contains an illegal Char: #x19
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n23.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n23.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -394,9 +446,11 @@ fn ibmnotwf_p02ibm02n24xml() {
         Description:Tests a comment which contains an illegal Char: #x1A
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n24.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n24.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -408,9 +462,11 @@ fn ibmnotwf_p02ibm02n25xml() {
         Description:Tests a comment which contains an illegal Char: #x1B
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n25.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n25.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -422,9 +478,11 @@ fn ibmnotwf_p02ibm02n26xml() {
         Description:Tests a comment which contains an illegal Char: #x1C
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n26.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n26.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -436,9 +494,11 @@ fn ibmnotwf_p02ibm02n27xml() {
         Description:Tests a comment which contains an illegal Char: #x1D
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n27.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n27.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -450,9 +510,11 @@ fn ibmnotwf_p02ibm02n28xml() {
         Description:Tests a comment which contains an illegal Char: #x1E
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n28.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n28.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -464,9 +526,11 @@ fn ibmnotwf_p02ibm02n29xml() {
         Description:Tests a comment which contains an illegal Char: #x1F
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n29.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n29.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -479,7 +543,9 @@ fn ibmnotwf_p02ibm02n30xml() {
         Description:Tests a comment which contains an illegal Char: #xD800
     */
 
-    test_ibm_notwf(non_utf8_file_reader("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n30.xml").as_str());
+    test_ibm_notwf(
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n30.xml").as_str(),
+    );
 }
 
 #[test]
@@ -492,7 +558,9 @@ fn ibmnotwf_p02ibm02n31xml() {
         Description:Tests a comment which contains an illegal Char: #xDFFF
     */
 
-    test_ibm_notwf(non_utf8_file_reader("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n31.xml").as_str());
+    test_ibm_notwf(
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n31.xml").as_str(),
+    );
 }
 
 #[test]
@@ -504,9 +572,11 @@ fn ibmnotwf_p02ibm02n32xml() {
         Description:Tests a comment which contains an illegal Char: #xFFFE
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n32.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n32.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -518,9 +588,11 @@ fn ibmnotwf_p02ibm02n33xml() {
         Description:Tests a comment which contains an illegal Char: #xFFFF
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n33.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n33.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -532,9 +604,11 @@ fn ibmnotwf_p03ibm03n01xml() {
         Description:Tests an end tag which contains an illegal space character #x3000 which follows the element name "book".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P03/ibm03n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P03/ibm03n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -546,9 +620,11 @@ fn ibmnotwf_p04ibm04n01xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x21
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -560,9 +636,11 @@ fn ibmnotwf_p04ibm04n02xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x28
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -574,9 +652,11 @@ fn ibmnotwf_p04ibm04n03xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x29
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -588,9 +668,11 @@ fn ibmnotwf_p04ibm04n04xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x2B
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -602,9 +684,11 @@ fn ibmnotwf_p04ibm04n05xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x2C
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -616,9 +700,11 @@ fn ibmnotwf_p04ibm04n06xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x2F
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -630,9 +716,11 @@ fn ibmnotwf_p04ibm04n07xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x3B
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n07.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -644,9 +732,11 @@ fn ibmnotwf_p04ibm04n08xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x3C
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n08.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n08.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -658,9 +748,11 @@ fn ibmnotwf_p04ibm04n09xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x3D
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n09.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n09.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -672,9 +764,11 @@ fn ibmnotwf_p04ibm04n10xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x3F
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n10.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n10.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -686,9 +780,11 @@ fn ibmnotwf_p04ibm04n11xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x5B
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n11.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n11.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -700,9 +796,11 @@ fn ibmnotwf_p04ibm04n12xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x5C
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n12.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n12.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -714,9 +812,11 @@ fn ibmnotwf_p04ibm04n13xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x5D
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n13.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n13.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -728,9 +828,11 @@ fn ibmnotwf_p04ibm04n14xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x5E
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n14.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n14.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -742,9 +844,11 @@ fn ibmnotwf_p04ibm04n15xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x60
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n15.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n15.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -756,9 +860,11 @@ fn ibmnotwf_p04ibm04n16xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x7B
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n16.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n16.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -770,9 +876,11 @@ fn ibmnotwf_p04ibm04n17xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x7C
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n17.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n17.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -784,9 +892,11 @@ fn ibmnotwf_p04ibm04n18xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x7D
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n18.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n18.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -798,9 +908,11 @@ fn ibmnotwf_p05ibm05n01xml() {
         Description:Tests an element name which has an illegal first character. An illegal first character "." is followed by "A_name-starts_with.".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P05/ibm05n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P05/ibm05n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -812,9 +924,11 @@ fn ibmnotwf_p05ibm05n02xml() {
         Description:Tests an element name which has an illegal first character. An illegal first character "-" is followed by "A_name-starts_with-".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P05/ibm05n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P05/ibm05n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -826,9 +940,11 @@ fn ibmnotwf_p05ibm05n03xml() {
         Description:Tests an element name which has an illegal first character. An illegal first character "5" is followed by "A_name-starts_with_digit".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P05/ibm05n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P05/ibm05n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -840,9 +956,11 @@ fn ibmnotwf_p09ibm09n01xml() {
         Description:Tests an internal general entity with an invalid value. The entity "Fullname" contains "%".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P09/ibm09n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P09/ibm09n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -854,9 +972,11 @@ fn ibmnotwf_p09ibm09n02xml() {
         Description:Tests an internal general entity with an invalid value. The entity "Fullname" contains the ampersand character.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P09/ibm09n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P09/ibm09n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -868,9 +988,11 @@ fn ibmnotwf_p09ibm09n03xml() {
         Description:Tests an internal general entity with an invalid value. The entity "Fullname" contains the double quote character in the middle.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P09/ibm09n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P09/ibm09n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -882,9 +1004,11 @@ fn ibmnotwf_p09ibm09n04xml() {
         Description:Tests an internal general entity with an invalid value. The closing bracket (double quote) is missing with the value of the entity "FullName".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P09/ibm09n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P09/ibm09n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -896,9 +1020,11 @@ fn ibmnotwf_p10ibm10n01xml() {
         Description:Tests an attribute with an invalid value. The value of the attribute "first" contains the character "less than".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -910,9 +1036,11 @@ fn ibmnotwf_p10ibm10n02xml() {
         Description:Tests an attribute with an invalid value. The value of the attribute "first" contains the character ampersand.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -924,9 +1052,11 @@ fn ibmnotwf_p10ibm10n03xml() {
         Description:Tests an attribute with an invalid value. The value of the attribute "first" contains the double quote character in the middle.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -938,9 +1068,11 @@ fn ibmnotwf_p10ibm10n04xml() {
         Description:Tests an attribute with an invalid value. The closing bracket (double quote) is missing with The value of the attribute "first".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -952,9 +1084,11 @@ fn ibmnotwf_p10ibm10n05xml() {
         Description:Tests an attribute with an invalid value. The value of the attribute "first" contains the character "less than".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -966,9 +1100,11 @@ fn ibmnotwf_p10ibm10n06xml() {
         Description:Tests an attribute with an invalid value. The value of the attribute "first" contains the character ampersand.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -980,9 +1116,11 @@ fn ibmnotwf_p10ibm10n07xml() {
         Description:Tests an attribute with an invalid value. The value of the attribute "first" contains the double quote character in the middle.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n07.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -994,9 +1132,11 @@ fn ibmnotwf_p10ibm10n08xml() {
         Description:Tests an attribute with an invalid value. The closing bracket (single quote) is missing with the value of the attribute "first".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n08.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n08.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1008,9 +1148,11 @@ fn ibmnotwf_p11ibm11n01xml() {
         Description:Tests SystemLiteral. The systemLiteral for the element "student" has a double quote character in the middle.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P11/ibm11n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P11/ibm11n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1022,9 +1164,11 @@ fn ibmnotwf_p11ibm11n02xml() {
         Description:Tests SystemLiteral. The systemLiteral for the element "student" has a single quote character in the middle.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P11/ibm11n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P11/ibm11n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1036,9 +1180,11 @@ fn ibmnotwf_p11ibm11n03xml() {
         Description:Tests SystemLiteral. The closing bracket (double quote) is missing with the systemLiteral for the element "student".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P11/ibm11n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P11/ibm11n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1050,9 +1196,11 @@ fn ibmnotwf_p11ibm11n04xml() {
         Description:Tests SystemLiteral. The closing bracket (single quote) is missing with the systemLiteral for the element "student".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P11/ibm11n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P11/ibm11n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1064,9 +1212,11 @@ fn ibmnotwf_p12ibm12n01xml() {
         Description:Tests PubidLiteral. The closing bracket (double quote) is missing with the value of the PubidLiteral for the entity "info".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P12/ibm12n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P12/ibm12n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1078,9 +1228,11 @@ fn ibmnotwf_p12ibm12n02xml() {
         Description:Tests PubidLiteral. The value of the PubidLiteral for the entity "info" has a single quote character in the middle..
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P12/ibm12n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P12/ibm12n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1092,9 +1244,11 @@ fn ibmnotwf_p12ibm12n03xml() {
         Description:Tests PubidLiteral. The closing bracket (single quote) is missing with the value of the PubidLiteral for the entity "info".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P12/ibm12n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P12/ibm12n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1106,9 +1260,11 @@ fn ibmnotwf_p13ibm13n01xml() {
         Description:Tests PubidChar. The pubidChar of the PubidLiteral for the entity "info" contains the character "{".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P13/ibm13n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P13/ibm13n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1120,9 +1276,11 @@ fn ibmnotwf_p13ibm13n02xml() {
         Description:Tests PubidChar. The pubidChar of the PubidLiteral for the entity "info" contains the character "~".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P13/ibm13n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P13/ibm13n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1134,9 +1292,11 @@ fn ibmnotwf_p13ibm13n03xml() {
         Description:Tests PubidChar. The pubidChar of the PubidLiteral for the entity "info" contains the character double quote in the middle.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P13/ibm13n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P13/ibm13n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1148,9 +1308,11 @@ fn ibmnotwf_p14ibm14n01xml() {
         Description:Tests CharData. The content of the element "student" contains the sequence close-bracket close-bracket greater-than.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P14/ibm14n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P14/ibm14n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1162,9 +1324,11 @@ fn ibmnotwf_p14ibm14n02xml() {
         Description:Tests CharData. The content of the element "student" contains the character "less than".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P14/ibm14n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P14/ibm14n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1176,9 +1340,11 @@ fn ibmnotwf_p14ibm14n03xml() {
         Description:Tests CharData. The content of the element "student" contains the character ampersand.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P14/ibm14n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P14/ibm14n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1190,9 +1356,11 @@ fn ibmnotwf_p15ibm15n01xml() {
         Description:Tests comment. The text of the second comment contains the character "-".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P15/ibm15n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P15/ibm15n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1204,9 +1372,11 @@ fn ibmnotwf_p15ibm15n02xml() {
         Description:Tests comment. The second comment has a wrong closing sequence "-(greater than)".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P15/ibm15n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P15/ibm15n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1218,9 +1388,11 @@ fn ibmnotwf_p15ibm15n03xml() {
         Description:Tests comment. The second comment has a wrong beginning sequence "(less than)!-".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P15/ibm15n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P15/ibm15n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1232,9 +1404,11 @@ fn ibmnotwf_p15ibm15n04xml() {
         Description:Tests comment. The closing sequence is missing with the second comment.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P15/ibm15n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P15/ibm15n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1246,9 +1420,11 @@ fn ibmnotwf_p16ibm16n01xml() {
         Description:Tests PI. The content of the PI includes the sequence "?(greater than)?".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P16/ibm16n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P16/ibm16n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1260,9 +1436,11 @@ fn ibmnotwf_p16ibm16n02xml() {
         Description:Tests PI. The PITarget is missing in the PI.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P16/ibm16n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P16/ibm16n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1274,9 +1452,11 @@ fn ibmnotwf_p16ibm16n03xml() {
         Description:Tests PI. The PI has a wrong closing sequence ">".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P16/ibm16n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P16/ibm16n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1288,9 +1468,11 @@ fn ibmnotwf_p16ibm16n04xml() {
         Description:Tests PI. The closing sequence is missing in the PI.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P16/ibm16n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P16/ibm16n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1302,9 +1484,11 @@ fn ibmnotwf_p17ibm17n01xml() {
         Description:Tests PITarget. The PITarget contains the string "XML".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P17/ibm17n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P17/ibm17n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1316,9 +1500,11 @@ fn ibmnotwf_p17ibm17n02xml() {
         Description:Tests PITarget. The PITarget contains the string "xML".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P17/ibm17n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P17/ibm17n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1330,9 +1516,11 @@ fn ibmnotwf_p17ibm17n03xml() {
         Description:Tests PITarget. The PITarget contains the string "xml".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P17/ibm17n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P17/ibm17n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1344,9 +1532,11 @@ fn ibmnotwf_p17ibm17n04xml() {
         Description:Tests PITarget. The PITarget contains the string "xmL".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P17/ibm17n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P17/ibm17n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1358,9 +1548,11 @@ fn ibmnotwf_p18ibm18n01xml() {
         Description:Tests CDSect. The CDStart is missing in the CDSect in the content of element "student".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P18/ibm18n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P18/ibm18n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1372,9 +1564,11 @@ fn ibmnotwf_p18ibm18n02xml() {
         Description:Tests CDSect. The CDEnd is missing in the CDSect in the content of element "student".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P18/ibm18n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P18/ibm18n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1386,9 +1580,11 @@ fn ibmnotwf_p19ibm19n01xml() {
         Description:Tests CDStart. The CDStart contains a lower case string "cdata".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P19/ibm19n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P19/ibm19n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1400,9 +1596,11 @@ fn ibmnotwf_p19ibm19n02xml() {
         Description:Tests CDStart. The CDStart contains an extra character "[".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P19/ibm19n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P19/ibm19n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1414,9 +1612,11 @@ fn ibmnotwf_p19ibm19n03xml() {
         Description:Tests CDStart. The CDStart contains a wrong character "?".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P19/ibm19n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P19/ibm19n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1428,9 +1628,11 @@ fn ibmnotwf_p20ibm20n01xml() {
         Description:Tests CDATA with an illegal sequence. The CDATA contains the sequence close-bracket close-bracket greater-than.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P20/ibm20n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P20/ibm20n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1442,9 +1644,11 @@ fn ibmnotwf_p21ibm21n01xml() {
         Description:Tests CDEnd. One "]" is missing in the CDEnd.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P21/ibm21n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P21/ibm21n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1456,9 +1660,11 @@ fn ibmnotwf_p21ibm21n02xml() {
         Description:Tests CDEnd. An extra "]" is placed in the CDEnd.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P21/ibm21n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P21/ibm21n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1470,9 +1676,11 @@ fn ibmnotwf_p21ibm21n03xml() {
         Description:Tests CDEnd. A wrong character ")" is placed in the CDEnd.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P21/ibm21n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P21/ibm21n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1484,9 +1692,11 @@ fn ibmnotwf_p22ibm22n01xml() {
         Description:Tests prolog with wrong field ordering. The XMLDecl occurs after the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P22/ibm22n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P22/ibm22n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1498,9 +1708,11 @@ fn ibmnotwf_p22ibm22n02xml() {
         Description:Tests prolog with wrong field ordering. The Misc (comment) occurs before the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P22/ibm22n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P22/ibm22n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1512,9 +1724,11 @@ fn ibmnotwf_p22ibm22n03xml() {
         Description:Tests prolog with wrong field ordering. The XMLDecl occurs after the DTD and a comment. The other comment occurs before the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P22/ibm22n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P22/ibm22n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1526,9 +1740,11 @@ fn ibmnotwf_p23ibm23n01xml() {
         Description:Tests XMLDecl with a required field missing. The Versioninfo is missing in the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P23/ibm23n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P23/ibm23n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1540,9 +1756,11 @@ fn ibmnotwf_p23ibm23n02xml() {
         Description:Tests XMLDecl with wrong field ordering. The VersionInfo occurs after the EncodingDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P23/ibm23n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P23/ibm23n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1554,9 +1772,11 @@ fn ibmnotwf_p23ibm23n03xml() {
         Description:Tests XMLDecl with wrong field ordering. The VersionInfo occurs after the SDDecl and the SDDecl occurs after the VersionInfo.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P23/ibm23n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P23/ibm23n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1568,9 +1788,11 @@ fn ibmnotwf_p23ibm23n04xml() {
         Description:Tests XMLDecl with wrong key word. An upper case string "XML" is used as the key word in the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P23/ibm23n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P23/ibm23n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1582,9 +1804,11 @@ fn ibmnotwf_p23ibm23n05xml() {
         Description:Tests XMLDecl with a wrong closing sequence ">".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P23/ibm23n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P23/ibm23n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1596,9 +1820,11 @@ fn ibmnotwf_p23ibm23n06xml() {
         Description:Tests XMLDecl with a wrong opening sequence "(less than)!".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P23/ibm23n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P23/ibm23n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1610,9 +1836,11 @@ fn ibmnotwf_p24ibm24n01xml() {
         Description:Tests VersionInfo with a required field missing. The VersionNum is missing in the VersionInfo in the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1624,9 +1852,11 @@ fn ibmnotwf_p24ibm24n02xml() {
         Description:Tests VersionInfo with a required field missing. The white space is missing between the key word "xml" and the VersionInfo in the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1638,9 +1868,11 @@ fn ibmnotwf_p24ibm24n03xml() {
         Description:Tests VersionInfo with a required field missing. The "=" (equal sign) is missing between the key word "version" and the VersionNum.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1652,9 +1884,11 @@ fn ibmnotwf_p24ibm24n04xml() {
         Description:Tests VersionInfo with wrong field ordering. The VersionNum occurs before "=" and "version".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1666,9 +1900,11 @@ fn ibmnotwf_p24ibm24n05xml() {
         Description:Tests VersionInfo with wrong field ordering. The "=" occurs after "version" and the VersionNum.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1680,9 +1916,11 @@ fn ibmnotwf_p24ibm24n06xml() {
         Description:Tests VersionInfo with the wrong key word "Version".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1694,9 +1932,11 @@ fn ibmnotwf_p24ibm24n07xml() {
         Description:Tests VersionInfo with the wrong key word "versioN".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n07.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1708,9 +1948,11 @@ fn ibmnotwf_p24ibm24n08xml() {
         Description:Tests VersionInfo with mismatched quotes around the VersionNum. version = '1.0" is used as the VersionInfo.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n08.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n08.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1722,9 +1964,11 @@ fn ibmnotwf_p24ibm24n09xml() {
         Description:Tests VersionInfo with mismatched quotes around the VersionNum. The closing bracket for the VersionNum is missing.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n09.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n09.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1736,9 +1980,11 @@ fn ibmnotwf_p25ibm25n01xml() {
         Description:Tests eq with a wrong key word "==".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P25/ibm25n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P25/ibm25n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1750,9 +1996,11 @@ fn ibmnotwf_p25ibm25n02xml() {
         Description:Tests eq with a wrong key word "eq".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P25/ibm25n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P25/ibm25n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1764,9 +2012,11 @@ fn ibmnotwf_p26ibm26n01xml() {
         Description:Tests VersionNum with an illegal character "#".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P26/ibm26n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P26/ibm26n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1778,9 +2028,11 @@ fn ibmnotwf_p27ibm27n01xml() {
         Description:Tests type of Misc. An element declaration is used as a type of Misc After the element "animal".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P27/ibm27n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P27/ibm27n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1792,9 +2044,11 @@ fn ibmnotwf_p28ibm28n01xml() {
         Description:Tests doctypedecl with a required field missing. The Name "animal" is missing in the doctypedecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1806,9 +2060,11 @@ fn ibmnotwf_p28ibm28n02xml() {
         Description:Tests doctypedecl with wrong field ordering. The Name "animal" occurs after the markup declarations inside the "[]".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1820,9 +2076,11 @@ fn ibmnotwf_p28ibm28n03xml() {
         Description:Tests doctypedecl with wrong field ordering. The Name "animal" occurs after the markup declarations inside the "[]".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1834,9 +2092,11 @@ fn ibmnotwf_p28ibm28n04xml() {
         Description:Tests doctypedecl with general entity reference.The "(ampersand)generalE" occurs in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1848,9 +2108,11 @@ fn ibmnotwf_p28ibm28n05xml() {
         Description:Tests doctypedecl with wrong key word. A wrong key word "DOCtYPE" occurs on line 2.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1862,9 +2124,11 @@ fn ibmnotwf_p28ibm28n06xml() {
         Description:Tests doctypedecl with mismatched brackets. The closing bracket "]" of the DTD is missing.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1876,9 +2140,11 @@ fn ibmnotwf_p28ibm28n07xml() {
         Description:Tests doctypedecl with wrong bracket. The opening bracket "{" occurs in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n07.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1890,9 +2156,11 @@ fn ibmnotwf_p28ibm28n08xml() {
         Description:Tests doctypedecl with wrong opening sequence. The opening sequence "(less than)?DOCTYPE" occurs in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n08.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n08.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1934,9 +2202,11 @@ fn ibmnotwf_p29ibm29n01xml() {
         Description:Tests markupdecl with an illegal markup declaration. A XMLDecl occurs inside the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1948,9 +2218,11 @@ fn ibmnotwf_p29ibm29n02xml() {
         Description:Tests WFC "PEs in Internal Subset". A PE reference occurs inside an elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1962,9 +2234,11 @@ fn ibmnotwf_p29ibm29n03xml() {
         Description:Tests WFC "PEs in Internal Subset". A PE reference occurs inside an ATTlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1976,9 +2250,11 @@ fn ibmnotwf_p29ibm29n04xml() {
         Description:Tests WFC "PEs in Internal Subset". A PE reference occurs inside an EntityDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1990,9 +2266,11 @@ fn ibmnotwf_p29ibm29n05xml() {
         Description:Tests WFC "PEs in Internal Subset". A PE reference occurs inside a PI in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2004,9 +2282,11 @@ fn ibmnotwf_p29ibm29n06xml() {
         Description:Tests WFC "PEs in Internal Subset". A PE reference occurs inside a comment in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2018,9 +2298,11 @@ fn ibmnotwf_p29ibm29n07xml() {
         Description:Tests WFC "PEs in Internal Subset". A PE reference occurs inside a NotationDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n07.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2092,9 +2374,11 @@ fn ibmnotwf_p32ibm32n01xml() {
         Description:Tests SDDecl with a required field missing. The leading white space is missing with the SDDecl in the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2106,9 +2390,11 @@ fn ibmnotwf_p32ibm32n02xml() {
         Description:Tests SDDecl with a required field missing. The "=" sign is missing in the SDDecl in the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2120,9 +2406,11 @@ fn ibmnotwf_p32ibm32n03xml() {
         Description:Tests SDDecl with wrong key word. The word "Standalone" occurs in the SDDecl in the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2134,9 +2422,11 @@ fn ibmnotwf_p32ibm32n04xml() {
         Description:Tests SDDecl with wrong key word. The word "Yes" occurs in the SDDecl in the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2148,9 +2438,11 @@ fn ibmnotwf_p32ibm32n05xml() {
         Description:Tests SDDecl with wrong key word. The word "YES" occurs in the SDDecl in the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2162,9 +2454,11 @@ fn ibmnotwf_p32ibm32n06xml() {
         Description:Tests SDDecl with wrong key word. The word "No" occurs in the SDDecl in the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2176,9 +2470,11 @@ fn ibmnotwf_p32ibm32n07xml() {
         Description:Tests SDDecl with wrong key word. The word "NO" occurs in the SDDecl in the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n07.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2190,9 +2486,11 @@ fn ibmnotwf_p32ibm32n08xml() {
         Description:Tests SDDecl with wrong field ordering. The "=" sign occurs after the key word "yes" in the SDDecl in the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n08.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n08.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2204,9 +2502,11 @@ fn ibmnotwf_p32ibm32n09xml() {
         Description:This is test violates WFC: Entity Declared in P68. The standalone document declaration has the value yes, BUT there is an external markup declaration of an entity (other than amp, lt, gt, apos, quot), and references to this entity appear in the document.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n09.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n09.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2218,9 +2518,11 @@ fn ibmnotwf_p39ibm39n01xml() {
         Description:Tests element with a required field missing. The ETag is missing for the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P39/ibm39n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P39/ibm39n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2232,9 +2534,11 @@ fn ibmnotwf_p39ibm39n02xml() {
         Description:Tests element with a required field missing. The STag is missing for the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P39/ibm39n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P39/ibm39n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2246,9 +2550,11 @@ fn ibmnotwf_p39ibm39n03xml() {
         Description:Tests element with required fields missing. Both the content and the ETag are missing in the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P39/ibm39n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P39/ibm39n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2260,9 +2566,11 @@ fn ibmnotwf_p39ibm39n04xml() {
         Description:Tests element with required fields missing. Both the content and the STag are missing in the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P39/ibm39n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P39/ibm39n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2274,9 +2582,11 @@ fn ibmnotwf_p39ibm39n05xml() {
         Description:Tests element with wrong field ordering. The STag and the ETag are swapped in the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P39/ibm39n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P39/ibm39n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2288,9 +2598,11 @@ fn ibmnotwf_p39ibm39n06xml() {
         Description:Tests element with wrong field ordering. The content occurs after the ETag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P39/ibm39n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P39/ibm39n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2302,9 +2614,11 @@ fn ibmnotwf_p40ibm40n01xml() {
         Description:Tests STag with a required field missing. The Name "root" is in the STag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P40/ibm40n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P40/ibm40n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2316,9 +2630,11 @@ fn ibmnotwf_p40ibm40n02xml() {
         Description:Tests STag with a required field missing. The white space between the Name "root" and the attribute "attr1" is missing in the STag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P40/ibm40n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P40/ibm40n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2330,9 +2646,11 @@ fn ibmnotwf_p40ibm40n03xml() {
         Description:Tests STag with wrong field ordering. The Name "root" occurs after the attribute "attr1" in the STag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P40/ibm40n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P40/ibm40n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2344,9 +2662,11 @@ fn ibmnotwf_p40ibm40n04xml() {
         Description:Tests STag with a wrong opening sequence. The string "(less than)!" is used as the opening sequence for the STag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P40/ibm40n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P40/ibm40n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2358,9 +2678,11 @@ fn ibmnotwf_p40ibm40n05xml() {
         Description:Tests STag with duplicate attribute names. The attribute name "attr1" occurs twice in the STag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P40/ibm40n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P40/ibm40n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2372,9 +2694,11 @@ fn ibmnotwf_p41ibm41n01xml() {
         Description:Tests Attribute with a required field missing. The attribute name is missing in the Attribute in the STag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2386,9 +2710,11 @@ fn ibmnotwf_p41ibm41n02xml() {
         Description:Tests Attribute with a required field missing. The "=" is missing between the attribute name and the attribute value in the Attribute in the STag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2400,9 +2726,11 @@ fn ibmnotwf_p41ibm41n03xml() {
         Description:Tests Attribute with a required field missing. The AttValue is missing in the Attribute in the STag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2414,9 +2742,11 @@ fn ibmnotwf_p41ibm41n04xml() {
         Description:Tests Attribute with a required field missing. The Name and the "=" are missing in the Attribute in the STag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2428,9 +2758,11 @@ fn ibmnotwf_p41ibm41n05xml() {
         Description:Tests Attribute with a required field missing. The "=" and the AttValue are missing in the Attribute in the STag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2442,9 +2774,11 @@ fn ibmnotwf_p41ibm41n06xml() {
         Description:Tests Attribute with a required field missing. The Name and the AttValue are missing in the Attribute in the STag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2456,9 +2790,11 @@ fn ibmnotwf_p41ibm41n07xml() {
         Description:Tests Attribute with wrong field ordering. The "=" occurs after the Name and the AttValue in the Attribute in the STag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n07.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2470,9 +2806,11 @@ fn ibmnotwf_p41ibm41n08xml() {
         Description:Tests Attribute with wrong field ordering. The Name and the AttValue are swapped in the Attribute in the STag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n08.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n08.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2484,9 +2822,11 @@ fn ibmnotwf_p41ibm41n09xml() {
         Description:Tests Attribute with wrong field ordering. The "=" occurs before the Name and the AttValue in the Attribute in the STag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n09.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n09.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2498,9 +2838,11 @@ fn ibmnotwf_p41ibm41n10xml() {
         Description:Tests Attribute against WFC "no external entity references". A direct reference to the external entity "aExternal" is contained in the value of the attribute "attr1".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n10.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n10.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2512,9 +2854,11 @@ fn ibmnotwf_p41ibm41n11xml() {
         Description:Tests Attribute against WFC "no external entity references". A indirect reference to the external entity "aExternal" is contained in the value of the attribute "attr1".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n11.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n11.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2526,9 +2870,11 @@ fn ibmnotwf_p41ibm41n12xml() {
         Description:Tests Attribute against WFC "no external entity references". A direct reference to the external unparsed entity "aImage" is contained in the value of the attribute "attr1".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n12.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n12.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2540,9 +2886,11 @@ fn ibmnotwf_p41ibm41n13xml() {
         Description:Tests Attribute against WFC "No (less than) character in Attribute Values". The character "less than" is contained in the value of the attribute "attr1".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n13.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n13.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2554,9 +2902,11 @@ fn ibmnotwf_p41ibm41n14xml() {
         Description:Tests Attribute against WFC "No (less than) in Attribute Values". The character "less than" is contained in the value of the attribute "attr1" through indirect internal entity reference.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n14.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n14.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2568,9 +2918,11 @@ fn ibmnotwf_p42ibm42n01xml() {
         Description:Tests ETag with a required field missing. The Name is missing in the ETag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P42/ibm42n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P42/ibm42n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2582,9 +2934,11 @@ fn ibmnotwf_p42ibm42n02xml() {
         Description:Tests ETag with a wrong beginning sequence. The string "(less than)\" is used as a beginning sequence of the ETag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P42/ibm42n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P42/ibm42n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2596,9 +2950,11 @@ fn ibmnotwf_p42ibm42n03xml() {
         Description:Tests ETag with a wrong beginning sequence. The string "less than" is used as a beginning sequence of the ETag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P42/ibm42n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P42/ibm42n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2610,9 +2966,11 @@ fn ibmnotwf_p42ibm42n04xml() {
         Description:Tests ETag with a wrong structure. An white space occurs between The beginning sequence and the Name of the ETag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P42/ibm42n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P42/ibm42n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2624,9 +2982,11 @@ fn ibmnotwf_p42ibm42n05xml() {
         Description:Tests ETag with a wrong structure. The ETag of the element "root" contains an Attribute (attr1="any").
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P42/ibm42n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P42/ibm42n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2638,9 +2998,11 @@ fn ibmnotwf_p43ibm43n01xml() {
         Description:Tests element content with a wrong option. A NotationDecl is used as the content of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P43/ibm43n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P43/ibm43n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2652,9 +3014,11 @@ fn ibmnotwf_p43ibm43n02xml() {
         Description:Tests element content with a wrong option. An elementdecl is used as the content of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P43/ibm43n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P43/ibm43n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2666,9 +3030,11 @@ fn ibmnotwf_p43ibm43n04xml() {
         Description:Tests element content with a wrong option. An entitydecl is used as the content of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P43/ibm43n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P43/ibm43n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2680,9 +3046,11 @@ fn ibmnotwf_p43ibm43n05xml() {
         Description:Tests element content with a wrong option. An AttlistDecl is used as the content of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P43/ibm43n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P43/ibm43n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2694,9 +3062,11 @@ fn ibmnotwf_p44ibm44n01xml() {
         Description:Tests EmptyElemTag with a required field missing. The Name "root" is missing in the EmptyElemTag.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P44/ibm44n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P44/ibm44n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2708,9 +3078,11 @@ fn ibmnotwf_p44ibm44n02xml() {
         Description:Tests EmptyElemTag with wrong field ordering. The Attribute (attri1 = "any") occurs before the name of the element "root" in the EmptyElemTag.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P44/ibm44n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P44/ibm44n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2722,9 +3094,11 @@ fn ibmnotwf_p44ibm44n03xml() {
         Description:Tests EmptyElemTag with wrong closing sequence. The string "\>" is used as the closing sequence in the EmptyElemtag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P44/ibm44n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P44/ibm44n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2736,9 +3110,11 @@ fn ibmnotwf_p44ibm44n04xml() {
         Description:Tests EmptyElemTag which against the WFC "Unique Att Spec". The attribute name "attr1" occurs twice in the EmptyElemTag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P44/ibm44n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P44/ibm44n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2750,9 +3126,11 @@ fn ibmnotwf_p45ibm45n01xml() {
         Description:Tests elementdecl with a required field missing. The Name is missing in the second elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2764,9 +3142,11 @@ fn ibmnotwf_p45ibm45n02xml() {
         Description:Tests elementdecl with a required field missing. The white space is missing between "aEle" and "(#PCDATA)" in the second elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2778,9 +3158,11 @@ fn ibmnotwf_p45ibm45n03xml() {
         Description:Tests elementdecl with a required field missing. The contentspec is missing in the second elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2792,9 +3174,11 @@ fn ibmnotwf_p45ibm45n04xml() {
         Description:Tests elementdecl with a required field missing. The contentspec and the white space is missing in the second elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2806,9 +3190,11 @@ fn ibmnotwf_p45ibm45n05xml() {
         Description:Tests elementdecl with a required field missing. The Name, the white space, and the contentspec are missing in the second elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2820,9 +3206,11 @@ fn ibmnotwf_p45ibm45n06xml() {
         Description:Tests elementdecl with wrong field ordering. The Name occurs after the contentspec in the second elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2834,9 +3222,11 @@ fn ibmnotwf_p45ibm45n07xml() {
         Description:Tests elementdecl with wrong beginning sequence. The string "(less than)ELEMENT" is used as the beginning sequence in the second elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n07.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2848,9 +3238,11 @@ fn ibmnotwf_p45ibm45n08xml() {
         Description:Tests elementdecl with wrong key word. The string "Element" is used as the key word in the second elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n08.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n08.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2862,9 +3254,11 @@ fn ibmnotwf_p45ibm45n09xml() {
         Description:Tests elementdecl with wrong key word. The string "element" is used as the key word in the second elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n09.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n09.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2876,9 +3270,11 @@ fn ibmnotwf_p46ibm46n01xml() {
         Description:Tests contentspec with wrong key word. the string "empty" is used as the key word in the contentspec of the second elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P46/ibm46n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P46/ibm46n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2890,9 +3286,11 @@ fn ibmnotwf_p46ibm46n02xml() {
         Description:Tests contentspec with wrong key word. the string "Empty" is used as the key word in the contentspec of the second elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P46/ibm46n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P46/ibm46n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2904,9 +3302,11 @@ fn ibmnotwf_p46ibm46n03xml() {
         Description:Tests contentspec with wrong key word. the string "Any" is used as the key word in the contentspec of the second elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P46/ibm46n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P46/ibm46n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2918,9 +3318,11 @@ fn ibmnotwf_p46ibm46n04xml() {
         Description:Tests contentspec with wrong key word. the string "any" is used as the key word in the contentspec of the second elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P46/ibm46n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P46/ibm46n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2932,9 +3334,11 @@ fn ibmnotwf_p46ibm46n05xml() {
         Description:Tests contentspec with a wrong option. The string "#CDATA" is used as the contentspec in the second elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P46/ibm46n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P46/ibm46n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2946,9 +3350,11 @@ fn ibmnotwf_p47ibm47n01xml() {
         Description:Tests children with a required field missing. The "+" is used as the choice or seq field in the second elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P47/ibm47n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P47/ibm47n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2960,9 +3366,11 @@ fn ibmnotwf_p47ibm47n02xml() {
         Description:Tests children with a required field missing. The "*" is used as the choice or seq field in the second elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P47/ibm47n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P47/ibm47n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2974,9 +3382,11 @@ fn ibmnotwf_p47ibm47n03xml() {
         Description:Tests children with a required field missing. The "?" is used as the choice or seq field in the second elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P47/ibm47n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P47/ibm47n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -2988,9 +3398,11 @@ fn ibmnotwf_p47ibm47n04xml() {
         Description:Tests children with wrong field ordering. The "*" occurs before the seq field (a,a) in the second elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P47/ibm47n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P47/ibm47n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3002,9 +3414,11 @@ fn ibmnotwf_p47ibm47n05xml() {
         Description:Tests children with wrong field ordering. The "+" occurs before the choice field (a|a) in the second elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P47/ibm47n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P47/ibm47n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3016,9 +3430,11 @@ fn ibmnotwf_p47ibm47n06xml() {
         Description:Tests children with wrong key word. The "^" occurs after the seq field in the second elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P47/ibm47n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P47/ibm47n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3030,9 +3446,11 @@ fn ibmnotwf_p48ibm48n01xml() {
         Description:Tests cp with a required fields missing. The field Name|choice|seq is missing in the second cp in the choice field in the third elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3044,9 +3462,11 @@ fn ibmnotwf_p48ibm48n02xml() {
         Description:Tests cp with a required fields missing. The field Name|choice|seq is missing in the cp in the third elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3058,9 +3478,11 @@ fn ibmnotwf_p48ibm48n03xml() {
         Description:Tests cp with a required fields missing. The field Name|choice|seq is missing in the first cp in the choice field in the third elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3072,9 +3494,11 @@ fn ibmnotwf_p48ibm48n04xml() {
         Description:Tests cp with wrong field ordering. The "+" occurs before the seq (a,a) in the first cp in the choice field in the third elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3086,9 +3510,11 @@ fn ibmnotwf_p48ibm48n05xml() {
         Description:Tests cp with wrong field ordering. The "*" occurs before the choice (a|b) in the first cp in the seq field in the third elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3100,9 +3526,11 @@ fn ibmnotwf_p48ibm48n06xml() {
         Description:Tests cp with wrong field ordering. The "?" occurs before the Name "a" in the second cp in the seq field in the third elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3114,9 +3542,11 @@ fn ibmnotwf_p48ibm48n07xml() {
         Description:Tests cp with wrong key word. The "^" occurs after the Name "a" in the first cp in the choice field in the third elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n07.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3128,9 +3558,11 @@ fn ibmnotwf_p49ibm49n01xml() {
         Description:Tests choice with a required field missing. The two cps are missing in the choice field in the third elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P49/ibm49n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P49/ibm49n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3142,9 +3574,11 @@ fn ibmnotwf_p49ibm49n02xml() {
         Description:Tests choice with a required field missing. The third cp is missing in the choice field in the fourth elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P49/ibm49n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P49/ibm49n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3156,9 +3590,11 @@ fn ibmnotwf_p49ibm49n03xml() {
         Description:Tests choice with a wrong separator. The "!" is used as the separator in the choice field in the fourth elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P49/ibm49n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P49/ibm49n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3170,9 +3606,11 @@ fn ibmnotwf_p49ibm49n04xml() {
         Description:Tests choice with a required field missing. The separator "|" is missing in the choice field (a b)+ in the fourth elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P49/ibm49n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P49/ibm49n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3184,9 +3622,11 @@ fn ibmnotwf_p49ibm49n05xml() {
         Description:Tests choice with an extra separator. An extra "|" occurs between a and b in the choice field in the fourth elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P49/ibm49n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P49/ibm49n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3198,9 +3638,11 @@ fn ibmnotwf_p49ibm49n06xml() {
         Description:Tests choice with a required field missing. The closing bracket ")" is missing in the choice field (a |b * in the fourth elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P49/ibm49n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P49/ibm49n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3212,9 +3654,11 @@ fn ibmnotwf_p50ibm50n01xml() {
         Description:Tests seq with a required field missing. The two cps are missing in the seq field in the fourth elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3226,9 +3670,11 @@ fn ibmnotwf_p50ibm50n02xml() {
         Description:Tests seq with a required field missing. The third cp is missing in the seq field in the fourth elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3240,9 +3686,11 @@ fn ibmnotwf_p50ibm50n03xml() {
         Description:Tests seq with a wrong separator. The "|" is used as the separator between a and b in the seq field in the fourth elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3254,9 +3702,11 @@ fn ibmnotwf_p50ibm50n04xml() {
         Description:Tests seq with a wrong separator. The "." is used as the separator between a and b in the seq field in the fourth elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3268,9 +3718,11 @@ fn ibmnotwf_p50ibm50n05xml() {
         Description:Tests seq with an extra separator. An extra "," occurs between (a|b) and a in the seq field in the fourth elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3282,9 +3734,11 @@ fn ibmnotwf_p50ibm50n06xml() {
         Description:Tests seq with a required field missing. The separator between (a|b) and (b|a) is missing in the seq field in the fourth elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3296,9 +3750,11 @@ fn ibmnotwf_p50ibm50n07xml() {
         Description:Tests seq with wrong closing bracket. The "]" is used as the closing bracket in the seq field in the fourth elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n07.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3310,9 +3766,11 @@ fn ibmnotwf_p51ibm51n01xml() {
         Description:Tests Mixed with a wrong key word. The string "#pcdata" is used as the key word in the Mixed field in the fourth elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3324,9 +3782,11 @@ fn ibmnotwf_p51ibm51n02xml() {
         Description:Tests Mixed with wrong field ordering. The field #PCDATA does not occur as the first component in the Mixed field in the fourth elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3338,9 +3798,11 @@ fn ibmnotwf_p51ibm51n03xml() {
         Description:Tests Mixed with a separator missing. The separator "|" is missing in between #PCDATA and a in the Mixed field in the fourth elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3352,9 +3814,11 @@ fn ibmnotwf_p51ibm51n04xml() {
         Description:Tests Mixed with a wrong key word. The string "#CDATA" is used as the key word in the Mixed field in the fourth elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3366,9 +3830,11 @@ fn ibmnotwf_p51ibm51n05xml() {
         Description:Tests Mixed with a required field missing. The "*" is missing after the ")" in the Mixed field in the fourth elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3380,9 +3846,11 @@ fn ibmnotwf_p51ibm51n06xml() {
         Description:Tests Mixed with wrong closing bracket. The "]" is used as the closing bracket in the Mixed field in the fourth elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3394,9 +3862,11 @@ fn ibmnotwf_p51ibm51n07xml() {
         Description:Tests Mixed with a required field missing. The closing bracket ")" is missing after (#PCDATA in the Mixed field in the fourth elementdecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n07.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3408,9 +3878,11 @@ fn ibmnotwf_p52ibm52n01xml() {
         Description:Tests AttlistDecl with a required field missing. The Name is missing in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P52/ibm52n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P52/ibm52n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3422,9 +3894,11 @@ fn ibmnotwf_p52ibm52n02xml() {
         Description:Tests AttlistDecl with a required field missing. The white space is missing between the beginning sequence and the name in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P52/ibm52n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P52/ibm52n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3436,9 +3910,11 @@ fn ibmnotwf_p52ibm52n03xml() {
         Description:Tests AttlistDecl with wrong field ordering. The Name "a" occurs after the first AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P52/ibm52n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P52/ibm52n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3450,9 +3926,11 @@ fn ibmnotwf_p52ibm52n04xml() {
         Description:Tests AttlistDecl with wrong key word. The string "Attlist" is used as the key word in the beginning sequence in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P52/ibm52n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P52/ibm52n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3464,9 +3942,11 @@ fn ibmnotwf_p52ibm52n05xml() {
         Description:Tests AttlistDecl with a required field missing. The closing bracket "greater than" is missing in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P52/ibm52n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P52/ibm52n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3478,9 +3958,11 @@ fn ibmnotwf_p52ibm52n06xml() {
         Description:Tests AttlistDecl with wrong beginning sequence. The string "(less than)ATTLIST" is used as the beginning sequence in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P52/ibm52n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P52/ibm52n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3492,9 +3974,11 @@ fn ibmnotwf_p53ibm53n01xml() {
         Description:Tests AttDef with a required field missing. The DefaultDecl is missing in the AttDef for the name "attr1" in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3506,9 +3990,11 @@ fn ibmnotwf_p53ibm53n02xml() {
         Description:Tests AttDef with a required field missing. The white space is missing between (abc|def) and "def" in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3520,9 +4006,11 @@ fn ibmnotwf_p53ibm53n03xml() {
         Description:Tests AttDef with a required field missing. The AttType is missing for "attr1" in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3534,9 +4022,11 @@ fn ibmnotwf_p53ibm53n04xml() {
         Description:Tests AttDef with a required field missing. The white space is missing between "attr1" and (abc|def) in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3548,9 +4038,11 @@ fn ibmnotwf_p53ibm53n05xml() {
         Description:Tests AttDef with a required field missing. The Name is missing in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3562,9 +4054,11 @@ fn ibmnotwf_p53ibm53n06xml() {
         Description:Tests AttDef with a required field missing. The white space before the name "attr2" is missing in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3576,9 +4070,11 @@ fn ibmnotwf_p53ibm53n07xml() {
         Description:Tests AttDef with wrong field ordering. The Name "attr1" occurs after the AttType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n07.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3590,9 +4086,11 @@ fn ibmnotwf_p53ibm53n08xml() {
         Description:Tests AttDef with wrong field ordering. The Name "attr1" occurs after the AttType and "default" occurs before the AttType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n08.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n08.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3604,9 +4102,11 @@ fn ibmnotwf_p54ibm54n01xml() {
         Description:Tests AttType with a wrong option. The string "BOGUSATTR" is used as the AttType in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P54/ibm54n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P54/ibm54n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3618,9 +4118,11 @@ fn ibmnotwf_p54ibm54n02xml() {
         Description:Tests AttType with a wrong option. The string "PCDATA" is used as the AttType in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P54/ibm54n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P54/ibm54n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3632,9 +4134,11 @@ fn ibmnotwf_p55ibm55n01xml() {
         Description:Tests StringType with a wrong key word. The lower case string "cdata" is used as the StringType in the AttType in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P55/ibm55n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P55/ibm55n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3646,9 +4150,11 @@ fn ibmnotwf_p55ibm55n02xml() {
         Description:Tests StringType with a wrong key word. The string "#CDATA" is used as the StringType in the AttType in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P55/ibm55n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P55/ibm55n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3660,9 +4166,11 @@ fn ibmnotwf_p55ibm55n03xml() {
         Description:Tests StringType with a wrong key word. The string "CData" is used as the StringType in the AttType in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P55/ibm55n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P55/ibm55n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3674,9 +4182,11 @@ fn ibmnotwf_p56ibm56n01xml() {
         Description:Tests TokenizedType with wrong key word. The type "id" is used in the TokenizedType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3688,9 +4198,11 @@ fn ibmnotwf_p56ibm56n02xml() {
         Description:Tests TokenizedType with wrong key word. The type "Idref" is used in the TokenizedType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3702,9 +4214,11 @@ fn ibmnotwf_p56ibm56n03xml() {
         Description:Tests TokenizedType with wrong key word. The type"Idrefs" is used in the TokenizedType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3716,9 +4230,11 @@ fn ibmnotwf_p56ibm56n04xml() {
         Description:Tests TokenizedType with wrong key word. The type "EntitY" is used in the TokenizedType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3730,9 +4246,11 @@ fn ibmnotwf_p56ibm56n05xml() {
         Description:Tests TokenizedType with wrong key word. The type "nmTOKEN" is used in the TokenizedType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3744,9 +4262,11 @@ fn ibmnotwf_p56ibm56n06xml() {
         Description:Tests TokenizedType with wrong key word. The type "NMtokens" is used in the TokenizedType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3758,9 +4278,11 @@ fn ibmnotwf_p56ibm56n07xml() {
         Description:Tests TokenizedType with wrong key word. The type "#ID" is used in the TokenizedType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n07.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3772,9 +4294,11 @@ fn ibmnotwf_p57ibm57n01xml() {
         Description:Tests EnumeratedType with an illegal option. The string "NMTOKEN (a|b)" is used in the EnumeratedType in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P57/ibm57n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P57/ibm57n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3786,9 +4310,11 @@ fn ibmnotwf_p58ibm58n01xml() {
         Description:Tests NotationType with wrong key word. The lower case "notation" is used as the key word in the NotationType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3800,9 +4326,11 @@ fn ibmnotwf_p58ibm58n02xml() {
         Description:Tests NotationType with a required field missing. The beginning bracket "(" is missing in the NotationType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3814,9 +4342,11 @@ fn ibmnotwf_p58ibm58n03xml() {
         Description:Tests NotationType with a required field missing. The Name is missing in the "()" in the NotationType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3828,9 +4358,11 @@ fn ibmnotwf_p58ibm58n04xml() {
         Description:Tests NotationType with a required field missing. The closing bracket is missing in the NotationType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3842,9 +4374,11 @@ fn ibmnotwf_p58ibm58n05xml() {
         Description:Tests NotationType with wrong field ordering. The key word "NOTATION" occurs after "(this)" in the NotationType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3856,9 +4390,11 @@ fn ibmnotwf_p58ibm58n06xml() {
         Description:Tests NotationType with wrong separator. The "," is used as a separator between "this" and "that" in the NotationType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3870,9 +4406,11 @@ fn ibmnotwf_p58ibm58n07xml() {
         Description:Tests NotationType with a required field missing. The white space is missing between "NOTATION" and "(this)" in the NotationType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n07.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3884,9 +4422,11 @@ fn ibmnotwf_p58ibm58n08xml() {
         Description:Tests NotationType with extra wrong characters. The double quote character occurs after "(" and before ")" in the NotationType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n08.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n08.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3898,9 +4438,11 @@ fn ibmnotwf_p59ibm59n01xml() {
         Description:Tests Enumeration with required fields missing. The Nmtokens and "|"s are missing in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P59/ibm59n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P59/ibm59n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3912,9 +4454,11 @@ fn ibmnotwf_p59ibm59n02xml() {
         Description:Tests Enumeration with a required field missing. The closing bracket ")" is missing in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P59/ibm59n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P59/ibm59n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3926,9 +4470,11 @@ fn ibmnotwf_p59ibm59n03xml() {
         Description:Tests Enumeration with wrong separator. The "," is used as the separator in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P59/ibm59n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P59/ibm59n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3940,9 +4486,11 @@ fn ibmnotwf_p59ibm59n04xml() {
         Description:Tests Enumeration with illegal presence. The double quotes occur around the Enumeration value in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P59/ibm59n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P59/ibm59n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3954,9 +4502,11 @@ fn ibmnotwf_p59ibm59n05xml() {
         Description:Tests Enumeration with a required field missing. The white space is missing between in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P59/ibm59n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P59/ibm59n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3968,9 +4518,11 @@ fn ibmnotwf_p59ibm59n06xml() {
         Description:Tests Enumeration with a required field missing. The beginning bracket "(" is missing in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P59/ibm59n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P59/ibm59n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3982,9 +4534,11 @@ fn ibmnotwf_p60ibm60n01xml() {
         Description:Tests DefaultDecl with wrong key word. The string "#required" is used as the key word in the DefaultDecl in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -3996,9 +4550,11 @@ fn ibmnotwf_p60ibm60n02xml() {
         Description:Tests DefaultDecl with wrong key word. The string "Implied" is used as the key word in the DefaultDecl in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -4010,9 +4566,11 @@ fn ibmnotwf_p60ibm60n03xml() {
         Description:Tests DefaultDecl with wrong key word. The string "!IMPLIED" is used as the key word in the DefaultDecl in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -4024,9 +4582,11 @@ fn ibmnotwf_p60ibm60n04xml() {
         Description:Tests DefaultDecl with a required field missing. There is no attribute value specified after the key word "#FIXED" in the DefaultDecl in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -4038,9 +4598,11 @@ fn ibmnotwf_p60ibm60n05xml() {
         Description:Tests DefaultDecl with a required field missing. The white space is missing between the key word "#FIXED" and the attribute value in the DefaultDecl in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -4052,9 +4614,11 @@ fn ibmnotwf_p60ibm60n06xml() {
         Description:Tests DefaultDecl with wrong field ordering. The key word "#FIXED" occurs after the attribute value "introduction" in the DefaultDecl in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -4066,9 +4630,11 @@ fn ibmnotwf_p60ibm60n07xml() {
         Description:Tests DefaultDecl against WFC of P60. The text replacement of the entity "avalue" contains the "less than" character in the DefaultDecl in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n07.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -4080,9 +4646,11 @@ fn ibmnotwf_p60ibm60n08xml() {
         Description:Tests DefaultDecl with more than one key word. The "#REQUIRED" and the "#IMPLIED" are used as the key words in the DefaultDecl in the AttDef in the AttlistDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n08.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n08.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -4724,9 +5292,11 @@ fn ibmnotwf_p66ibm66n01xml() {
         Description:Tests CharRef with an illegal character referred to. The "#002f" is used as the referred character in the CharRef in the EntityDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -4738,9 +5308,11 @@ fn ibmnotwf_p66ibm66n02xml() {
         Description:Tests CharRef with the semicolon character missing. The semicolon character is missing at the end of the CharRef in the attribute value in the STag of element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -4752,9 +5324,11 @@ fn ibmnotwf_p66ibm66n03xml() {
         Description:Tests CharRef with an illegal character referred to. The "49" is used as the referred character in the CharRef in the EntityDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -4766,9 +5340,11 @@ fn ibmnotwf_p66ibm66n04xml() {
         Description:Tests CharRef with an illegal character referred to. The "#5~0" is used as the referred character in the attribute value in the EmptyElemTag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -4780,9 +5356,11 @@ fn ibmnotwf_p66ibm66n05xml() {
         Description:Tests CharRef with an illegal character referred to. The "#x002g" is used as the referred character in the CharRef in the EntityDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -4794,9 +5372,11 @@ fn ibmnotwf_p66ibm66n06xml() {
         Description:Tests CharRef with an illegal character referred to. The "#x006G" is used as the referred character in the attribute value in the EmptyElemTag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -4808,9 +5388,11 @@ fn ibmnotwf_p66ibm66n07xml() {
         Description:Tests CharRef with an illegal character referred to. The "#0=2f" is used as the referred character in the CharRef in the EntityDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n07.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -4822,9 +5404,11 @@ fn ibmnotwf_p66ibm66n08xml() {
         Description:Tests CharRef with an illegal character referred to. The "#56.0" is used as the referred character in the attribute value in the EmptyElemTag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n08.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n08.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -4836,9 +5420,11 @@ fn ibmnotwf_p66ibm66n09xml() {
         Description:Tests CharRef with an illegal character referred to. The "#x00/2f" is used as the referred character in the CharRef in the EntityDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n09.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n09.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -4850,9 +5436,11 @@ fn ibmnotwf_p66ibm66n10xml() {
         Description:Tests CharRef with an illegal character referred to. The "#51)" is used as the referred character in the attribute value in the EmptyElemTag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n10.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n10.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -4864,9 +5452,11 @@ fn ibmnotwf_p66ibm66n11xml() {
         Description:Tests CharRef with an illegal character referred to. The "#00 2f" is used as the referred character in the CharRef in the EntityDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n11.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n11.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -4878,9 +5468,11 @@ fn ibmnotwf_p66ibm66n12xml() {
         Description:Tests CharRef with an illegal character referred to. The "#x0000" is used as the referred character in the attribute value in the EmptyElemTag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n12.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n12.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -4892,9 +5484,11 @@ fn ibmnotwf_p66ibm66n13xml() {
         Description:Tests CharRef with an illegal character referred to. The "#x001f" is used as the referred character in the attribute value in the EmptyElemTag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n13.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n13.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -4906,9 +5500,11 @@ fn ibmnotwf_p66ibm66n14xml() {
         Description:Tests CharRef with an illegal character referred to. The "#xfffe" is used as the referred character in the attribute value in the EmptyElemTag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n14.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n14.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -4920,9 +5516,11 @@ fn ibmnotwf_p66ibm66n15xml() {
         Description:Tests CharRef with an illegal character referred to. The "#xffff" is used as the referred character in the attribute value in the EmptyElemTag of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n15.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n15.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -4934,9 +5532,11 @@ fn ibmnotwf_p68ibm68n01xml() {
         Description:Tests EntityRef with a required field missing. The Name is missing in the EntityRef in the content of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -4948,9 +5548,11 @@ fn ibmnotwf_p68ibm68n02xml() {
         Description:Tests EntityRef with a required field missing. The semicolon is missing in the EntityRef in the attribute value in the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -4962,9 +5564,11 @@ fn ibmnotwf_p68ibm68n03xml() {
         Description:Tests EntityRef with an extra white space. A white space occurs after the ampersand in the EntityRef in the content of the element "root".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -4976,9 +5580,11 @@ fn ibmnotwf_p68ibm68n04xml() {
         Description:Tests EntityRef which is against P68 WFC: Entity Declared. The name "aAa" in the EntityRef in the AttValue in the STage of the element "root" does not match the Name of any declared entity in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -4990,9 +5596,11 @@ fn ibmnotwf_p68ibm68n05xml() {
         Description:Tests EntityRef which is against P68 WFC: Entity Declared. The entity with the name "aaa" in the EntityRef in the AttValue in the STag of the element "root" is not declared.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5004,9 +5612,11 @@ fn ibmnotwf_p68ibm68n06xml() {
         Description:Tests EntityRef which is against P68 WFC: Entity Declared. The entity with the name "aaa" in the EntityRef in the AttValue in the STag of the element "root" is externally declared, but standalone is "yes".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5018,9 +5628,11 @@ fn ibmnotwf_p68ibm68n07xml() {
         Description:Tests EntityRef which is against P68 WFC: Entity Declared. The entity with the name "aaa" in the EntityRef in the AttValue in the STag of the element "root" is referred before declared.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n07.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5032,9 +5644,11 @@ fn ibmnotwf_p68ibm68n08xml() {
         Description:Tests EntityRef which is against P68 WFC: Parsed Entity. The EntityRef in the AttValue in the STag of the element "root" contains the name "aImage" of an unparsed entity.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n08.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n08.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5046,9 +5660,11 @@ fn ibmnotwf_p68ibm68n09xml() {
         Description:Tests EntityRef which is against P68 WFC: No Recursion. The recursive entity reference occurs with the entity declarations for "aaa" and "bbb" in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n09.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n09.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5060,9 +5676,11 @@ fn ibmnotwf_p68ibm68n10xml() {
         Description:Tests EntityRef which is against P68 WFC: No Recursion. The indirect recursive entity reference occurs with the entity declarations for "aaa", "bbb", "ccc", "ddd", and "eee" in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n10.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n10.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5074,9 +5692,11 @@ fn ibmnotwf_p69ibm69n01xml() {
         Description:Tests PEReference with a required field missing. The Name "paaa" is missing in the PEReference in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P69/ibm69n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P69/ibm69n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5088,9 +5708,11 @@ fn ibmnotwf_p69ibm69n02xml() {
         Description:Tests PEReference with a required field missing. The semicolon is missing in the PEReference "%paaa" in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P69/ibm69n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P69/ibm69n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5102,9 +5724,11 @@ fn ibmnotwf_p69ibm69n03xml() {
         Description:Tests PEReference with an extra white space. There is an extra white space occurs before ";" in the PEReference in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P69/ibm69n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P69/ibm69n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5116,9 +5740,11 @@ fn ibmnotwf_p69ibm69n04xml() {
         Description:Tests PEReference with an extra white space. There is an extra white space occurs after "%" in the PEReference in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P69/ibm69n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P69/ibm69n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5130,9 +5756,11 @@ fn ibmnotwf_p69ibm69n06xml() {
         Description:Tests PEReference which is against P69 WFC: No Recursion. The recursive PE reference occurs with the entity declarations for "paaa" and "bbb" in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P69/ibm69n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P69/ibm69n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5144,9 +5772,11 @@ fn ibmnotwf_p69ibm69n07xml() {
         Description:Tests PEReference which is against P69 WFC: No Recursion. The indirect recursive PE reference occurs with the entity declarations for "paaa", "bbb", "ccc", "ddd", and "eee" in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P69/ibm69n07.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P69/ibm69n07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5158,9 +5788,11 @@ fn ibmnotwf_p71ibm70n01xml() {
         Description:Tests
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm70n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm70n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5172,9 +5804,11 @@ fn ibmnotwf_p71ibm71n01xml() {
         Description:Tests EntityDecl with a required field missing. The white space is missing between the beginning sequence and the Name "aaa" in the EntityDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5186,9 +5820,11 @@ fn ibmnotwf_p71ibm71n02xml() {
         Description:Tests EntityDecl with a required field missing. The white space is missing between the Name "aaa" and the EntityDef "aString" in the EntityDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5200,9 +5836,11 @@ fn ibmnotwf_p71ibm71n03xml() {
         Description:Tests EntityDecl with a required field missing. The EntityDef is missing in the EntityDecl with the Name "aaa" in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5214,9 +5852,11 @@ fn ibmnotwf_p71ibm71n04xml() {
         Description:Tests EntityDecl with a required field missing. The Name is missing in the EntityDecl with the EntityDef "aString" in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5228,9 +5868,11 @@ fn ibmnotwf_p71ibm71n05xml() {
         Description:Tests EntityDecl with wrong ordering. The Name "aaa" occurs after the EntityDef in the EntityDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5242,9 +5884,11 @@ fn ibmnotwf_p71ibm71n06xml() {
         Description:Tests EntityDecl with wrong key word. The string "entity" is used as the key word in the beginning sequence in the EntityDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5256,9 +5900,11 @@ fn ibmnotwf_p71ibm71n07xml() {
         Description:Tests EntityDecl with a required field missing. The closing bracket (greater than) is missing in the EntityDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n07.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5270,9 +5916,11 @@ fn ibmnotwf_p71ibm71n08xml() {
         Description:Tests EntityDecl with a required field missing. The exclamation mark is missing in the beginning sequence in the EntityDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n08.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n08.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5284,9 +5932,11 @@ fn ibmnotwf_p72ibm72n01xml() {
         Description:Tests PEdecl with a required field missing. The white space is missing between the beginning sequence and the "%" in the PEDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5298,9 +5948,11 @@ fn ibmnotwf_p72ibm72n02xml() {
         Description:Tests PEdecl with a required field missing. The Name is missing in the PEDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5312,9 +5964,11 @@ fn ibmnotwf_p72ibm72n03xml() {
         Description:Tests PEdecl with a required field missing. The white space is missing between the Name and the PEDef in the PEDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5326,9 +5980,11 @@ fn ibmnotwf_p72ibm72n04xml() {
         Description:Tests PEdecl with a required field missing. The PEDef is missing after the Name "paaa" in the PEDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5340,9 +5996,11 @@ fn ibmnotwf_p72ibm72n05xml() {
         Description:Tests PEdecl with wrong field ordering. The Name "paaa" occurs after the PEDef in the PEDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5354,9 +6012,11 @@ fn ibmnotwf_p72ibm72n06xml() {
         Description:Tests PEdecl with wrong field ordering. The "%" and the Name "paaa" occurs after the PEDef in the PEDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5368,9 +6028,11 @@ fn ibmnotwf_p72ibm72n07xml() {
         Description:Tests PEdecl with wrong key word. The string "entity" is used as the key word in the beginning sequence in the PEDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n07.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5382,9 +6044,11 @@ fn ibmnotwf_p72ibm72n08xml() {
         Description:Tests PEdecl with a required field missing. The closing bracket (greater than) is missing in the PEDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n08.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n08.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5396,9 +6060,11 @@ fn ibmnotwf_p72ibm72n09xml() {
         Description:Tests PEdecl with wrong closing sequence. The string "!(greater than)" is used as the closing sequence in the PEDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n09.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n09.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5410,9 +6076,11 @@ fn ibmnotwf_p73ibm73n01xml() {
         Description:Tests EntityDef with wrong field ordering. The NDataDecl "NDATA JPGformat" occurs before the ExternalID in the EntityDef in the EntityDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P73/ibm73n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P73/ibm73n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5424,9 +6092,11 @@ fn ibmnotwf_p73ibm73n03xml() {
         Description:Tests EntityDef with a required field missing. The ExternalID is missing before the NDataDecl in the EntityDef in the EntityDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P73/ibm73n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P73/ibm73n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5438,9 +6108,11 @@ fn ibmnotwf_p74ibm74n01xml() {
         Description:Tests PEDef with extra fields. The NDataDecl occurs after the ExternalID in the PEDef in the PEDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P74/ibm74n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P74/ibm74n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5452,9 +6124,11 @@ fn ibmnotwf_p75ibm75n01xml() {
         Description:Tests ExternalID with wrong key word. The string "system" is used as the key word in the ExternalID in the EntityDef in the EntityDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5466,9 +6140,11 @@ fn ibmnotwf_p75ibm75n02xml() {
         Description:Tests ExternalID with wrong key word. The string "public" is used as the key word in the ExternalID in the doctypedecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5480,9 +6156,11 @@ fn ibmnotwf_p75ibm75n03xml() {
         Description:Tests ExternalID with wrong key word. The string "Public" is used as the key word in the ExternalID in the doctypedecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5494,9 +6172,11 @@ fn ibmnotwf_p75ibm75n04xml() {
         Description:Tests ExternalID with wrong field ordering. The key word "PUBLIC" occurs after the PublicLiteral and the SystemLiteral in the ExternalID in the doctypedecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5508,9 +6188,11 @@ fn ibmnotwf_p75ibm75n05xml() {
         Description:Tests ExternalID with a required field missing. The white space between "SYSTEM" and the Systemliteral is missing in the ExternalID in the EntityDef in the EntityDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5522,9 +6204,11 @@ fn ibmnotwf_p75ibm75n06xml() {
         Description:Tests ExternalID with a required field missing. The Systemliteral is missing after "SYSTEM" in the ExternalID in the EntityDef in the EntityDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5536,9 +6220,11 @@ fn ibmnotwf_p75ibm75n07xml() {
         Description:Tests ExternalID with a required field missing. The white space between the PublicLiteral and the Systemliteral is missing in the ExternalID in the doctypedecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n07.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5550,9 +6236,11 @@ fn ibmnotwf_p75ibm75n08xml() {
         Description:Tests ExternalID with a required field missing. The key word "PUBLIC" is missing in the ExternalID in the doctypedecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n08.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n08.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5564,9 +6252,11 @@ fn ibmnotwf_p75ibm75n09xml() {
         Description:Tests ExternalID with a required field missing. The white space between "PUBLIC" and the PublicLiteral is missing in the ExternalID in the doctypedecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n09.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n09.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5578,9 +6268,11 @@ fn ibmnotwf_p75ibm75n10xml() {
         Description:Tests ExternalID with a required field missing. The PublicLiteral is missing in the ExternalID in the doctypedecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n10.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n10.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5592,9 +6284,11 @@ fn ibmnotwf_p75ibm75n11xml() {
         Description:Tests ExternalID with a required field missing. The PublicLiteral is missing in the ExternalID in the doctypedecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n11.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n11.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5606,9 +6300,11 @@ fn ibmnotwf_p75ibm75n12xml() {
         Description:Tests ExternalID with a required field missing. The SystemLiteral is missing in the ExternalID in the doctypedecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n12.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n12.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5620,9 +6316,11 @@ fn ibmnotwf_p75ibm75n13xml() {
         Description:Tests ExternalID with wrong field ordering. The key word "PUBLIC" occurs after the PublicLiteral in the ExternalID in the doctypedecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n13.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n13.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5634,9 +6332,11 @@ fn ibmnotwf_p76ibm76n01xml() {
         Description:Tests NDataDecl with wrong key word. The string "ndata" is used as the key word in the NDataDecl in the EntityDef in the GEDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5648,9 +6348,11 @@ fn ibmnotwf_p76ibm76n02xml() {
         Description:Tests NDataDecl with wrong key word. The string "NData" is used as the key word in the NDataDecl in the EntityDef in the GEDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5662,9 +6364,11 @@ fn ibmnotwf_p76ibm76n03xml() {
         Description:Tests NDataDecl with a required field missing. The leading white space is missing in the NDataDecl in the EntityDef in the GEDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5676,9 +6380,11 @@ fn ibmnotwf_p76ibm76n04xml() {
         Description:Tests NDataDecl with a required field missing. The key word "NDATA" is missing in the NDataDecl in the EntityDef in the GEDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5690,9 +6396,11 @@ fn ibmnotwf_p76ibm76n05xml() {
         Description:Tests NDataDecl with a required field missing. The Name after the key word "NDATA" is missing in the NDataDecl in the EntityDef in the GEDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5704,9 +6412,11 @@ fn ibmnotwf_p76ibm76n06xml() {
         Description:Tests NDataDecl with a required field missing. The white space between "NDATA" and the Name is missing in the NDataDecl in the EntityDef in the GEDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5718,9 +6428,11 @@ fn ibmnotwf_p76ibm76n07xml() {
         Description:Tests NDataDecl with wrong field ordering. The key word "NDATA" occurs after the Name in the NDataDecl in the EntityDef in the GEDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n07.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5732,9 +6444,11 @@ fn ibmnotwf_p77ibm77n01xml() {
         Description:Tests TextDecl with wrong field ordering. The VersionInfo occurs after the EncodingDecl in the TextDecl in the file "ibm77n01.ent".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P77/ibm77n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P77/ibm77n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5746,9 +6460,11 @@ fn ibmnotwf_p77ibm77n02xml() {
         Description:Tests TextDecl with wrong key word. The string "XML" is used in the beginning sequence in the TextDecl in the file "ibm77n02.ent".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P77/ibm77n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P77/ibm77n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5760,9 +6476,11 @@ fn ibmnotwf_p77ibm77n03xml() {
         Description:Tests TextDecl with wrong closing sequence. The character "greater than" is used as the closing sequence in the TextDecl in the file "ibm77n03.ent".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P77/ibm77n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P77/ibm77n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5774,9 +6492,11 @@ fn ibmnotwf_p77ibm77n04xml() {
         Description:Tests TextDecl with a required field missing. The closing sequence is missing in the TextDecl in the file "ibm77n04.ent".
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P77/ibm77n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P77/ibm77n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5788,9 +6508,11 @@ fn ibmnotwf_p78ibm78n01xml() {
         Description:Tests extParsedEnt with wrong field ordering. The TextDecl occurs after the content in the file ibm78n01.ent.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P78/ibm78n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P78/ibm78n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5802,9 +6524,11 @@ fn ibmnotwf_p78ibm78n02xml() {
         Description:Tests extParsedEnt with extra field. A blank line occurs before the TextDecl in the file ibm78n02.ent.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P78/ibm78n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P78/ibm78n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5816,9 +6540,11 @@ fn ibmnotwf_p79ibm79n01xml() {
         Description:Tests extPE with wrong field ordering. The TextDecl occurs after the extSubsetDecl (the white space and the comment) in the file ibm79n01.ent.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P79/ibm79n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P79/ibm79n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5830,9 +6556,11 @@ fn ibmnotwf_p79ibm79n02xml() {
         Description:Tests extPE with extra field. A blank line occurs before the TextDecl in the file ibm78n02.ent.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P79/ibm79n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P79/ibm79n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5844,9 +6572,11 @@ fn ibmnotwf_p80ibm80n01xml() {
         Description:Tests EncodingDecl with a required field missing. The leading white space is missing in the EncodingDecl in the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P80/ibm80n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P80/ibm80n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5858,9 +6588,11 @@ fn ibmnotwf_p80ibm80n02xml() {
         Description:Tests EncodingDecl with a required field missing. The "=" sign is missing in the EncodingDecl in the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P80/ibm80n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P80/ibm80n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5872,9 +6604,11 @@ fn ibmnotwf_p80ibm80n03xml() {
         Description:Tests EncodingDecl with a required field missing. The double quoted EncName are missing in the EncodingDecl in the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P80/ibm80n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P80/ibm80n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5886,9 +6620,11 @@ fn ibmnotwf_p80ibm80n04xml() {
         Description:Tests EncodingDecl with wrong field ordering. The string "encoding=" occurs after the double quoted EncName in the EncodingDecl in the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P80/ibm80n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P80/ibm80n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5900,9 +6636,11 @@ fn ibmnotwf_p80ibm80n05xml() {
         Description:Tests EncodingDecl with wrong field ordering. The "encoding" occurs after the double quoted EncName in the EncodingDecl in the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P80/ibm80n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P80/ibm80n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5914,9 +6652,11 @@ fn ibmnotwf_p80ibm80n06xml() {
         Description:Tests EncodingDecl with wrong key word. The string "Encoding" is used as the key word in the EncodingDecl in the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P80/ibm80n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P80/ibm80n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5928,9 +6668,11 @@ fn ibmnotwf_p81ibm81n01xml() {
         Description:Tests EncName with an illegal character. The "_" is used as the first character in the EncName in the EncodingDecl in the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5942,9 +6684,11 @@ fn ibmnotwf_p81ibm81n02xml() {
         Description:Tests EncName with an illegal character. The "-" is used as the first character in the EncName in the EncodingDecl in the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5956,9 +6700,11 @@ fn ibmnotwf_p81ibm81n03xml() {
         Description:Tests EncName with an illegal character. The "." is used as the first character in the EncName in the EncodingDecl in the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5970,9 +6716,11 @@ fn ibmnotwf_p81ibm81n04xml() {
         Description:Tests EncName with illegal characters. The "8-" is used as the initial characters in the EncName in the EncodingDecl in the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5984,9 +6732,11 @@ fn ibmnotwf_p81ibm81n05xml() {
         Description:Tests EncName with an illegal character. The "~" is used as one character in the EncName in the EncodingDecl in the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -5998,9 +6748,11 @@ fn ibmnotwf_p81ibm81n06xml() {
         Description:Tests EncName with an illegal character. The "#" is used as one character in the EncName in the EncodingDecl in the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -6012,9 +6764,11 @@ fn ibmnotwf_p81ibm81n07xml() {
         Description:Tests EncName with an illegal character. The ":" is used as one character in the EncName in the EncodingDecl in the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n07.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -6026,9 +6780,11 @@ fn ibmnotwf_p81ibm81n08xml() {
         Description:Tests EncName with an illegal character. The "/" is used as one character in the EncName in the EncodingDecl in the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n08.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n08.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -6040,9 +6796,11 @@ fn ibmnotwf_p81ibm81n09xml() {
         Description:Tests EncName with an illegal character. The ";" is used as one character in the EncName in the EncodingDecl in the XMLDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n09.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n09.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -6054,9 +6812,11 @@ fn ibmnotwf_p82ibm82n01xml() {
         Description:Tests NotationDecl with a required field missing. The white space after the beginning sequence of the NotationDecl is missing in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -6068,9 +6828,11 @@ fn ibmnotwf_p82ibm82n02xml() {
         Description:Tests NotationDecl with a required field missing. The Name in the NotationDecl is missing in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -6082,9 +6844,11 @@ fn ibmnotwf_p82ibm82n03xml() {
         Description:Tests NotationDecl with a required field missing. The externalID or the PublicID is missing in the NotationDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -6096,9 +6860,11 @@ fn ibmnotwf_p82ibm82n04xml() {
         Description:Tests NotationDecl with wrong field ordering. The Name occurs after the "SYSTEM" and the externalID in the NotationDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -6110,9 +6876,11 @@ fn ibmnotwf_p82ibm82n05xml() {
         Description:Tests NotationDecl with wrong key word. The string "notation" is used as a key word in the NotationDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -6124,9 +6892,11 @@ fn ibmnotwf_p82ibm82n06xml() {
         Description:Tests NotationDecl with a required field missing. The closing bracket (the greater than character) is missing in the NotationDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -6138,9 +6908,11 @@ fn ibmnotwf_p82ibm82n07xml() {
         Description:Tests NotationDecl with wrong beginning sequence. The "!" is missing in the beginning sequence in the NotationDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n07.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -6152,9 +6924,11 @@ fn ibmnotwf_p82ibm82n08xml() {
         Description:Tests NotationDecl with wrong closing sequence. The extra "!" occurs in the closing sequence in the NotationDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n08.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n08.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -6166,9 +6940,11 @@ fn ibmnotwf_p83ibm83n01xml() {
         Description:Tests PublicID with wrong key word. The string "public" is used as the key word in the PublicID in the NotationDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P83/ibm83n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P83/ibm83n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -6180,9 +6956,11 @@ fn ibmnotwf_p83ibm83n02xml() {
         Description:Tests PublicID with wrong key word. The string "Public" is used as the key word in the PublicID in the NotationDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P83/ibm83n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P83/ibm83n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -6194,9 +6972,11 @@ fn ibmnotwf_p83ibm83n03xml() {
         Description:Tests PublicID with a required field missing. The key word "PUBLIC" is missing in the PublicID in the NotationDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P83/ibm83n03.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P83/ibm83n03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -6208,9 +6988,11 @@ fn ibmnotwf_p83ibm83n04xml() {
         Description:Tests PublicID with a required field missing. The white space between the "PUBLIC" and the PubidLiteral is missing in the PublicID in the NotationDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P83/ibm83n04.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P83/ibm83n04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -6222,9 +7004,11 @@ fn ibmnotwf_p83ibm83n05xml() {
         Description:Tests PublicID with a required field missing. The PubidLiteral is missing in the PublicID in the NotationDecl in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P83/ibm83n05.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P83/ibm83n05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -6236,9 +7020,11 @@ fn ibmnotwf_p83ibm83n06xml() {
         Description:Tests PublicID with wrong field ordering. The key word "PUBLIC" occurs after the PubidLiteral in the PublicID in the NotationDecl.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P83/ibm83n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P83/ibm83n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -6250,9 +7036,11 @@ fn ibmnotwf_p85ibm85n01xml() {
         Description:Tests BaseChar with an illegal character. The character #x00D7 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -6264,9 +7052,11 @@ fn ibmnotwf_p85ibm85n02xml() {
         Description:Tests BaseChar with an illegal character. The character #x00F7 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 /*
@@ -12242,9 +13032,11 @@ fn ibmnotwf_p88ibm88n01xml() {
         Description:Tests Digit with an illegal character. The character #x0029 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -12256,9 +13048,11 @@ fn ibmnotwf_p88ibm88n02xml() {
         Description:Tests Digit with an illegal character. The character #x003B occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 /*
@@ -12543,9 +13337,11 @@ fn ibmnotwf_p89ibm89n01xml() {
         Description:Tests Extender with an illegal character. The character #x00B6 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n01.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -12557,9 +13353,11 @@ fn ibmnotwf_p89ibm89n02xml() {
         Description:Tests Extender with an illegal character. The character #x00B8 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n02.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 /*
@@ -12634,9 +13432,11 @@ fn ibmnotwf_p89ibm89n06xml() {
         Description:Tests Extender with an illegal character. The character #x0EC7 occurs as the second character in the PITarget in the PI in the DTD. [Also contains two top-level elements -- one should be removed]
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n06.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -12648,9 +13448,11 @@ fn ibmnotwf_p89ibm89n07xml() {
         Description:Tests Extender with an illegal character. The character #x3006 occurs as the second character in the PITarget in the PI in the DTD. [Also contains two top-level elements -- one should be removed]
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n07.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -12662,9 +13464,11 @@ fn ibmnotwf_p89ibm89n08xml() {
         Description:Tests Extender with an illegal character. The character #x3030 occurs as the second character in the PITarget in the PI in the DTD. [Also contains two top-level elements -- one should be removed]
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n08.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n08.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -12676,9 +13480,11 @@ fn ibmnotwf_p89ibm89n09xml() {
         Description:Tests Extender with an illegal character. The character #x3036 occurs as the second character in the PITarget in the PI in the DTD. [Also contains two top-level elements -- one should be removed]
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n09.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n09.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -12690,9 +13496,11 @@ fn ibmnotwf_p89ibm89n10xml() {
         Description:Tests Extender with an illegal character. The character #x309C occurs as the second character in the PITarget in the PI in the DTD. [Also contains two top-level elements -- one should be removed]
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n10.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n10.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -12704,9 +13512,11 @@ fn ibmnotwf_p89ibm89n11xml() {
         Description:Tests Extender with an illegal character. The character #x309F occurs as the second character in the PITarget in the PI in the DTD. [Also contains two top-level elements -- one should be removed]
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n11.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n11.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -12718,7 +13528,9 @@ fn ibmnotwf_p89ibm89n12xml() {
         Description:Tests Extender with an illegal character. The character #x30FF occurs as the second character in the PITarget in the PI in the DTD. [Also contains two top-level elements -- one should be removed]
     */
 
-    test_ibm_notwf(fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n12.xml")
+    test_ibm_notwf(
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n12.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }

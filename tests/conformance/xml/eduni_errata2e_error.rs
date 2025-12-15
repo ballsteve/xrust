@@ -10,7 +10,7 @@ use xrust::parser::ParseError;
 use xrust::parser::xml;
 use xrust::trees::smite::RNode;
 
-fn test_eduni_errata2e_error(xmldoc: &str){
+fn test_eduni_errata2e_error(xmldoc: &str) {
     let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
@@ -33,7 +33,7 @@ fn rmte2e34() {
     test_eduni_errata2e_error(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E34.xml")
             .unwrap()
-            .as_str()
+            .as_str(),
     );
 }
 
@@ -48,7 +48,7 @@ fn rmte2e55() {
     test_eduni_errata2e_error(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E55.xml")
             .unwrap()
-            .as_str()
+            .as_str(),
     );
 }
 
@@ -63,6 +63,6 @@ fn rmte2e57() {
     test_eduni_errata2e_error(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E57.xml")
             .unwrap()
-            .as_str()
+            .as_str(),
     );
 }

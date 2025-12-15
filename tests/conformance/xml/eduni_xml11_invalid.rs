@@ -9,7 +9,7 @@ use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
-fn test_xml11_invalid(xmldoc: &str){
+fn test_xml11_invalid(xmldoc: &str) {
     let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
@@ -20,7 +20,7 @@ fn test_xml11_invalid(xmldoc: &str){
     assert!(parseresult.is_err());
 }
 
-fn test_xml11_invalid_dtd(xmldoc: &str){
+fn test_xml11_invalid_dtd(xmldoc: &str) {
     let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
@@ -108,9 +108,11 @@ fn rmt030() {
         Description:Has a NEL character in an NMTOKENS attribute; well-formed in both XML 1.0 and 1.1, but valid only in 1.1
     */
 
-    test_xml11_invalid_dtd(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/030.xml")
+    test_xml11_invalid_dtd(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/030.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -123,9 +125,11 @@ fn rmt032() {
         Description:Has an LSEP character in an NMTOKENS attribute; well-formed in both XML 1.0 and 1.1, but valid only in 1.1
     */
 
-    test_xml11_invalid_dtd(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/032.xml")
+    test_xml11_invalid_dtd(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/032.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 // This seems like an edge case. Saxon accepts the document
@@ -139,9 +143,11 @@ fn rmt036() {
         Description:Has an NMTOKENS attribute containing a NEL character that comes from a character reference in an internal entity. Because NEL is not in the S production (even though real NELs are converted to LF on input), this is invalid in both XML 1.0 and 1.1.
     */
 
-    test_xml11_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/036.xml")
+    test_xml11_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/036.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -154,9 +160,11 @@ fn rmt037() {
         Description:Has an NMTOKENS attribute containing a NEL character that comes from a character reference in an internal entity. Because NEL is not in the S production (even though real NELs are converted to LF on input), this is invalid in both XML 1.0 and 1.1.
     */
 
-    test_xml11_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/037.xml")
+    test_xml11_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/037.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -169,9 +177,11 @@ fn rmt046() {
         Description:Has a NEL character in element content whitespace; well-formed in both XML 1.0 and 1.1, but valid only in 1.1
     */
 
-    test_xml11_invalid_dtd(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/046.xml")
+    test_xml11_invalid_dtd(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/046.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -184,9 +194,11 @@ fn rmt048() {
         Description:Has an LSEP character in element content whitespace; well-formed in both XML 1.0 and 1.1, but valid only in 1.1
     */
 
-    test_xml11_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/048.xml")
+    test_xml11_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/048.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -199,9 +211,11 @@ fn rmt052() {
         Description:Has element content whitespace containing a NEL character that comes from a character reference in an internal entity. Because NEL is not in the S production (even though real NELs are converted to LF on input), this is invalid in both XML 1.0 and 1.1.
     */
 
-    test_xml11_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/052.xml")
+    test_xml11_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/052.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -214,7 +228,9 @@ fn rmt053() {
         Description:Has element content whitespace containing a NEL character that comes from a character reference in an internal entity. Because NEL is not in the S production (even though real NELs are converted to LF on input), this is invalid in both XML 1.0 and 1.1.
     */
 
-    test_xml11_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/053.xml")
+    test_xml11_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/053.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }

@@ -12,7 +12,7 @@ use xrust::item::Node;
 use xrust::parser::{ParseError, ParserStateBuilder, StaticStateBuilder, xml};
 use xrust::trees::smite::RNode;
 
-fn test_xmltest_invalid(xmldoc: &str){
+fn test_xmltest_invalid(xmldoc: &str) {
     let ss = StaticStateBuilder::new()
         .dtd_resolver(dtdfileresolve())
         .namespace(|_: &_| Err(ParseError::MissingNameSpace))
@@ -23,11 +23,7 @@ fn test_xmltest_invalid(xmldoc: &str){
         .doc(testxml)
         .document_location("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string())
         .build();
-    let parseresult = xml::parse_with_state(
-        xmldoc,
-        ps,
-        ss,
-    );
+    let parseresult = xml::parse_with_state(xmldoc, ps, ss);
 
     assert!(parseresult.is_err());
 }
@@ -42,9 +38,10 @@ fn invalid002() {
         Description:Tests the "Proper Group/PE Nesting" validity constraint by fragmenting a content model between two parameter entities.
     */
 
-    test_xmltest_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/invalid/002.xml")
+    test_xmltest_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/invalid/002.xml")
             .unwrap()
-            .as_str()
+            .as_str(),
     );
 }
 
@@ -57,9 +54,10 @@ fn invalid005() {
         Description:Tests the "Proper Declaration/PE Nesting" validity constraint by fragmenting an element declaration between two parameter entities.
     */
 
-    test_xmltest_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/invalid/005.xml")
-        .unwrap()
-        .as_str()
+    test_xmltest_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/invalid/005.xml")
+            .unwrap()
+            .as_str(),
     );
 }
 
@@ -73,9 +71,10 @@ fn invalid006() {
         Description:Tests the "Proper Declaration/PE Nesting" validity constraint by fragmenting an element declaration between two parameter entities.
     */
 
-    test_xmltest_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/invalid/006.xml")
-        .unwrap()
-        .as_str()
+    test_xmltest_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/invalid/006.xml")
+            .unwrap()
+            .as_str(),
     );
 }
 
@@ -88,9 +87,9 @@ fn invalidnotsa022() {
         Description:Test the "Proper Conditional Section/ PE Nesting" validity constraint.
     */
 
-    test_xmltest_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/invalid/not-sa/022.xml")
-        .unwrap()
-        .as_str()
+    test_xmltest_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/invalid/not-sa/022.xml")
+            .unwrap()
+            .as_str(),
     );
-    
 }

@@ -327,16 +327,13 @@ impl<N: Node> Context<N> {
             // If the context item is a node then set the new context to the root node
             // otherwise there is no context
             ctxt.context(
-                self.context.get(self.i).map_or_else(
-                    Vec::new,
-                    |i| {
-                        if let Item::Node(n) = i {
-                            vec![Item::Node(n.owner_document())]
-                        } else {
-                            vec![]
-                        }
-                    },
-                ),
+                self.context.get(self.i).map_or_else(Vec::new, |i| {
+                    if let Item::Node(n) = i {
+                        vec![Item::Node(n.owner_document())]
+                    } else {
+                        vec![]
+                    }
+                }),
                 0,
             );
             // Populate the context with stylesheet-level variables.
@@ -728,9 +725,9 @@ where
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
-    {
-        fn default() -> Self {
-            Self::new()
+{
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -796,12 +793,12 @@ pub struct StaticContextBuilder<
 
 impl<N: Node, F, G, H> Default for StaticContextBuilder<N, F, G, H>
 where
-     F: FnMut(&str) -> Result<(), Error>,
-     G: FnMut(&str) -> Result<N, Error>,
-     H: FnMut(&Url) -> Result<String, Error>,
-    {
-        fn default() -> Self {
-            Self::new()
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+{
+    fn default() -> Self {
+        Self::new()
     }
 }
 

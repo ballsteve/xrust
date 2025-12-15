@@ -9,7 +9,7 @@ use xrust::item::Node;
 use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 
-fn test_eduni_misc_notwf(xmldoc: &str){
+fn test_eduni_misc_notwf(xmldoc: &str) {
     let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
@@ -31,7 +31,8 @@ fn hstbh001() {
     test_eduni_misc_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/001.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -45,7 +46,8 @@ fn hstbh002() {
     test_eduni_misc_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/002.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -59,7 +61,8 @@ fn hstbh003() {
     test_eduni_misc_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/003.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -73,7 +76,8 @@ fn hstbh004() {
     test_eduni_misc_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/004.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -88,7 +92,8 @@ fn hstlhs007() {
     test_eduni_misc_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/007.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -103,7 +108,8 @@ fn hstlhs008() {
     test_eduni_misc_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/008.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -118,5 +124,6 @@ fn hstlhs009() {
     test_eduni_misc_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/009.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }

@@ -8,7 +8,7 @@ use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
-fn test_eduni_errata3e_valid(xmldoc:&str){
+fn test_eduni_errata3e_valid(xmldoc: &str) {
     let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
@@ -35,7 +35,8 @@ fn rmte3e05a() {
     test_eduni_errata3e_valid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E05a.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -49,7 +50,8 @@ fn rmte3e05b() {
     test_eduni_errata3e_valid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E05b.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -64,5 +66,6 @@ fn rmte3e06i() {
     test_eduni_errata3e_valid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06i.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }

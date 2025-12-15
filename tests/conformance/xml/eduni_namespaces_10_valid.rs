@@ -10,7 +10,7 @@ use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
-fn test_eduni_namespaces_10_valid(xmldoc: &str){
+fn test_eduni_namespaces_10_valid(xmldoc: &str) {
     let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
@@ -26,7 +26,6 @@ fn test_eduni_namespaces_10_valid(xmldoc: &str){
     assert!(validation.is_ok());
 }
 
-
 #[test]
 fn rmtns10001() {
     /*
@@ -38,7 +37,8 @@ fn rmtns10001() {
     test_eduni_namespaces_10_valid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/001.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -52,7 +52,8 @@ fn rmtns10002() {
     test_eduni_namespaces_10_valid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/002.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -66,7 +67,8 @@ fn rmtns10003() {
     test_eduni_namespaces_10_valid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/002.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -81,7 +83,8 @@ fn rmtns10007() {
     test_eduni_namespaces_10_valid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/007.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -96,7 +99,8 @@ fn rmtns10008() {
     test_eduni_namespaces_10_valid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/008.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -110,7 +114,8 @@ fn htns10047() {
     test_eduni_namespaces_10_valid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/047.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -124,5 +129,6 @@ fn htns10048() {
     test_eduni_namespaces_10_valid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/048.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }

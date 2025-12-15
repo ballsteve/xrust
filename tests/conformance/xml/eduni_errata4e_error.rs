@@ -9,7 +9,7 @@ use xrust::item::Node;
 use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 
-fn test_eduni_errata4e_error(xmldoc: &str){
+fn test_eduni_errata4e_error(xmldoc: &str) {
     let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
@@ -31,7 +31,8 @@ fn invalidbo7() {
     test_eduni_errata4e_error(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbomboom_be.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -45,7 +46,8 @@ fn invalidbo8() {
     test_eduni_errata4e_error(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbomboom_le.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -59,7 +61,8 @@ fn invalidbo9() {
     test_eduni_errata4e_error(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/incl8bomboom.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 /*

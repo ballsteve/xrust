@@ -31,7 +31,8 @@ fn rmtnse1013a() {
     test_eduni_namespaces_errata1e_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/errata-1e/NE13a.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -45,7 +46,8 @@ fn rmtnse1013b() {
     test_eduni_namespaces_errata1e_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/errata-1e/NE13b.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -59,5 +61,6 @@ fn rmtnse1013c() {
     test_eduni_namespaces_errata1e_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/errata-1e/NE13c.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }

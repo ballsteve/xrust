@@ -9,7 +9,7 @@ use xrust::item::Node;
 use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 
-fn test_eduni_namespaces_11_notwf(xmldoc: &str){
+fn test_eduni_namespaces_11_notwf(xmldoc: &str) {
     let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
@@ -31,7 +31,8 @@ fn rmtns11005() {
     test_eduni_namespaces_11_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/005.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -45,7 +46,8 @@ fn htbhns11007() {
     test_eduni_namespaces_11_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/007.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -59,5 +61,6 @@ fn htbhns11008() {
     test_eduni_namespaces_11_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/008.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }

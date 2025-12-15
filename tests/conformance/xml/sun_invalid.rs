@@ -10,7 +10,7 @@ use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
-fn test_sun_invalid(xmldoc: &str){
+fn test_sun_invalid(xmldoc: &str) {
     let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
@@ -36,9 +36,11 @@ fn invdtd01() {
         Description:Tests the No Duplicate Types VC
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/dtd01.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/dtd01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -51,9 +53,11 @@ fn invdtd02() {
         Description:Tests the "Notation Declared" VC by using an undeclared notation name.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/dtd02.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/dtd02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -65,9 +69,11 @@ fn invdtd03() {
         Description:Tests the "Element Valid" VC (clause 2) by omitting a required element.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/dtd03.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/dtd03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -79,9 +85,11 @@ fn el01() {
         Description:Tests the Element Valid VC (clause 4) by including an undeclared child element.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/el01.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/el01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -93,9 +101,11 @@ fn el02() {
         Description:Tests the Element Valid VC (clause 1) by including elements in an EMPTY content model.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/el02.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/el02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -107,9 +117,11 @@ fn el03() {
         Description:Tests the Element Valid VC (clause 3) by including a child element not permitted by a mixed content model.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/el03.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/el03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -122,9 +134,11 @@ fn el04() {
         Description:Tests the Unique Element Type Declaration VC.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/el04.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/el04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -137,9 +151,11 @@ fn el05() {
         Description:Tests the No Duplicate Types VC.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/el05.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/el05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -151,9 +167,11 @@ fn el06() {
         Description:Tests the Element Valid VC (clause 1), using one of the predefined internal entities inside an EMPTY content model.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/el06.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/el06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -166,9 +184,11 @@ fn id01() {
         Description:Tests the ID (is a Name) VC
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/id01.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/id01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -181,9 +201,11 @@ fn id02() {
         Description:Tests the ID (appears once) VC
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/id02.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/id02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -196,9 +218,11 @@ fn id03() {
         Description:Tests the One ID per Element Type VC
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/id03.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/id03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -210,9 +234,11 @@ fn id04() {
         Description:Tests the ID Attribute Default VC
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/id04.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/id04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -225,9 +251,11 @@ fn id05() {
         Description:Tests the ID Attribute Default VC
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/id05.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/id05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -240,9 +268,11 @@ fn id06() {
         Description:Tests the IDREF (is a Name) VC
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/id06.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/id06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -255,9 +285,11 @@ fn id07() {
         Description:Tests the IDREFS (is a Names) VC
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/id07.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/id07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -270,9 +302,11 @@ fn id08() {
         Description:Tests the IDREF (matches an ID) VC
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/id08.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/id08.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -285,9 +319,11 @@ fn id09() {
         Description:Tests the IDREF (IDREFS matches an ID) VC
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/id09.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/id09.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -300,10 +336,11 @@ fn invnotsa01() {
         Description:Tests the Standalone Document Declaration VC, ensuring that optional whitespace causes a validity error.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/not-sa01.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/not-sa01.xml")
             .unwrap()
-            .as_str());
-
+            .as_str(),
+    );
 }
 
 #[test]
@@ -316,9 +353,11 @@ fn invnotsa02() {
         Description:Tests the Standalone Document Declaration VC, ensuring that attributes needing normalization cause a validity error.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/not-sa02.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/not-sa02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -331,9 +370,11 @@ fn invnotsa04() {
         Description:Tests the Standalone Document Declaration VC, ensuring that attributes needing defaulting cause a validity error.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/not-sa04.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/not-sa04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -346,9 +387,11 @@ fn invnotsa05() {
         Description:Tests the Standalone Document Declaration VC, ensuring that a token attribute that needs normalization causes a validity error.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/not-sa05.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/not-sa05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -361,9 +404,11 @@ fn invnotsa06() {
         Description:Tests the Standalone Document Declaration VC, ensuring that a NOTATION attribute that needs normalization causes a validity error.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/not-sa06.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/not-sa06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -376,9 +421,11 @@ fn invnotsa07() {
         Description:Tests the Standalone Document Declaration VC, ensuring that an NMTOKEN attribute needing normalization causes a validity error.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/not-sa07.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/not-sa07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -391,9 +438,11 @@ fn invnotsa08() {
         Description:Tests the Standalone Document Declaration VC, ensuring that an NMTOKENS attribute needing normalization causes a validity error.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/not-sa08.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/not-sa08.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -406,9 +455,11 @@ fn invnotsa09() {
         Description:Tests the Standalone Document Declaration VC, ensuring that an ID attribute needing normalization causes a validity error.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/not-sa09.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/not-sa09.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -421,9 +472,11 @@ fn invnotsa10() {
         Description:Tests the Standalone Document Declaration VC, ensuring that an IDREF attribute needing normalization causes a validity error.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/not-sa10.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/not-sa10.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -436,9 +489,11 @@ fn invnotsa11() {
         Description:Tests the Standalone Document Declaration VC, ensuring that an IDREFS attribute needing normalization causes a validity error.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/not-sa11.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/not-sa11.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -451,9 +506,11 @@ fn invnotsa12() {
         Description:Tests the Standalone Document Declaration VC, ensuring that an ENTITY attribute needing normalization causes a validity error.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/not-sa12.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/not-sa12.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -466,9 +523,11 @@ fn invnotsa13() {
         Description:Tests the Standalone Document Declaration VC, ensuring that an ENTITIES attribute needing normalization causes a validity error.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/not-sa13.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/not-sa13.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -481,9 +540,11 @@ fn invnotsa14() {
         Description:CDATA sections containing only whitespace do not match the nonterminal S, and cannot appear in these positions.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/not-sa14.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/not-sa14.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -496,9 +557,11 @@ fn optional01() {
         Description:Tests the Element Valid VC (clause 2) for one instance of "children" content model, providing no children where one is required.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional01.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -511,9 +574,11 @@ fn optional02() {
         Description:Tests the Element Valid VC (clause 2) for one instance of "children" content model, providing two children where one is required.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional02.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -526,9 +591,11 @@ fn optional03() {
         Description:Tests the Element Valid VC (clause 2) for one instance of "children" content model, providing no children where two are required.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional03.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -541,9 +608,11 @@ fn optional04() {
         Description:Tests the Element Valid VC (clause 2) for one instance of "children" content model, providing three children where two are required.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional04.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -556,9 +625,11 @@ fn optional05() {
         Description:Tests the Element Valid VC (clause 2) for one instance of "children" content model, providing no children where one or two are required (one construction of that model).
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional05.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -571,9 +642,11 @@ fn optional06() {
         Description:Tests the Element Valid VC (clause 2) for one instance of "children" content model, providing no children where one or two are required (a second construction of that model).
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional06.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -586,9 +659,11 @@ fn optional07() {
         Description:Tests the Element Valid VC (clause 2) for one instance of "children" content model, providing no children where one or two are required (a third construction of that model).
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional07.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -601,9 +676,11 @@ fn optional08() {
         Description:Tests the Element Valid VC (clause 2) for one instance of "children" content model, providing no children where one or two are required (a fourth construction of that model).
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional08.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional08.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -616,9 +693,11 @@ fn optional09() {
         Description:Tests the Element Valid VC (clause 2) for one instance of "children" content model, providing no children where one or two are required (a fifth construction of that model).
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional09.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional09.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -631,9 +710,11 @@ fn optional10() {
         Description:Tests the Element Valid VC (clause 2) for one instance of "children" content model, providing three children where one or two are required (a basic construction of that model).
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional10.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional10.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -646,9 +727,11 @@ fn optional11() {
         Description:Tests the Element Valid VC (clause 2) for one instance of "children" content model, providing three children where one or two are required (a second construction of that model).
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional11.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional11.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -661,9 +744,11 @@ fn optional12() {
         Description:Tests the Element Valid VC (clause 2) for one instance of "children" content model, providing three children where one or two are required (a third construction of that model).
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional12.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional12.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -676,9 +761,11 @@ fn optional13() {
         Description:Tests the Element Valid VC (clause 2) for one instance of "children" content model, providing three children where one or two are required (a fourth construction of that model).
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional13.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional13.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -691,9 +778,11 @@ fn optional14() {
         Description:Tests the Element Valid VC (clause 2) for one instance of "children" content model, providing three children where one or two are required (a fifth construction of that model).
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional14.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional14.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -706,9 +795,11 @@ fn optional20() {
         Description:Tests the Element Valid VC (clause 2) for one instance of "children" content model, providing no children where one or more are required (a sixth construction of that model).
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional20.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional20.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -721,9 +812,11 @@ fn optional21() {
         Description:Tests the Element Valid VC (clause 2) for one instance of "children" content model, providing no children where one or more are required (a seventh construction of that model).
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional21.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional21.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -736,9 +829,11 @@ fn optional22() {
         Description:Tests the Element Valid VC (clause 2) for one instance of "children" content model, providing no children where one or more are required (an eigth construction of that model).
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional22.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional22.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -751,9 +846,11 @@ fn optional23() {
         Description:Tests the Element Valid VC (clause 2) for one instance of "children" content model, providing no children where one or more are required (a ninth construction of that model).
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional23.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional23.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -766,9 +863,11 @@ fn optional24() {
         Description:Tests the Element Valid VC (clause 2) for one instance of "children" content model, providing no children where one or more are required (a tenth construction of that model).
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional24.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional24.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -781,9 +880,11 @@ fn optional25() {
         Description:Tests the Element Valid VC (clause 2) for one instance of "children" content model, providing text content where one or more elements are required.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional25.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/optional25.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -795,9 +896,11 @@ fn invrequired00() {
         Description:Tests the Required Attribute VC.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/required00.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/required00.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -810,9 +913,11 @@ fn invrequired01() {
         Description:Tests the Attribute Value Type (declared) VC for the xml:space attribute
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/required01.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/required01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -824,9 +929,11 @@ fn invrequired02() {
         Description:Tests the Attribute Value Type (declared) VC for the xml:lang attribute
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/required02.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/required02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -839,9 +946,11 @@ fn root() {
         Description:Tests the Root Element Type VC
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/root.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/root.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -854,9 +963,11 @@ fn attr01() {
         Description:Tests the "Entity Name" VC for the ENTITY attribute type.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr01.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr01.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -869,9 +980,11 @@ fn attr02() {
         Description:Tests the "Entity Name" VC for the ENTITIES attribute type.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr02.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr02.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -884,9 +997,11 @@ fn attr03() {
         Description:Tests the "Notation Attributes" VC for the NOTATION attribute type, first clause: value must be one of the ones that's declared.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr03.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr03.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -899,9 +1014,11 @@ fn attr04() {
         Description:Tests the "Notation Attributes" VC for the NOTATION attribute type, second clause: the names in the declaration must all be declared.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr04.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr04.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -914,9 +1031,11 @@ fn attr05() {
         Description:Tests the "Name Token" VC for the NMTOKEN attribute type.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr05.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr05.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -929,9 +1048,11 @@ fn attr06() {
         Description:Tests the "Name Token" VC for the NMTOKENS attribute type.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr06.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr06.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -943,9 +1064,11 @@ fn attr07() {
         Description:Tests the "Enumeration" VC by providing a value which wasn't one of the choices.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr07.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr07.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -958,9 +1081,11 @@ fn attr08() {
         Description:Tests the "Fixed Attribute Default" VC by providing the wrong value.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr08.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr08.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -973,9 +1098,11 @@ fn attr09() {
         Description:Tests the "Attribute Default Legal" VC by providing an illegal IDREF value.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr09.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr09.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -988,9 +1115,11 @@ fn attr10() {
         Description:Tests the "Attribute Default Legal" VC by providing an illegal IDREFS value.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr10.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr10.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1003,9 +1132,11 @@ fn attr11() {
         Description:Tests the "Attribute Default Legal" VC by providing an illegal ENTITY value.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr11.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr11.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1018,9 +1149,11 @@ fn attr12() {
         Description:Tests the "Attribute Default Legal" VC by providing an illegal ENTITIES value.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr12.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr12.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1033,9 +1166,11 @@ fn attr13() {
         Description:Tests the "Attribute Default Legal" VC by providing an illegal NMTOKEN value.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr13.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr13.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1048,9 +1183,11 @@ fn attr14() {
         Description:Tests the "Attribute Default Legal" VC by providing an illegal NMTOKENS value.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr14.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr14.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1063,9 +1200,11 @@ fn attr15() {
         Description:Tests the "Attribute Default Legal" VC by providing an illegal NOTATIONS value.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr15.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr15.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1078,9 +1217,11 @@ fn attr16() {
         Description:Tests the "Attribute Default Legal" VC by providing an illegal enumeration value.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr16.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/attr16.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1093,9 +1234,11 @@ fn utf16b() {
         Description:Tests reading an invalid "big endian" UTF-16 document
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/utf16b.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/utf16b.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1108,9 +1251,11 @@ fn utf16l() {
         Description:Tests reading an invalid "little endian" UTF-16 document
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/utf16l.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/utf16l.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -1123,7 +1268,9 @@ fn empty() {
         Description:CDATA section containing only white space does not match the nonterminal S, and cannot appear in these positions.
     */
 
-    test_sun_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/empty.xml")
+    test_sun_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/empty.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }

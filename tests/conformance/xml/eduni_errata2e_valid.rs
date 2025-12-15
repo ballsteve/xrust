@@ -11,7 +11,7 @@ use xrust::parser::{ParseError, ParserStateBuilder, StaticStateBuilder, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
-fn test_eduni_errata2e_valid(xmldoc:&str, xmlcanondoc: Option<&str>){
+fn test_eduni_errata2e_valid(xmldoc: &str, xmlcanondoc: Option<&str>) {
     let ss = StaticStateBuilder::new()
         .dtd_resolver(dtdfileresolve())
         .namespace(|_: &_| Err(ParseError::MissingNameSpace))
@@ -23,11 +23,7 @@ fn test_eduni_errata2e_valid(xmldoc:&str, xmlcanondoc: Option<&str>){
         .document_location("tests/conformance/xml/xmlconf/eduni/errata-2e/".to_string())
         .build();
 
-    let parseresult = xml::parse_with_state(
-        xmldoc,
-        ps,
-        ss,
-    );
+    let parseresult = xml::parse_with_state(xmldoc, ps, ss);
     assert!(parseresult.is_ok());
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
@@ -58,7 +54,8 @@ fn rmte2e9a() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E9a.xml")
             .unwrap()
             .as_str(),
-        None);
+        None,
+    );
 }
 
 #[test]
@@ -73,7 +70,8 @@ fn rmte2e15e() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15e.xml")
             .unwrap()
             .as_str(),
-        None);
+        None,
+    );
 }
 
 #[test]
@@ -88,7 +86,8 @@ fn rmte2e15f() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15f.xml")
             .unwrap()
             .as_str(),
-        None);
+        None,
+    );
 }
 
 #[test]
@@ -103,7 +102,8 @@ fn rmte2e15i() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15i.xml")
             .unwrap()
             .as_str(),
-        None);
+        None,
+    );
 }
 
 #[test]
@@ -118,7 +118,8 @@ fn rmte2e15j() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15j.xml")
             .unwrap()
             .as_str(),
-        None);
+        None,
+    );
 }
 
 #[test]
@@ -133,7 +134,8 @@ fn rmte2e15k() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15k.xml")
             .unwrap()
             .as_str(),
-        None);
+        None,
+    );
 }
 
 #[test]
@@ -148,7 +150,8 @@ fn rmte2e15l() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15l.xml")
             .unwrap()
             .as_str(),
-        None);
+        None,
+    );
 }
 
 #[test]
@@ -164,9 +167,11 @@ fn rmte2e18() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E18.xml")
             .unwrap()
             .as_str(),
-        Some(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E18.xml")
-            .unwrap()
-            .as_str())
+        Some(
+            fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E18.xml")
+                .unwrap()
+                .as_str(),
+        ),
     );
 }
 
@@ -183,9 +188,11 @@ fn rmte2e19() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E19.xml")
             .unwrap()
             .as_str(),
-        Some(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E19.xml")
-            .unwrap()
-            .as_str())
+        Some(
+            fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E19.xml")
+                .unwrap()
+                .as_str(),
+        ),
     );
 }
 
@@ -202,7 +209,7 @@ fn rmte2e22() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E22.xml")
             .unwrap()
             .as_str(),
-        None
+        None,
     );
 }
 
@@ -218,7 +225,7 @@ fn rmte2e24() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E24.xml")
             .unwrap()
             .as_str(),
-        None
+        None,
     );
 }
 
@@ -234,7 +241,7 @@ fn rmte2e29() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E29.xml")
             .unwrap()
             .as_str(),
-        None
+        None,
     );
 }
 
@@ -251,7 +258,7 @@ fn rmte2e36() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E36.xml")
             .unwrap()
             .as_str(),
-        None
+        None,
     );
 }
 
@@ -267,7 +274,7 @@ fn rmte2e41() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E41.xml")
             .unwrap()
             .as_str(),
-        None
+        None,
     );
 }
 
@@ -283,7 +290,7 @@ fn rmte2e48() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E48.xml")
             .unwrap()
             .as_str(),
-        None
+        None,
     );
 }
 
@@ -300,7 +307,7 @@ fn rmte2e50() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E50.xml")
             .unwrap()
             .as_str(),
-        None
+        None,
     );
 }
 
@@ -316,6 +323,6 @@ fn rmte2e60() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E60.xml")
             .unwrap()
             .as_str(),
-        None
+        None,
     );
 }

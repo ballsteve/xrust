@@ -10,7 +10,7 @@ use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
-fn test_eduni_misc_invalid(xmldoc: &str){
+fn test_eduni_misc_invalid(xmldoc: &str) {
     let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
@@ -38,7 +38,8 @@ fn hstbh005() {
     test_eduni_misc_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/005.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -53,5 +54,6 @@ fn hstbh006() {
     test_eduni_misc_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/006.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }

@@ -9,7 +9,7 @@ use xrust::item::Node;
 use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 
-fn test_sun_error(xmldoc: &str){
+fn test_sun_error(xmldoc: &str) {
     let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
@@ -29,7 +29,9 @@ fn uri01() {
         Description:        SYSTEM ids may not have URI fragments
     */
 
-    test_sun_error(fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/uri01.xml")
-        .unwrap()
-        .as_str())
+    test_sun_error(
+        fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/uri01.xml")
+            .unwrap()
+            .as_str(),
+    )
 }

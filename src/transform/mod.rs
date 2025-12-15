@@ -875,9 +875,7 @@ impl Debug for WildcardOrName {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             WildcardOrName::Wildcard => f.write_str("WildcardOrNamespaceUri::Wildcard"),
-            WildcardOrName::Name(n) => {
-                f.write_str(format!("WildcardOrName::Name({})", n).as_str())
-            }
+            WildcardOrName::Name(n) => f.write_str(format!("WildcardOrName::Name({})", n).as_str()),
         }
     }
 }

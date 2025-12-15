@@ -4,8 +4,8 @@ use std::rc::Rc;
 use url::Url;
 
 use crate::item::{Item, Node, Sequence, SequenceTrait};
-use crate::transform::context::{Context, StaticContext};
 use crate::transform::Transform;
+use crate::transform::context::{Context, StaticContext};
 use crate::value::{Operator, Value};
 use crate::xdmerror::{Error, ErrorKind};
 
@@ -24,12 +24,12 @@ pub(crate) fn tr_or<
     let mut b = false;
     let mut i = 0;
     while let Some(a) = v.get(i) {
-                if ctxt.dispatch(stctxt, a)?.to_bool() {
-                    b = true;
-                    break;
-                }
-                i += 1;
-            }
+        if ctxt.dispatch(stctxt, a)?.to_bool() {
+            b = true;
+            break;
+        }
+        i += 1;
+    }
     Ok(vec![Item::Value(Rc::new(Value::from(b)))])
 }
 
@@ -48,12 +48,12 @@ pub(crate) fn tr_and<
     let mut b = true;
     let mut i = 0;
     while let Some(a) = v.get(i) {
-            if !ctxt.dispatch(stctxt, a)?.to_bool() {
-                b = false;
-                break;
-            }
-            i += 1;
+        if !ctxt.dispatch(stctxt, a)?.to_bool() {
+            b = false;
+            break;
         }
+        i += 1;
+    }
     Ok(vec![Item::Value(Rc::new(Value::from(b)))])
 }
 

@@ -214,7 +214,7 @@ where
                                 }
                             } else {
                                 let thisatprefix =
-                                    attnode.name().unwrap().namespace_uri().and_then( |ns| {
+                                    attnode.name().unwrap().namespace_uri().and_then(|ns| {
                                         state1
                                             .in_scope_namespaces
                                             .prefix(&ns)
@@ -297,7 +297,6 @@ where
                                         if default_attrs
                                             .iter()
                                             .any(|aqn| *aqn == attnode.name().unwrap())
-
                                         {
                                             //eprintln!("already created this attribute as default")
                                         } else {
