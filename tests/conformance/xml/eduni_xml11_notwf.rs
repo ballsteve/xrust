@@ -10,6 +10,26 @@ use xrust::item::Node;
 use xrust::parser::{ParseError, ParserStateBuilder, StaticStateBuilder, xml};
 use xrust::trees::smite::RNode;
 
+fn test_eduni_xml11_notwf(xmldoc: &str, docloc: &str) {
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
+
+    let testxml = RNode::new_document();
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location(docloc.to_string())
+        .build();
+    let parseresult = xml::parse_with_state(
+        xmldoc,
+        ps,
+        ss,
+    );
+
+    assert!(parseresult.is_err());
+}
+
 #[test]
 fn rmt001() {
     /*
@@ -19,25 +39,12 @@ fn rmt001() {
         Description:External subset has later version number
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/eduni/xml-1.1/".to_string())
-        .build();
-    let parseresult = xml::parse_with_state(
+    test_eduni_xml11_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/001.xml")
-            .unwrap()
-            .as_str(),
-        ps,
-        ss,
+        .unwrap()
+        .as_str(),
+    "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -48,26 +55,12 @@ fn rmt002() {
         Spec Sections:2.8 4.3.4
         Description:External PE has later version number
     */
-
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/eduni/xml-1.1/".to_string())
-        .build();
-    let parseresult = xml::parse_with_state(
+    test_eduni_xml11_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/002.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -78,27 +71,12 @@ fn rmt003() {
         Spec Sections:2.8 4.3.4
         Description:External general entity has later version number
     */
-
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/eduni/xml-1.1/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_eduni_xml11_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/003.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -109,27 +87,12 @@ fn rmt004() {
         Spec Sections:2.8 4.3.4
         Description:External general entity has later version number (no decl means 1.0)
     */
-
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/eduni/xml-1.1/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_eduni_xml11_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/004.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -140,27 +103,12 @@ fn rmt005() {
         Spec Sections:2.8 4.3.4
         Description:Indirect external general entity has later version number
     */
-
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/eduni/xml-1.1/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_eduni_xml11_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/005.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -172,17 +120,12 @@ fn rmt011() {
         Spec Sections:2.2
         Description:Contains a C1 control, legal in XML 1.0, illegal in XML 1.1
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_xml11_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/011.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -193,17 +136,12 @@ fn rmt013() {
         Spec Sections:2.2
         Description:Contains a DEL, legal in XML 1.0, illegal in XML 1.1
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_xml11_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/013.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
     );
-
-    assert!(parseresult.is_err());
 }
 
 /*
@@ -220,17 +158,12 @@ fn rmt014() {
         Spec Sections:2.3
         Description:Has a "long s" in a name, legal in XML 1.1, illegal in XML 1.0 thru 4th edition
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_xml11_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/014.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
     );
-
-    assert!(parseresult.is_err());
 }
  */
 
@@ -248,17 +181,12 @@ fn rmt016() {
         Spec Sections:2.3
         Description:Has a Byzantine Musical Symbol Kratimata in a name, legal in XML 1.1, illegal in XML 1.0 thru 4th edition
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_xml11_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/016.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
     );
-
-    assert!(parseresult.is_err());
 }
  */
 
@@ -276,17 +204,12 @@ fn rmt019() {
         Spec Sections:2.3
         Description:Has the last legal namechar in XML 1.1, illegal in XML 1.0 thru 4th edition
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_xml11_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/019.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
     );
-
-    assert!(parseresult.is_err());
 }
  */
 
@@ -298,17 +221,12 @@ fn rmt020() {
         Spec Sections:2.3
         Description:Has the first character after the last legal namechar in XML 1.1, illegal in both XML 1.0 and 1.1
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_xml11_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/020.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -319,17 +237,12 @@ fn rmt021() {
         Spec Sections:2.3
         Description:Has the first character after the last legal namechar in XML 1.1, illegal in both XML 1.0 and 1.1
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_xml11_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/021.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -340,17 +253,12 @@ fn rmt038() {
         Spec Sections:2.2
         Description:Contains a C0 control character (form-feed), illegal in both XML 1.0 and 1.1
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_xml11_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/038.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -361,17 +269,12 @@ fn rmt039() {
         Spec Sections:2.2
         Description:Contains a C0 control character (form-feed), illegal in both XML 1.0 and 1.1
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_xml11_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/039.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -383,17 +286,12 @@ fn rmt041() {
         Spec Sections:2.2
         Description:Contains a C1 control character (partial line up), legal in XML 1.0 but not 1.1
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_xml11_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/041.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -404,15 +302,10 @@ fn rmt042() {
         Spec Sections:4.1
         Description:Contains a character reference to a C0 control character (form-feed), legal in XML 1.1 but not 1.0
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_xml11_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/042.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        "tests/conformance/xml/xmlconf/eduni/xml-1.1/"
     );
-
-    assert!(parseresult.is_err());
 }

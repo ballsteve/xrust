@@ -10,6 +10,17 @@ use xrust::item::Node;
 use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 
+fn test_eduni_xml11_error(xmldoc: &str){
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        xmldoc,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+    );
+
+    assert!(parseresult.is_err());
+}
+
 #[test]
 fn rmt008() {
     /*
@@ -19,16 +30,9 @@ fn rmt008() {
         Description:an implausibly-versioned document
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/008.xml")
+    test_eduni_xml11_error(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/008.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -40,16 +44,9 @@ fn rmt009() {
         Description:External general entity has implausible version number
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/009.xml")
+    test_eduni_xml11_error(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/009.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -61,14 +58,9 @@ fn rmt055() {
         Description:Has a Latin-1 NEL in the XML declaration (to be made an error in PR)
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/055.xml").as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+    test_eduni_xml11_error(
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/055.xml")
+            .as_str());
 }
 
 #[test]
@@ -80,16 +72,9 @@ fn rmt056() {
         Description:Has a UTF-8 NEL in the XML declaration (to be made an error in PR)
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/056.xml")
+    test_eduni_xml11_error(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/056.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -101,14 +86,7 @@ fn rmt057() {
         Description:Has a UTF-8 LSEP in the XML declaration (to be made an error in PR)
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/057.xml")
+    test_eduni_xml11_error(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/057.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }

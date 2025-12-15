@@ -12,6 +12,17 @@ use xrust::item::Node;
 use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 
+fn test_xmltest_notwf_sa(xmldoc: &str) {
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        xmldoc,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+    );
+
+    assert!(parseresult.is_err());
+}
+
 #[test]
 fn notwfsa001() {
     /*
@@ -20,16 +31,9 @@ fn notwfsa001() {
         Spec Sections:3.1 [41]
         Description:Attribute values must start with attribute names, not "?".
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/001.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/001.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -40,16 +44,9 @@ fn notwfsa002() {
         Spec Sections:2.3 [4]
         Description:Names may not start with "."; it's not a Letter.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/002.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/002.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -60,16 +57,9 @@ fn notwfsa003() {
         Spec Sections:2.6 [16]
         Description:Processing Instruction target name is required.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/003.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/003.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -80,16 +70,9 @@ fn notwfsa004() {
         Spec Sections:2.6 [16]
         Description:SGML-ism: processing instructions end in '?>' not '>'.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/004.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/004.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -100,16 +83,9 @@ fn notwfsa005() {
         Spec Sections:2.6 [16]
         Description:Processing instructions end in '?>' not '?'.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/005.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/005.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -120,16 +96,9 @@ fn notwfsa006() {
         Spec Sections:2.5 [16]
         Description:XML comments may not contain "--"
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/006.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/006.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -140,16 +109,9 @@ fn notwfsa007() {
         Spec Sections:4.1 [68]
         Description:General entity references have no whitespace after the entity name and before the semicolon.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/007.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/007.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -160,16 +122,9 @@ fn notwfsa008() {
         Spec Sections:2.3 [5]
         Description:Entity references must include names, which don't begin with '.' (it's not a Letter or other name start character).
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/008.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/008.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -180,16 +135,9 @@ fn notwfsa009() {
         Spec Sections:4.1 [66]
         Description:Character references may have only decimal or numeric strings.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/009.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/009.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -200,16 +148,9 @@ fn notwfsa010() {
         Spec Sections:4.1 [68]
         Description:Ampersand may only appear as part of a general entity reference.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/010.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/010.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -220,16 +161,9 @@ fn notwfsa011() {
         Spec Sections:3.1 [41]
         Description:SGML-ism: attribute values must be explicitly assigned a value, it can't act as a boolean toggle.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/011.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/011.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -240,16 +174,9 @@ fn notwfsa012() {
         Spec Sections:2.3 [10]
         Description:SGML-ism: attribute values must be quoted in all cases.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/012.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/012.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -260,16 +187,9 @@ fn notwfsa013() {
         Spec Sections:2.3 [10]
         Description:The quotes on both ends of an attribute value must match.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/013.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/013.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -280,16 +200,9 @@ fn notwfsa014() {
         Spec Sections:2.3 [10]
         Description:Attribute values may not contain literal '<' characters.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/014.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/014.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -300,16 +213,9 @@ fn notwfsa015() {
         Spec Sections:3.1 [41]
         Description:Attribute values need a value, not just an equals sign.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/015.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/015.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -320,16 +226,9 @@ fn notwfsa016() {
         Spec Sections:3.1 [41]
         Description:Attribute values need an associated name.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/016.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/016.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -340,16 +239,9 @@ fn notwfsa017() {
         Spec Sections:2.7 [18]
         Description:CDATA sections need a terminating ']]>'.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/017.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/017.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -360,16 +252,9 @@ fn notwfsa018() {
         Spec Sections:2.7 [19]
         Description:CDATA sections begin with a literal '<![CDATA[', no space.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/018.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/018.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -380,16 +265,9 @@ fn notwfsa019() {
         Spec Sections:3.1 [42]
         Description:End tags may not be abbreviated as '</>'.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/019.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/019.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -400,16 +278,9 @@ fn notwfsa020() {
         Spec Sections:2.3 [10]
         Description:Attribute values may not contain literal '&' characters except as part of an entity reference.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/020.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/020.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -420,16 +291,9 @@ fn notwfsa021() {
         Spec Sections:2.3 [10]
         Description:Attribute values may not contain literal '&' characters except as part of an entity reference.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/021.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/021.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -440,16 +304,9 @@ fn notwfsa022() {
         Spec Sections:4.1 [66]
         Description:Character references end with semicolons, always!
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/022.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/022.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -460,16 +317,9 @@ fn notwfsa023() {
         Spec Sections:2.3 [5]
         Description:Digits are not valid name start characters.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/023.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/023.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -480,16 +330,9 @@ fn notwfsa024() {
         Spec Sections:2.3 [5]
         Description:Digits are not valid name start characters.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/024.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/024.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -500,16 +343,9 @@ fn notwfsa025() {
         Spec Sections:2.4 [14]
         Description:Text may not contain a literal ']]>' sequence.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/025.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/025.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -520,16 +356,9 @@ fn notwfsa026() {
         Spec Sections:2.4 [14]
         Description:Text may not contain a literal ']]>' sequence.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/026.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/026.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -540,16 +369,9 @@ fn notwfsa027() {
         Spec Sections:2.5 [15]
         Description:Comments must be terminated with "-->".
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/027.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/027.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -560,16 +382,9 @@ fn notwfsa028() {
         Spec Sections:2.6 [16]
         Description:Processing instructions must end with '?>'.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/028.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/028.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -580,16 +395,9 @@ fn notwfsa029() {
         Spec Sections:2.4 [14]
         Description:Text may not contain a literal ']]>' sequence.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/029.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/029.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -600,16 +408,9 @@ fn notwfsa030() {
         Spec Sections:2.2 [2]
         Description:A form feed is not a legal XML character.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/030.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/030.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -620,16 +421,9 @@ fn notwfsa031() {
         Spec Sections:2.2 [2]
         Description:A form feed is not a legal XML character.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/031.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/031.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -640,16 +434,9 @@ fn notwfsa032() {
         Spec Sections:2.2 [2]
         Description:A form feed is not a legal XML character.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/032.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/032.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -660,16 +447,9 @@ fn notwfsa033() {
         Spec Sections:2.2 [2]
         Description:An ESC (octal 033) is not a legal XML character.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/033.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/033.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -680,16 +460,9 @@ fn notwfsa034() {
         Spec Sections:2.2 [2]
         Description:A form feed is not a legal XML character.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/034.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/034.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -700,16 +473,9 @@ fn notwfsa035() {
         Spec Sections:3.1 [43]
         Description:The '<' character is a markup delimiter and must start an element, CDATA section, PI, or comment.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/035.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/035.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -720,16 +486,9 @@ fn notwfsa036() {
         Spec Sections:2.8 [27]
         Description:Text may not appear after the root element.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/036.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/036.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -740,16 +499,9 @@ fn notwfsa037() {
         Spec Sections:2.8 [27]
         Description:Character references may not appear after the root element.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/037.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/037.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -760,16 +512,9 @@ fn notwfsa038() {
         Spec Sections:3.1
         Description:Tests the "Unique Att Spec" WF constraint by providing multiple values for an attribute.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/038.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/038.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -780,16 +525,9 @@ fn notwfsa039() {
         Spec Sections:3
         Description:Tests the Element Type Match WFC - end tag name must match start tag name.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/039.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/039.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -800,16 +538,9 @@ fn notwfsa040() {
         Spec Sections:2.8 [27]
         Description:Provides two document elements.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/040.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/040.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -820,16 +551,9 @@ fn notwfsa041() {
         Spec Sections:2.8 [27]
         Description:Provides two document elements.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/041.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/041.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -840,16 +564,9 @@ fn notwfsa042() {
         Spec Sections:3.1 [42]
         Description:Invalid End Tag
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/042.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/042.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -860,16 +577,9 @@ fn notwfsa043() {
         Spec Sections:2.8 [27]
         Description:Provides #PCDATA text after the document element.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/043.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/043.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -880,16 +590,9 @@ fn notwfsa044() {
         Spec Sections:2.8 [27]
         Description:Provides two document elements.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/044.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/044.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -900,16 +603,9 @@ fn notwfsa045() {
         Spec Sections:3.1 [44]
         Description:Invalid Empty Element Tag
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/045.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/045.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -920,16 +616,9 @@ fn notwfsa046() {
         Spec Sections:3.1 [40]
         Description:This start (or empty element) tag was not terminated correctly.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/046.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/046.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -940,16 +629,9 @@ fn notwfsa047() {
         Spec Sections:3.1 [44]
         Description:Invalid empty element tag invalid whitespace
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/047.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/047.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -960,16 +642,9 @@ fn notwfsa048() {
         Spec Sections:2.8 [27]
         Description:Provides a CDATA section after the root element.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/048.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/048.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -980,16 +655,9 @@ fn notwfsa049() {
         Spec Sections:3.1 [40]
         Description:Missing start tag
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/049.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/049.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1000,16 +668,9 @@ fn notwfsa050() {
         Spec Sections:2.1 [1]
         Description:Empty document, with no root element.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/050.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/050.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1020,16 +681,9 @@ fn notwfsa051() {
         Spec Sections:2.7 [18]
         Description:CDATA is invalid at top level of document.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/051.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/051.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1040,16 +694,9 @@ fn notwfsa052() {
         Spec Sections:4.1 [66]
         Description:Invalid character reference.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/052.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/052.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1060,16 +707,9 @@ fn notwfsa053() {
         Spec Sections:3.1 [42]
         Description:End tag does not match start tag.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/053.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/053.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1080,16 +720,9 @@ fn notwfsa054() {
         Spec Sections:4.2.2 [75]
         Description:PUBLIC requires two literals.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/054.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/054.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1100,16 +733,9 @@ fn notwfsa055() {
         Spec Sections:2.8 [28]
         Description:Invalid Document Type Definition format.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/055.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/055.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1120,16 +746,9 @@ fn notwfsa056() {
         Spec Sections:2.8 [28]
         Description:Invalid Document Type Definition format - misplaced comment.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/056.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/056.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1140,16 +759,9 @@ fn notwfsa057() {
         Spec Sections:3.2 [45]
         Description:This isn't SGML; comments can't exist in declarations.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/057.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/057.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1160,16 +772,9 @@ fn notwfsa058() {
         Spec Sections:3.3.1 [54]
         Description:Invalid character , in ATTLIST enumeration
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/058.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/058.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1180,16 +785,9 @@ fn notwfsa059() {
         Spec Sections:3.3.1 [59]
         Description:String literal must be in quotes.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/059.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/059.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1200,16 +798,9 @@ fn notwfsa060() {
         Spec Sections:3.3.1 [56]
         Description:Invalid type NAME defined in ATTLIST.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/060.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/060.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1220,16 +811,9 @@ fn notwfsa061() {
         Spec Sections:4.2.2 [75]
         Description:External entity declarations require whitespace between public and system IDs.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/061.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/061.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1240,16 +824,9 @@ fn notwfsa062() {
         Spec Sections:4.2 [71]
         Description:Entity declarations need space after the entity name.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/062.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/062.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1260,16 +837,9 @@ fn notwfsa063() {
         Spec Sections:2.8 [29]
         Description:Conditional sections may only appear in the external DTD subset.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/063.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/063.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1280,16 +850,9 @@ fn notwfsa064() {
         Spec Sections:3.3 [53]
         Description:Space is required between attribute type and default values in <!ATTLIST...> declarations.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/064.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/064.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1300,16 +863,9 @@ fn notwfsa065() {
         Spec Sections:3.3 [53]
         Description:Space is required between attribute name and type in <!ATTLIST...> declarations.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/065.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/065.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1320,16 +876,9 @@ fn notwfsa066() {
         Spec Sections:3.3 [52]
         Description:Required whitespace is missing.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/066.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/066.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1340,16 +889,9 @@ fn notwfsa067() {
         Spec Sections:3.3 [53]
         Description:Space is required between attribute type and default values in <!ATTLIST...> declarations.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/067.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/067.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1360,16 +902,9 @@ fn notwfsa068() {
         Spec Sections:3.3.1 [58]
         Description:Space is required between NOTATION keyword and list of enumerated choices in <!ATTLIST...> declarations.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/068.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/068.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1380,16 +915,9 @@ fn notwfsa069() {
         Spec Sections:4.2.2 [76]
         Description:Space is required before an NDATA entity annotation.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/069.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/069.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1400,16 +928,9 @@ fn notwfsa070() {
         Spec Sections:2.5 [16]
         Description:XML comments may not contain "--"
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/070.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/070.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1420,16 +941,9 @@ fn notwfsa071() {
         Spec Sections:4.1 [68]
         Description:ENTITY can't reference itself directly or indirectly.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/071.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/071.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1440,16 +954,9 @@ fn notwfsa072() {
         Spec Sections:4.1 [68]
         Description:Undefined ENTITY foo.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/072.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/072.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1460,16 +967,9 @@ fn notwfsa073() {
         Spec Sections:4.1 [68]
         Description:Undefined ENTITY f.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/073.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/073.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1480,16 +980,9 @@ fn notwfsa074() {
         Spec Sections:4.3.2
         Description:Internal general parsed entities are only well formed if they match the "content" production.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/074.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/074.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1500,16 +993,9 @@ fn notwfsa075() {
         Spec Sections:4.1 [68]
         Description:ENTITY can't reference itself directly or indirectly.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/075.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/075.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1520,16 +1006,9 @@ fn notwfsa076() {
         Spec Sections:4.1 [68]
         Description:Undefined ENTITY foo.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/076.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/076.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1540,16 +1019,9 @@ fn notwfsa077() {
         Spec Sections:41. [68]
         Description:Undefined ENTITY bar.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/077.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/077.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1560,16 +1032,9 @@ fn notwfsa078() {
         Spec Sections:4.1 [68]
         Description:Undefined ENTITY foo.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/078.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/078.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1580,16 +1045,9 @@ fn notwfsa079() {
         Spec Sections:4.1 [68]
         Description:ENTITY can't reference itself directly or indirectly.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/079.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/079.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1600,16 +1058,9 @@ fn notwfsa080() {
         Spec Sections:4.1 [68]
         Description:ENTITY can't reference itself directly or indirectly.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/080.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/080.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1620,16 +1071,9 @@ fn notwfsa081() {
         Spec Sections:3.1
         Description:This tests the No External Entity References WFC, since the entity is referred to within an attribute.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/081.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/081.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1640,16 +1084,9 @@ fn notwfsa082() {
         Spec Sections:3.1
         Description:This tests the No External Entity References WFC, since the entity is referred to within an attribute.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/082.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/082.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1660,16 +1097,9 @@ fn notwfsa083() {
         Spec Sections:4.2.2 [76]
         Description:Undefined NOTATION n.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/083.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/083.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1680,16 +1110,9 @@ fn notwfsa084() {
         Spec Sections:4.1
         Description:Tests the Parsed Entity WFC by referring to an unparsed entity. (This precedes the error of not declaring that entity's notation, which may be detected any time before the DTD parsing is completed.)
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/084.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/084.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1700,16 +1123,9 @@ fn notwfsa085() {
         Spec Sections:2.3 [13]
         Description:Public IDs may not contain "[".
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/085.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/085.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1720,16 +1136,9 @@ fn notwfsa086() {
         Spec Sections:2.3 [13]
         Description:Public IDs may not contain "[".
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/086.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/086.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1740,16 +1149,9 @@ fn notwfsa087() {
         Spec Sections:2.3 [13]
         Description:Public IDs may not contain "[".
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/087.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/087.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1760,16 +1162,9 @@ fn notwfsa088() {
         Spec Sections:2.3 [10]
         Description:Attribute values are terminated by literal quote characters, and any entity expansion is done afterwards.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/088.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/088.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1780,16 +1175,9 @@ fn notwfsa089() {
         Spec Sections:4.2 [74]
         Description:Parameter entities "are" always parsed; NDATA annotations are not permitted.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/089.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/089.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1800,16 +1188,9 @@ fn notwfsa090() {
         Spec Sections:2.3 [10]
         Description:Attributes may not contain a literal "<" character; this one has one because of reference expansion.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/090.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/090.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1820,16 +1201,9 @@ fn notwfsa091() {
         Spec Sections:4.2 [74]
         Description:Parameter entities "are" always parsed; NDATA annotations are not permitted.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/091.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/091.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1840,16 +1214,9 @@ fn notwfsa092() {
         Spec Sections:4.5
         Description:The replacement text of this entity has an illegal reference, because the character reference is expanded immediately.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/092.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/092.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1860,16 +1227,9 @@ fn notwfsa093() {
         Spec Sections:4.1 [66]
         Description:Hexadecimal character references may not use the uppercase 'X'.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/093.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/093.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1880,16 +1240,9 @@ fn notwfsa094() {
         Spec Sections:2.8 [24]
         Description:Prolog VERSION must be lowercase.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/094.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/094.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1900,16 +1253,9 @@ fn notwfsa095() {
         Spec Sections:2.8 [23]
         Description:VersionInfo must come before EncodingDecl.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/095.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/095.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1920,16 +1266,9 @@ fn notwfsa096() {
         Spec Sections:2.9 [32]
         Description:Space is required before the standalone declaration.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/096.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/096.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1940,16 +1279,9 @@ fn notwfsa097() {
         Spec Sections:2.8 [24]
         Description:Both quotes surrounding VersionNum must be the same.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/097.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/097.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1960,16 +1292,9 @@ fn notwfsa098() {
         Spec Sections:2.8 [23]
         Description:Only one "version=..." string may appear in an XML declaration.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/098.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/098.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1980,16 +1305,9 @@ fn notwfsa099() {
         Spec Sections:2.8 [23]
         Description:Only three pseudo-attributes are in the XML declaration, and "valid=..." is not one of them.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/099.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/099.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2000,16 +1318,9 @@ fn notwfsa100() {
         Spec Sections:2.9 [32]
         Description:Only "yes" and "no" are permitted as values of "standalone".
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/100.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/100.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2020,16 +1331,9 @@ fn notwfsa101() {
         Spec Sections:4.3.3 [81]
         Description:Space is not permitted in an encoding name.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/101.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/101.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2040,16 +1344,9 @@ fn notwfsa102() {
         Spec Sections:2.8 [26]
         Description:Provides an illegal XML version number; spaces are illegal.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/102.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/102.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2060,16 +1357,9 @@ fn notwfsa103() {
         Spec Sections:4.3.2
         Description:End-tag required for element foo.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/103.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/103.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2080,16 +1370,9 @@ fn notwfsa104() {
         Spec Sections:4.3.2
         Description:Internal general parsed entities are only well formed if they match the "content" production.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/104.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/104.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2100,16 +1383,9 @@ fn notwfsa105() {
         Spec Sections:2.7
         Description:Invalid placement of CDATA section.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/105.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/105.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2120,16 +1396,9 @@ fn notwfsa106() {
         Spec Sections:4.2
         Description:Invalid placement of entity declaration.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/106.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/106.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2140,16 +1409,9 @@ fn notwfsa107() {
         Spec Sections:2.8 [28]
         Description:Invalid document type declaration. CDATA alone is invalid.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/107.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/107.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2160,16 +1422,9 @@ fn notwfsa108() {
         Spec Sections:2.7 [19]
         Description:No space in '<![CDATA['.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/108.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/108.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2180,16 +1435,9 @@ fn notwfsa109() {
         Spec Sections:4.2 [70]
         Description:Tags invalid within EntityDecl.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/109.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/109.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2200,16 +1448,9 @@ fn notwfsa110() {
         Spec Sections:4.1 [68]
         Description:Entity reference must be in content of element.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/110.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/110.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2220,16 +1461,9 @@ fn notwfsa111() {
         Spec Sections:3.1 [43]
         Description:Entiry reference must be in content of element not Start-tag.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/111.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/111.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2240,16 +1474,9 @@ fn notwfsa112() {
         Spec Sections:2.7 [19]
         Description:CDATA sections start '<![CDATA[', not '<!cdata['.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/112.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/112.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2260,16 +1487,9 @@ fn notwfsa113() {
         Spec Sections:2.3 [9]
         Description:Parameter entity values must use valid reference syntax; this reference is malformed.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/113.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/113.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2280,16 +1500,9 @@ fn notwfsa114() {
         Spec Sections:2.3 [9]
         Description:General entity values must use valid reference syntax; this reference is malformed.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/114.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/114.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2300,16 +1513,9 @@ fn notwfsa115() {
         Spec Sections:4.5
         Description:The replacement text of this entity is an illegal character reference, which must be rejected when it is parsed in the context of an attribute value.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/115.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/115.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2320,16 +1526,9 @@ fn notwfsa116() {
         Spec Sections:4.3.2
         Description:Internal general parsed entities are only well formed if they match the "content" production. This is a partial character reference, not a full one.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/116.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/116.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2340,16 +1539,9 @@ fn notwfsa117() {
         Spec Sections:4.3.2
         Description:Internal general parsed entities are only well formed if they match the "content" production. This is a partial character reference, not a full one.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/117.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/117.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2360,16 +1552,9 @@ fn notwfsa118() {
         Spec Sections:4.1 [68]
         Description:Entity reference expansion is not recursive.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/118.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/118.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2380,16 +1565,9 @@ fn notwfsa119() {
         Spec Sections:4.3.2
         Description:Internal general parsed entities are only well formed if they match the "content" production. This is a partial character reference, not a full one.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/119.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/119.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2400,16 +1578,9 @@ fn notwfsa120() {
         Spec Sections:4.5
         Description:Character references are expanded in the replacement text of an internal entity, which is then parsed as usual. Accordingly, & must be doubly quoted - encoded either as &amp; or as &#38;#38;.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/120.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/120.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2420,16 +1591,9 @@ fn notwfsa121() {
         Spec Sections:4.1 [68]
         Description:A name of an ENTITY was started with an invalid character.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/121.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/121.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2440,16 +1604,9 @@ fn notwfsa122() {
         Spec Sections:3.2.1 [47]
         Description:Invalid syntax mixed connectors are used.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/122.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/122.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2460,16 +1617,9 @@ fn notwfsa123() {
         Spec Sections:3.2.1 [48]
         Description:Invalid syntax mismatched parenthesis.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/123.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/123.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2480,16 +1630,9 @@ fn notwfsa124() {
         Spec Sections:3.2.2 [51]
         Description:Invalid format of Mixed-content declaration.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/124.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/124.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2500,16 +1643,9 @@ fn notwfsa125() {
         Spec Sections:3.2.2 [51]
         Description:Invalid syntax extra set of parenthesis not necessary.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/125.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/125.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2520,16 +1656,9 @@ fn notwfsa126() {
         Spec Sections:3.2.2 [51]
         Description:Invalid syntax Mixed-content must be defined as zero or more.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/126.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/126.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2540,16 +1669,9 @@ fn notwfsa127() {
         Spec Sections:3.2.2 [51]
         Description:Invalid syntax Mixed-content must be defined as zero or more.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/127.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/127.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2560,16 +1682,9 @@ fn notwfsa128() {
         Spec Sections:2.7 [18]
         Description:Invalid CDATA syntax.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/128.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/128.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2580,16 +1695,9 @@ fn notwfsa129() {
         Spec Sections:3.2 [45]
         Description:Invalid syntax for Element Type Declaration.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/129.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/129.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2600,16 +1708,9 @@ fn notwfsa130() {
         Spec Sections:3.2 [45]
         Description:Invalid syntax for Element Type Declaration.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/130.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/130.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2620,16 +1721,9 @@ fn notwfsa131() {
         Spec Sections:3.2 [45]
         Description:Invalid syntax for Element Type Declaration.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/131.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/131.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2640,16 +1734,9 @@ fn notwfsa132() {
         Spec Sections:3.2.1 [50]
         Description:Invalid syntax mixed connectors used.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/132.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/132.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2660,16 +1747,9 @@ fn notwfsa133() {
         Spec Sections:3.2.1
         Description:Illegal whitespace before optional character causes syntax error.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/133.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/133.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2680,16 +1760,9 @@ fn notwfsa134() {
         Spec Sections:3.2.1
         Description:Illegal whitespace before optional character causes syntax error.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/134.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/134.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2700,16 +1773,9 @@ fn notwfsa135() {
         Spec Sections:3.2.1 [47]
         Description:Invalid character used as connector.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/135.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/135.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2720,16 +1786,9 @@ fn notwfsa136() {
         Spec Sections:3.2 [45]
         Description:Tag omission is invalid in XML.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/136.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/136.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2740,16 +1799,9 @@ fn notwfsa137() {
         Spec Sections:3.2 [45]
         Description:Space is required before a content model.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/137.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/137.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2760,16 +1812,9 @@ fn notwfsa138() {
         Spec Sections:3.2.1 [48]
         Description:Invalid syntax for content particle.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/138.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/138.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2780,16 +1825,9 @@ fn notwfsa139() {
         Spec Sections:3.2.1 [46]
         Description:The element-content model should not be empty.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/139.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/139.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 /*
@@ -2808,16 +1846,9 @@ fn notwfsa140() {
         Spec Sections:2.3 [4]
         Description:Character '&#x309a;' is a CombiningChar, not a Letter, and so may not begin a name.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/140.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/140.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
  */
 
@@ -2836,16 +1867,9 @@ fn notwfsa141() {
         Spec Sections:2.3 [5]
         Description:Character #x0E5C is not legal in XML names.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/141.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/141.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
  */
 
@@ -2857,16 +1881,9 @@ fn notwfsa142() {
         Spec Sections:2.2 [2]
         Description:Character #x0000 is not legal anywhere in an XML document.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/142.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/142.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2877,16 +1894,9 @@ fn notwfsa143() {
         Spec Sections:2.2 [2]
         Description:Character #x001F is not legal anywhere in an XML document.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/143.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/143.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2897,16 +1907,9 @@ fn notwfsa144() {
         Spec Sections:2.2 [2]
         Description:Character #xFFFF is not legal anywhere in an XML document.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/144.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/144.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2917,16 +1920,9 @@ fn notwfsa145() {
         Spec Sections:2.2 [2]
         Description:Character #xD800 is not legal anywhere in an XML document. (If it appeared in a UTF-16 surrogate pair, it'd represent half of a UCS-4 character and so wouldn't really be in the document.)
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/145.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/145.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2937,16 +1933,9 @@ fn notwfsa146() {
         Spec Sections:2.2 [2]
         Description:Character references must also refer to legal XML characters; #x00110000 is one more than the largest legal character.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/146.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/146.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2957,16 +1946,9 @@ fn notwfsa147() {
         Spec Sections:2.8 [22]
         Description:XML Declaration may not be preceded by whitespace.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/147.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/147.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2977,16 +1959,9 @@ fn notwfsa148() {
         Spec Sections:2.8 [22]
         Description:XML Declaration may not be preceded by comments or whitespace.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/148.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/148.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -2997,16 +1972,9 @@ fn notwfsa149() {
         Spec Sections:2.8 [28]
         Description:XML Declaration may not be within a DTD.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/149.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/149.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3017,16 +1985,9 @@ fn notwfsa150() {
         Spec Sections:3.1 [43]
         Description:XML declarations may not be within element content.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/150.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/150.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3037,16 +1998,9 @@ fn notwfsa151() {
         Spec Sections:2.8 [27]
         Description:XML declarations may not follow document content.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/151.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/151.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3057,16 +2011,9 @@ fn notwfsa152() {
         Spec Sections:2.8 [22]
         Description:XML declarations must include the "version=..." string.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/152.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/152.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3077,16 +2024,9 @@ fn notwfsa153() {
         Spec Sections:4.3.2
         Description:Text declarations may not begin internal parsed entities; they may only appear at the beginning of external parsed (parameter or general) entities.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/153.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/153.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3097,16 +2037,9 @@ fn notwfsa154() {
         Spec Sections:2.8 2.6 [23, 17]
         Description:'<?XML ...?>' is neither an XML declaration nor a legal processing instruction target name.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/154.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/154.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3117,16 +2050,9 @@ fn notwfsa155() {
         Spec Sections:2.8 2.6 [23, 17]
         Description:'<?xmL ...?>' is neither an XML declaration nor a legal processing instruction target name.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/155.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/155.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3137,16 +2063,9 @@ fn notwfsa156() {
         Spec Sections:2.8 2.6 [23, 17]
         Description:'<?xMl ...?>' is neither an XML declaration nor a legal processing instruction target name.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/156.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/156.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3157,16 +2076,9 @@ fn notwfsa157() {
         Spec Sections:2.6 [17]
         Description:'<?xmL ...?>' is not a legal processing instruction target name.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/157.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/157.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3177,16 +2089,9 @@ fn notwfsa158() {
         Spec Sections:3.3 [52]
         Description:SGML-ism: "#NOTATION gif" can't have attributes.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/158.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/158.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3197,16 +2102,9 @@ fn notwfsa159() {
         Spec Sections:2.3 [9]
         Description:Uses '&' unquoted in an entity declaration, which is illegal syntax for an entity reference.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/159.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/159.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3217,16 +2115,9 @@ fn notwfsa160() {
         Spec Sections:2.8
         Description:Violates the PEs in Internal Subset WFC by using a PE reference within a declaration.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/160.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/160.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3237,16 +2128,9 @@ fn notwfsa161() {
         Spec Sections:2.8
         Description:Violates the PEs in Internal Subset WFC by using a PE reference within a declaration.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/161.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/161.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3257,16 +2141,9 @@ fn notwfsa162() {
         Spec Sections:2.8
         Description:Violates the PEs in Internal Subset WFC by using a PE reference within a declaration.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/162.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/162.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3277,16 +2154,9 @@ fn notwfsa163() {
         Spec Sections:4.1 [69]
         Description:Invalid placement of Parameter entity reference.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/163.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/163.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3297,16 +2167,9 @@ fn notwfsa164() {
         Spec Sections:4.1 [69]
         Description:Invalid placement of Parameter entity reference.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/164.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/164.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3317,16 +2180,9 @@ fn notwfsa165() {
         Spec Sections:4.2 [72]
         Description:Parameter entity declarations must have a space before the '%'.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/165.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/165.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3337,16 +2193,9 @@ fn notwfsa166() {
         Spec Sections:2.2 [2]
         Description:Character FFFF is not legal anywhere in an XML document.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/166.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/166.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3357,16 +2206,9 @@ fn notwfsa167() {
         Spec Sections:2.2 [2]
         Description:Character FFFE is not legal anywhere in an XML document.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/167.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/167.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3378,16 +2220,9 @@ fn notwfsa168() {
         Spec Sections:2.2 [2]
         Description:An unpaired surrogate (D800) is not legal anywhere in an XML document.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/168.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/168.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3399,16 +2234,9 @@ fn notwfsa169() {
         Spec Sections:2.2 [2]
         Description:An unpaired surrogate (DC00) is not legal anywhere in an XML document.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/169.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/169.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3420,16 +2248,9 @@ fn notwfsa170() {
         Spec Sections:2.2 [2]
         Description:Four byte UTF-8 encodings can encode UCS-4 characters which are beyond the range of legal XML characters (and can't be expressed in Unicode surrogate pairs). This document holds such a character.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/170.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/170.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3440,16 +2261,9 @@ fn notwfsa171() {
         Spec Sections:2.2 [2]
         Description:Character FFFF is not legal anywhere in an XML document.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/171.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/171.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3460,16 +2274,9 @@ fn notwfsa172() {
         Spec Sections:2.2 [2]
         Description:Character FFFF is not legal anywhere in an XML document.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/172.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/172.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3480,16 +2287,9 @@ fn notwfsa173() {
         Spec Sections:2.2 [2]
         Description:Character FFFF is not legal anywhere in an XML document.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/173.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/173.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3500,16 +2300,9 @@ fn notwfsa174() {
         Spec Sections:2.2 [2]
         Description:Character FFFF is not legal anywhere in an XML document.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/174.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/174.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3520,16 +2313,9 @@ fn notwfsa175() {
         Spec Sections:2.2 [2]
         Description:Character FFFF is not legal anywhere in an XML document.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/175.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/175.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3540,16 +2326,9 @@ fn notwfsa176() {
         Spec Sections:3 [39]
         Description:Start tags must have matching end tags.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/176.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/176.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3560,16 +2339,9 @@ fn notwfsa177() {
         Spec Sections:2.2 [2]
         Description:Character FFFF is not legal anywhere in an XML document.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/177.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/177.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3580,16 +2352,9 @@ fn notwfsa178() {
         Spec Sections:3.1 [41]
         Description:Invalid syntax matching double quote is missing.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/178.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/178.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3600,16 +2365,9 @@ fn notwfsa179() {
         Spec Sections:4.1 [66]
         Description:Invalid syntax matching double quote is missing.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/179.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/179.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3620,16 +2378,9 @@ fn notwfsa180() {
         Spec Sections:4.1
         Description:The Entity Declared WFC requires entities to be declared before they are used in an attribute list declaration.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/180.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/180.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3640,16 +2391,9 @@ fn notwfsa181() {
         Spec Sections:4.3.2
         Description:Internal parsed entities must match the content production to be well formed.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/181.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/181.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3660,16 +2404,9 @@ fn notwfsa182() {
         Spec Sections:4.3.2
         Description:Internal parsed entities must match the content production to be well formed.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/182.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/182.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3680,16 +2417,9 @@ fn notwfsa183() {
         Spec Sections:3.2.2 [51]
         Description:Mixed content declarations may not include content particles.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/183.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/183.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3700,16 +2430,9 @@ fn notwfsa184() {
         Spec Sections:3.2.2 [51]
         Description:In mixed content models, element names must not be parenthesized.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/184.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/184.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3720,16 +2443,9 @@ fn notwfsa185() {
         Spec Sections:4.1
         Description:Tests the Entity Declared WFC. Note: a nonvalidating parser is permitted not to report this WFC violation, since it would need to read an external parameter entity to distinguish it from a violation of the Standalone Declaration VC.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/185.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/185.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -3740,14 +2456,7 @@ fn notwfsa186() {
         Spec Sections:3.1 [44]
         Description:Whitespace is required between attribute/value pairs.
     */
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/186.xml")
+    test_xmltest_notwf_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/186.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }

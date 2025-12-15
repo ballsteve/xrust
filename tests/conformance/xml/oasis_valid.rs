@@ -10,6 +10,21 @@ use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
+fn test_oasis_valid(xmldoc: &str){
+        let testxml = RNode::new_document();
+        let parseresult = xml::parse(
+                testxml,
+                xmldoc,
+                Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        );
+
+        assert!(parseresult.is_ok());
+
+        let doc = parseresult.unwrap();
+        let validation = doc.validate(Schema::DTD);
+        assert!(validation.is_ok());
+}
+
 #[test]
 fn op01pass2() {
     /*
@@ -19,20 +34,9 @@ fn op01pass2() {
         Description:various Misc items where they can occur
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p01pass2.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p01pass2.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -44,20 +48,9 @@ fn op06pass1() {
         Description:various satisfactions of the Names production in a NAMES attribute
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p06pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p06pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -69,20 +62,9 @@ fn op07pass1() {
         Description:various valid Nmtoken 's in an attribute list declaration.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p07pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p07pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -94,20 +76,9 @@ fn op08pass1() {
         Description:various satisfaction of an NMTOKENS attribute value.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p08pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p08pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -120,20 +91,9 @@ fn op09pass1() {
         Description:valid EntityValue's. Except for entity references, markup is not recognized.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p09pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p09pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -145,20 +105,9 @@ fn op12pass1() {
         Description:valid public IDs.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p12pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p12pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -170,20 +119,9 @@ fn op22pass4() {
         Description:XML decl and doctypedecl
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p22pass4.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p22pass4.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -195,20 +133,9 @@ fn op22pass5() {
         Description:just doctypedecl
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p22pass5.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p22pass5.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -220,20 +147,9 @@ fn op22pass6() {
         Description:S between decls is not required
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p22pass6.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p22pass6.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -245,20 +161,9 @@ fn op28pass1() {
         Description:Empty-element tag must be used for element which are declared EMPTY.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p28pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p28pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -271,20 +176,9 @@ fn op28pass3() {
         Description:Valid doctypedecl with Parameter entity reference. The declaration of a parameter entity must precede any reference to it.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p28pass3.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p28pass3.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -297,20 +191,9 @@ fn op28pass4() {
         Description:Valid doctypedecl with ExternalID as an External Entity declaration.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p28pass4.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p28pass4.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -323,20 +206,9 @@ fn op28pass5() {
         Description:Valid doctypedecl with ExternalID as an External Entity. A parameter entity reference is also used.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p28pass5.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p28pass5.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -348,20 +220,9 @@ fn op29pass1() {
         Description:Valid types of markupdecl.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p29pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p29pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -374,20 +235,9 @@ fn op30pass1() {
         Description:Valid doctypedecl with ExternalID as an External Entity. The external entity has an element declaration.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p30pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p30pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -400,20 +250,9 @@ fn op30pass2() {
         Description:Valid doctypedecl with ExternalID as an Enternal Entity. The external entity begins with a Text Declaration.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p30pass2.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p30pass2.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -426,20 +265,9 @@ fn op31pass1() {
         Description:external subset can be empty
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p31pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p31pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -452,20 +280,9 @@ fn op31pass2() {
         Description:Valid doctypedecl with EXternalID as Enternal Entity. The external entity contains a parameter entity reference and condtional sections.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p31pass2.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p31pass2.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -478,20 +295,9 @@ fn op43pass1() {
         Description:Valid use of character data, comments, processing instructions and CDATA sections within the start and end tag.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p43pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p43pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -503,20 +309,9 @@ fn op45pass1() {
         Description:valid element declarations
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p45pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p45pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -528,20 +323,9 @@ fn op46pass1() {
         Description:Valid use of contentspec, element content models, and mixed content within an element type declaration.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p46pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p46pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -553,20 +337,9 @@ fn op47pass1() {
         Description:Valid use of contentspec, element content models, choices, sequences and content particles within an element type declaration. The optional character following a name or list governs the number of times the element or content particle may appear.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p47pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p47pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -578,20 +351,9 @@ fn op48pass1() {
         Description:Valid use of contentspec, element content models, choices, sequences and content particles within an element type declaration. The optional character following a name or list governs the number of times the element or content particle may appear.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p48pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p48pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -603,20 +365,9 @@ fn op49pass1() {
         Description:Valid use of contentspec, element content models, choices, and content particles within an element type declaration. The optional character following a name or list governs the number of times the element or content particle may appear. Whitespace is also valid between choices.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p49pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p49pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -628,20 +379,9 @@ fn op50pass1() {
         Description:Valid use of contentspec, element content models, sequences and content particles within an element type declaration. The optional character following a name or list governs the number of times the element or content particle may appear. Whitespace is also valid between sequences.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p50pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p50pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -653,20 +393,9 @@ fn op51pass1() {
         Description:valid Mixed contentspec's.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p51pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p51pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -679,20 +408,9 @@ fn op52pass1() {
         Description:valid AttlistDecls: No AttDef's are required, and the terminating S is optional, multiple ATTLISTS per element are OK, and multiple declarations of the same attribute are OK.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p52pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p52pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -704,20 +422,9 @@ fn op53pass1() {
         Description:a valid AttDef
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p53pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p53pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -729,20 +436,9 @@ fn op54pass1() {
         Description:the three kinds of attribute types
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p54pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p54pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -754,20 +450,9 @@ fn op55pass1() {
         Description:StringType = "CDATA"
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p55pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p55pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -779,20 +464,9 @@ fn op56pass1() {
         Description:the 7 tokenized attribute types
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p56pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p56pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -804,20 +478,9 @@ fn op57pass1() {
         Description:enumerated types are NMTOKEN or NOTATION lists
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p57pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p57pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -829,20 +492,9 @@ fn op58pass1() {
         Description:NOTATION enumeration has on or more items
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p58pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p58pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -854,20 +506,9 @@ fn op59pass1() {
         Description:NMTOKEN enumerations have one or more items
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p59pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p59pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -879,20 +520,9 @@ fn op60pass1() {
         Description:the four types of default values
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p60pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p60pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -905,20 +535,9 @@ fn op61pass1() {
         Description:valid conditional sections are INCLUDE and IGNORE
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p61pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p61pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -931,20 +550,9 @@ fn op62pass1() {
         Description:valid INCLUDE sections -- options S before and after keyword, sections can nest
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p62pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p62pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -957,20 +565,9 @@ fn op63pass1() {
         Description:valid IGNORE sections
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p63pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p63pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -983,20 +580,9 @@ fn op64pass1() {
         Description:IGNOREd sections ignore everything except section delimiters
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p64pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p64pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -1008,20 +594,9 @@ fn op68pass1() {
         Description:Valid entity references. Also ensures that a charref to '&' isn't interpreted as an entity reference open delimiter
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p68pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p68pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -1033,20 +608,9 @@ fn op69pass1() {
         Description:Valid PEReferences.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p69pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p69pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -1058,20 +622,9 @@ fn op70pass1() {
         Description:An EntityDecl is either a GEDecl or a PEDecl
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p70pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p70pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -1083,20 +636,9 @@ fn op71pass1() {
         Description:Valid GEDecls
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p71pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p71pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -1108,20 +650,9 @@ fn op72pass1() {
         Description:Valid PEDecls
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p72pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p72pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -1134,20 +665,9 @@ fn op73pass1() {
         Description:EntityDef is either Entity value or an external id, with an optional NDataDecl
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p73pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p73pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -1160,18 +680,7 @@ fn op76pass1() {
         Description:valid NDataDecls
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p76pass1.xml")
+        test_oasis_valid(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p76pass1.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }

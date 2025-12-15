@@ -9,6 +9,17 @@ use xrust::item::Node;
 use xrust::parser::{ParseError, ParserStateBuilder, StaticStateBuilder, xml};
 use xrust::trees::smite::RNode;
 
+fn test_sun_notwf(xmldoc: &str){
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        xmldoc,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+    );
+
+    assert!(parseresult.is_err());
+}
+
 #[test]
 fn notwfsa03() {
     /*
@@ -18,16 +29,10 @@ fn notwfsa03() {
         Description:Tests the Entity Declared WFC, ensuring that a reference to externally defined entity causes a well-formedness error.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/not-sa03.xml")
-            .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+        .unwrap()
+        .as_str());
 }
 
 #[test]
@@ -39,16 +44,10 @@ fn attlist01() {
         Description:SGML's NUTOKEN is not allowed.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist01.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -60,16 +59,10 @@ fn attlist02() {
         Description:SGML's NUTOKENS attribute type is not allowed.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist02.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -81,16 +74,10 @@ fn attlist03() {
         Description:Comma doesn't separate enumerations, unlike in SGML.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist03.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -102,16 +89,10 @@ fn attlist04() {
         Description:SGML's NUMBER attribute type is not allowed.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist04.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -123,16 +104,10 @@ fn attlist05() {
         Description:SGML's NUMBERS attribute type is not allowed.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist05.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -144,16 +119,10 @@ fn attlist06() {
         Description:SGML's NAME attribute type is not allowed.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist06.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -165,16 +134,10 @@ fn attlist07() {
         Description:SGML's NAMES attribute type is not allowed.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist07.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -186,16 +149,10 @@ fn attlist08() {
         Description:SGML's #CURRENT is not allowed.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist08.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -207,16 +164,10 @@ fn attlist09() {
         Description:SGML's #CONREF is not allowed.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist09.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -228,16 +179,10 @@ fn attlist10() {
         Description:Whitespace required between attributes
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist10.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -249,16 +194,10 @@ fn attlist11() {
         Description:Whitespace required between attributes
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist11.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -330,16 +269,10 @@ fn content01() {
         Description:No whitespace before "?" in content model
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/content01.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -351,16 +284,10 @@ fn content02() {
         Description:No whitespace before "*" in content model
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/content02.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -372,16 +299,10 @@ fn content03() {
         Description:No whitespace before "+" in content model
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/content03.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -393,16 +314,10 @@ fn decl01() {
         Description:External entities may not have standalone decls.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/decl01.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -414,16 +329,10 @@ fn nwfdtd00() {
         Description:Comma mandatory in content model
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd00.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -435,16 +344,10 @@ fn nwfdtd01() {
         Description:Can't mix comma and vertical bar in content models
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd01.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -456,16 +359,10 @@ fn dtd02() {
         Description:PE name immediately after "%"
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd02.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -477,16 +374,10 @@ fn dtd03() {
         Description:PE name immediately followed by ";"
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd03.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -498,16 +389,10 @@ fn dtd04() {
         Description:PUBLIC literal must be quoted
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd04.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -519,16 +404,10 @@ fn dtd05() {
         Description:SYSTEM identifier must be quoted
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd05.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -570,16 +449,10 @@ fn element00() {
         Description:EOF in middle of incomplete ETAG
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/element00.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -591,16 +464,10 @@ fn element01() {
         Description:EOF in middle of incomplete ETAG
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/element01.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -612,16 +479,10 @@ fn element02() {
         Description:Illegal markup (<%@ ... %>)
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/element02.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -633,16 +494,10 @@ fn element03() {
         Description:Illegal markup (<% ... %>)
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/element03.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -654,16 +509,10 @@ fn element04() {
         Description:Illegal markup (<!ELEMENT ... >)
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/element04.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -675,16 +524,10 @@ fn encoding01() {
         Description:Illegal character " " in encoding name
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding01.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -696,16 +539,10 @@ fn encoding02() {
         Description:Illegal character "/" in encoding name
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding02.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -717,16 +554,10 @@ fn encoding03() {
         Description:Illegal character reference in encoding name
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding03.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -738,16 +569,10 @@ fn encoding04() {
         Description:Illegal character ":" in encoding name
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding04.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -759,16 +584,10 @@ fn encoding05() {
         Description:Illegal character "@" in encoding name
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding05.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -780,16 +599,10 @@ fn encoding06() {
         Description:Illegal character "+" in encoding name
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding06.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -801,16 +614,10 @@ fn encoding07() {
         Description:Text declarations (which optionally begin any external entity)are required to have "encoding=...".
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding07.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -822,16 +629,10 @@ fn pi() {
         Description:No space between PI target name and data
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pi.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -843,16 +644,10 @@ fn pubid01() {
         Description:Illegal entity ref in public ID
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pubid01.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -864,16 +659,10 @@ fn pubid02() {
         Description:Illegal characters in public ID
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pubid02.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -885,16 +674,10 @@ fn pubid03() {
         Description:Illegal characters in public ID
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pubid03.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -906,16 +689,10 @@ fn pubid04() {
         Description:Illegal characters in public ID
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pubid04.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -927,16 +704,10 @@ fn pubid05() {
         Description:SGML-ism: public ID without system ID
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pubid05.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -948,16 +719,10 @@ fn sgml01() {
         Description:SGML-ism: omitted end tag for EMPTY content
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml01.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -969,16 +734,10 @@ fn sgml02() {
         Description:XML declaration must be at the very beginning of a document;it"s not a processing instruction
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml02.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -990,16 +749,10 @@ fn sgml03() {
         Description:Comments may not contain "--"
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml03.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1011,16 +764,10 @@ fn sgml04() {
         Description:ATTLIST declarations apply to only one element, unlike SGML
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml04.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1032,16 +779,10 @@ fn sgml05() {
         Description:ELEMENT declarations apply to only one element, unlike SGML
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml05.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1053,16 +794,10 @@ fn sgml06() {
         Description:ATTLIST declarations are never global, unlike in SGML
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml06.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1074,16 +809,10 @@ fn sgml07() {
         Description:SGML Tag minimization specifications are not allowed
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml07.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1095,16 +824,10 @@ fn sgml08() {
         Description:SGML Tag minimization specifications are not allowed
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml08.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1116,16 +839,10 @@ fn sgml09() {
         Description:SGML Content model exception specifications are not allowed
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml09.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1137,16 +854,10 @@ fn sgml10() {
         Description:SGML Content model exception specifications are not allowed
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml10.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1158,16 +869,10 @@ fn sgml11() {
         Description:CDATA is not a valid content model spec
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml11.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1179,16 +884,10 @@ fn sgml12() {
         Description:RCDATA is not a valid content model spec
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml12.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -1200,14 +899,8 @@ fn sgml13() {
         Description:SGML Unordered content models not allowed
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+       test_sun_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml13.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }

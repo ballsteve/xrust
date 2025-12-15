@@ -11,6 +11,18 @@ use xrust::item::Node;
 use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 
+fn test_not_wf_ext_sa(xmldoc: &str){
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        xmldoc,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+    );
+
+    assert!(parseresult.is_err());
+}
+
+
 #[test]
 #[ignore]
 fn notwfextsa001() {
@@ -21,16 +33,10 @@ fn notwfextsa001() {
         Description:Tests the No Recursion WFC by having an external general entity be self-recursive.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/ext-sa/001.xml")
-            .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
+    test_not_wf_ext_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/ext-sa/001.xml")
+    .unwrap()
+    .as_str());
 
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -43,16 +49,11 @@ fn notwfextsa002() {
         Description:External entities have "text declarations", which do not permit the "standalone=..." attribute that's allowed in XML declarations.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/ext-sa/002.xml")
+    test_not_wf_ext_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/ext-sa/002.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+            .as_str()
     );
 
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -65,14 +66,8 @@ fn notwfextsa003() {
         Description:Only one text declaration is permitted; a second one looks like an illegal processing instruction (target names of "xml" in any case are not allowed).
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/ext-sa/003.xml")
+        test_not_wf_ext_sa(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/ext-sa/003.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str()
+        );
 }

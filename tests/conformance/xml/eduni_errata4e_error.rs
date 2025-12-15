@@ -9,6 +9,17 @@ use xrust::item::Node;
 use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 
+fn test_eduni_errata4e_error(xmldoc: &str){
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        xmldoc,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+    );
+
+    assert!(parseresult.is_err());
+}
+
 #[test]
 fn invalidbo7() {
     /*
@@ -17,17 +28,10 @@ fn invalidbo7() {
         Spec Sections:4.3.3
         Description:A byte order mark and a backwards one in general entity cause an illegal char. error (big-endian)
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata4e_error(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbomboom_be.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -38,17 +42,10 @@ fn invalidbo8() {
         Spec Sections:4.3.3
         Description:A byte order mark and a backwards one in general entity cause an illegal char. error (little-endian)
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata4e_error(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbomboom_le.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -59,17 +56,10 @@ fn invalidbo9() {
         Spec Sections:4.3.3
         Description:A byte order mark and a backwards one in general entity cause an illegal char. error (utf-8)
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata4e_error(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/incl8bomboom.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 /*
@@ -86,16 +76,9 @@ fn xrmt008() {
         Spec Sections:2.8 4.3.4
         Description:a document with version=1.7, illegal in XML 1.0 through 4th edition
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata4e_error(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/008.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 */

@@ -8,6 +8,23 @@ use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
+fn test_eduni_namespaces_11_valid(xmldoc: &str) {
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        xmldoc,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+    );
+
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
+}
+
 #[test]
 #[ignore]
 fn rmtns11001() {
@@ -17,17 +34,9 @@ fn rmtns11001() {
         Spec Sections:2.1
         Description:Namespace name test: a perfectly good http IRI that is not a URI
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/001.xml")
+test_eduni_namespaces_11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/001.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -39,22 +48,9 @@ fn rmtns11002() {
         Spec Sections:2.3
         Description:Namespace inequality test: different escaping of non-ascii letter
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/002.xml")
+test_eduni_namespaces_11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/002.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -65,22 +61,9 @@ fn rmtns11003() {
         Spec Sections:6.1
         Description:1.1 style prefix unbinding
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/003.xml")
+test_eduni_namespaces_11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/003.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -91,22 +74,9 @@ fn rmtns11004() {
         Spec Sections:6.1
         Description:1.1 style prefix unbinding and rebinding
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/004.xml")
+test_eduni_namespaces_11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/004.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }
 
 #[test]
@@ -118,20 +88,7 @@ fn rmtns11006() {
         Spec Sections:2.1
         Description:Test whether non-Latin-1 characters are accepted in IRIs, and whether they are correctly distinguished
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/006.xml")
+test_eduni_namespaces_11_valid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/006.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
+            .as_str());
 }

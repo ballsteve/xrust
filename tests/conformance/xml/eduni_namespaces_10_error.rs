@@ -9,6 +9,17 @@ use xrust::item::Node;
 use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 
+fn test_eduni_namespaces_10_error(xmldoc: &str){
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        xmldoc,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+    );
+
+    assert!(parseresult.is_err());
+}
+
 #[test]
 fn rmtns10004() {
     /*
@@ -17,17 +28,10 @@ fn rmtns10004() {
         Spec Sections:2
         Description:Namespace name test: a relative URI (deprecated)
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_error(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/004.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -39,17 +43,10 @@ fn rmtns10005() {
         Spec Sections:2
         Description:Namespace name test: a same-document relative URI (deprecated)
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_error(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/005.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
 
 #[test]
@@ -61,15 +58,8 @@ fn rmtns10006() {
         Spec Sections:2
         Description:Namespace name test: an http IRI that is not a URI
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_error(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/006.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }

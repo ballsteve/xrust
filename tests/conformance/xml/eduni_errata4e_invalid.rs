@@ -11,15 +11,7 @@ use xrust::parser::{ParseError, ParserStateBuilder, StaticStateBuilder, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
-#[test]
-#[ignore]
-fn invalidbo1() {
-    /*
-        Test ID:invalid-bo-1
-        Test URI:inclbom_be.xml
-        Spec Sections:4.3.3
-        Description:Byte order mark in general entity should go away (big-endian)
-    */
+fn test_eduni_errata4e_invalid(xmldoc: &str){
     let ss = StaticStateBuilder::new()
         .dtd_resolver(dtdfileresolve())
         .namespace(|_: &_| Err(ParseError::MissingNameSpace))
@@ -31,9 +23,7 @@ fn invalidbo1() {
         .document_location("tests/conformance/xml/xmlconf/eduni/errata-4e/".to_string())
         .build();
     let parseresult = xml::parse_with_state(
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbom_be.xml")
-            .unwrap()
-            .as_str(),
+        xmldoc,
         ps,
         ss,
     );
@@ -48,6 +38,20 @@ fn invalidbo1() {
 
 #[test]
 #[ignore]
+fn invalidbo1() {
+    /*
+        Test ID:invalid-bo-1
+        Test URI:inclbom_be.xml
+        Spec Sections:4.3.3
+        Description:Byte order mark in general entity should go away (big-endian)
+    */
+    test_eduni_errata4e_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbom_be.xml")
+            .unwrap()
+            .as_str());
+}
+
+#[test]
+#[ignore]
 fn invalidbo2() {
     /*
         Test ID:invalid-bo-2
@@ -55,29 +59,9 @@ fn invalidbo2() {
         Spec Sections:4.3.3
         Description:Byte order mark in general entity should go away (little-endian)
     */
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/eduni/errata-4e/".to_string())
-        .build();
-    let parseresult = xml::parse_with_state(
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbom_le.xml")
+    test_eduni_errata4e_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbom_le.xml")
             .unwrap()
-            .as_str(),
-        ps,
-        ss,
-    );
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
+            .as_str());
 }
 
 #[test]
@@ -90,21 +74,9 @@ fn invalidbo3() {
         Description:Byte order mark in general entity should go away (utf-8)
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/incl8bom.xml")
+test_eduni_errata4e_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/incl8bom.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
+            .as_str());
 }
 
 #[test]
@@ -117,21 +89,9 @@ fn invalidbo4() {
         Description:Two byte order marks in general entity produce only one (big-endian)
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbombom_be.xml")
+test_eduni_errata4e_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbombom_be.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
+            .as_str());
 }
 
 #[test]
@@ -144,21 +104,9 @@ fn invalidbo5() {
         Description:Two byte order marks in general entity produce only one (little-endian)
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbombom_le.xml")
+test_eduni_errata4e_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbombom_le.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
+            .as_str());
 }
 
 #[test]
@@ -171,21 +119,9 @@ fn invalidbo6() {
         Description:Two byte order marks in general entity produce only one (utf-8)
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/incl8bombom.xml")
+test_eduni_errata4e_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/incl8bombom.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
+            .as_str());
 }
 
 /*
@@ -205,16 +141,9 @@ fn invalidsa140() {
         Description:Character '&#x309a;' is a CombiningChar, not a Letter, but as of 5th edition, may begin a name (c.f. xmltest/not-wf/sa/140.xml).
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/140.xml")
+test_eduni_errata4e_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/140.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
  */
 
@@ -235,16 +164,9 @@ fn invalidsa141() {
         Description:As of 5th edition, character #x0E5C is legal in XML names (c.f. xmltest/not-wf/sa/141.xml).
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/141.xml")
+test_eduni_errata4e_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/141.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
  */
 
@@ -265,16 +187,9 @@ fn xrmt5014() {
         Description:Has a "long s" in a name, legal in XML 1.1, legal in XML 1.0 5th edition
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/014.xml")
+test_eduni_errata4e_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/014.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
  */
 
@@ -295,16 +210,9 @@ fn xrmt5016() {
         Description:Has a Byzantine Musical Symbol Kratimata in a name, legal in XML 1.1, legal in XML 1.0 5th edition
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/016.xml")
+test_eduni_errata4e_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/016.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_err());
+            .as_str());
 }
  */
 
@@ -325,16 +233,9 @@ fn xrmt5019() {
         Description:Has the last legal namechar in XML 1.1, legal in XML 1.0 5th edition
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/019.xml")
+test_eduni_errata4e_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/019.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(testxml.is_err());
+            .as_str());
 }
 */
 
@@ -347,21 +248,9 @@ fn ibminvalid_p89ibm89n06xml() {
         Description:Tests Extender with an only legal per 5th edition character. The character #x0EC7 occurs as the second character in the PITarget in the PI in the prolog, and in an element name.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n06.xml")
+test_eduni_errata4e_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n06.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
+            .as_str());
 }
 
 #[test]
@@ -373,21 +262,9 @@ fn ibminvalid_p89ibm89n07xml() {
         Description:Tests Extender with an only legal per 5th edition character. The character #x3006 occurs as the second character in the PITarget in the PI in the prolog, and in an element name.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n07.xml")
+test_eduni_errata4e_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n07.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
+            .as_str());
 }
 
 #[test]
@@ -399,21 +276,9 @@ fn ibminvalid_p89ibm89n08xml() {
         Description:Tests Extender with an only legal per 5th edition character. The character #x3030 occurs as the second character in the PITarget in the PI in the prolog, and in an element name.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n08.xml")
+test_eduni_errata4e_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n08.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
+            .as_str());
 }
 
 #[test]
@@ -425,21 +290,9 @@ fn ibminvalid_p89ibm89n09xml() {
         Description:Tests Extender with an only legal per 5th edition character. The character #x3036 occurs as the second character in the PITarget in the PI in the prolog, and in an element name.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n09.xml")
+test_eduni_errata4e_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n09.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
+            .as_str());
 }
 
 #[test]
@@ -451,21 +304,9 @@ fn ibminvalid_p89ibm89n10xml() {
         Description:Tests Extender with an only legal per 5th edition character. The character #x309C occurs as the second character in the PITarget in the PI in the prolog, and in an element name.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n10.xml")
+test_eduni_errata4e_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n10.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
+            .as_str());
 }
 
 #[test]
@@ -477,21 +318,9 @@ fn ibminvalid_p89ibm89n11xml() {
         Description:Tests Extender with an only legal per 5th edition character. The character #x309F occurs as the second character in the PITarget in the PI in the prolog, and in an element name.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n11.xml")
+test_eduni_errata4e_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n11.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
+            .as_str());
 }
 
 #[test]
@@ -503,19 +332,7 @@ fn ibminvalid_p89ibm89n12xml() {
         Description:Tests Extender with an only legal per 5th edition character. The character #x30FF occurs as the second character in the PITarget in the PI in the prolog, and in an element name.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n12.xml")
+test_eduni_errata4e_invalid(fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n12.xml")
             .unwrap()
-            .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
-    );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
+            .as_str());
 }
