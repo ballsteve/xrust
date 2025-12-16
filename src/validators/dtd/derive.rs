@@ -149,9 +149,46 @@ pub(crate) fn child_deriv(pat: DTDPattern, n: impl Node, dtd: DTD) -> DTDPattern
             let mut pat1 = start_tag_open_deriv(pat, n.name().unwrap(), dtd.clone());
             //at this stage, we check if the DTD is for DTDPattern::Any. If it is present, we build a pattern
             //based on the child nodes, so that they are all validated individually.
-                if let DTDPattern::After(a, p) = pat1.clone() {
-                    match *a {
-                        DTDPattern::Any => {
+            if let DTDPattern::After(a, p) = pat1.clone() {
+                match *a {
+                    DTDPattern::Any => {
+                        let mut newpat = DTDPattern::Empty;
+                        let mut children = n
+                            .child_iter()
+                            .filter(|node| {
+                                node.node_type() != NodeType::ProcessingInstruction
+                                    && node.node_type() != NodeType::Comment
+                                    && !(node.node_type() == NodeType::Text
+                                        && node.value().to_string() == *"")
+                            })
+                            .collect::<Vec<_>>();
+                        //todo POP VECTOR UNTIL EMPTY
+                        children.reverse();
+                        for c in children {
+                            match c.node_type() {
+                                NodeType::Element => {
+                                    newpat = DTDPattern::Group(
+                                        Box::new(DTDPattern::Ref((
+                                            None,
+                                            c.name().unwrap().to_string(),
+                                        ))),
+                                        Box::new(newpat),
+                                    )
+                                }
+                                NodeType::Text => {
+                                    newpat = DTDPattern::Group(
+                                        Box::new(DTDPattern::Text),
+                                        Box::new(newpat),
+                                    )
+                                }
+                                _ => {}
+                            }
+                        }
+
+                        pat1 = DTDPattern::After(Box::new(newpat), p)
+                    }
+                    DTDPattern::Group(an, p1) => {
+                        if *an == DTDPattern::Any {
                             let mut newpat = DTDPattern::Empty;
                             let mut children = n
                                 .child_iter()
@@ -185,54 +222,15 @@ pub(crate) fn child_deriv(pat: DTDPattern, n: impl Node, dtd: DTD) -> DTDPattern
                                 }
                             }
 
-                            pat1 = DTDPattern::After(Box::new(newpat), p)
+                            pat1 = DTDPattern::After(
+                                Box::from(DTDPattern::Group(Box::new(newpat), p1)),
+                                p,
+                            )
                         }
-                        DTDPattern::Group(an, p1) => {
-                            if *an == DTDPattern::Any {
-                                let mut newpat = DTDPattern::Empty;
-                                let mut children = n
-                                    .child_iter()
-                                    .filter(|node| {
-                                        node.node_type() != NodeType::ProcessingInstruction
-                                            && node.node_type() != NodeType::Comment
-                                            && !(node.node_type() == NodeType::Text
-                                                && node.value().to_string() == *"")
-                                    })
-                                    .collect::<Vec<_>>();
-                                //todo POP VECTOR UNTIL EMPTY
-                                children.reverse();
-                                for c in children {
-                                    match c.node_type() {
-                                        NodeType::Element => {
-                                            newpat = DTDPattern::Group(
-                                                Box::new(DTDPattern::Ref((
-                                                    None,
-                                                    c.name().unwrap().to_string(),
-                                                ))),
-                                                Box::new(newpat),
-                                            )
-                                        }
-                                        NodeType::Text => {
-                                            newpat = DTDPattern::Group(
-                                                Box::new(DTDPattern::Text),
-                                                Box::new(newpat),
-                                            )
-                                        }
-                                        _ => {}
-                                    }
-                                }
-
-                                pat1 = DTDPattern::After(
-                                    Box::from(DTDPattern::Group(Box::new(newpat), p1)),
-                                    p,
-                                )
-                            }
-                        }
-                        _ => {}
                     }
+                    _ => {}
                 }
-
-
+            }
 
             for attribute in n.attribute_iter() {
                 pat1 = att_deriv(pat1, attribute)

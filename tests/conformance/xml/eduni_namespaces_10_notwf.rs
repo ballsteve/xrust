@@ -10,6 +10,20 @@ use xrust::item::Node;
 use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 
+fn test_eduni_namespaces_10_notwf(xmldoc: &str) {
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        xmldoc,
+        Some(|p: &NamespacePrefix| {
+            eprintln!("resolve ns prefix {}", p.to_string());
+            Err(ParseError::MissingNameSpace)
+        }),
+    );
+
+    assert!(parseresult.is_err());
+}
+
 #[test]
 fn rmtns10009() {
     /*
@@ -19,19 +33,11 @@ fn rmtns10009() {
         Description:Namespace equality test: plain repetition
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/009.xml")
             .unwrap()
             .as_str(),
-        Some(|p: &NamespacePrefix| {
-            eprintln!("resolve ns prefix {}", p.to_string());
-            Err(ParseError::MissingNameSpace)
-        }),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -43,16 +49,11 @@ fn rmtns10010() {
         Description:Namespace equality test: use of character reference
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/010.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -64,16 +65,11 @@ fn rmtns10011() {
         Description:Namespace equality test: use of entity reference
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/011.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -85,16 +81,11 @@ fn rmtns10012() {
         Description:Namespace inequality test: equal after attribute value normalization
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/012.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -106,16 +97,11 @@ fn rmtns10013() {
         Description:Bad QName syntax: multiple colons
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/013.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -127,16 +113,11 @@ fn rmtns10014() {
         Description:Bad QName syntax: colon at end
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/014.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -148,16 +129,11 @@ fn rmtns10015() {
         Description:Bad QName syntax: colon at start
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/015.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -169,16 +145,11 @@ fn rmtns10016() {
         Description:Bad QName syntax: xmlns:
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/016.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -190,16 +161,11 @@ fn rmtns10023() {
         Description:Illegal use of 1.1-style prefix unbinding in 1.0 document
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/023.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -211,16 +177,11 @@ fn rmtns10025() {
         Description:Unbound element prefix
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/025.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -232,16 +193,11 @@ fn rmtns10026() {
         Description:Unbound attribute prefix
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/026.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -253,16 +209,11 @@ fn rmtns10029() {
         Description:Reserved prefixes and namespaces: declaring the xml prefix incorrectly
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/029.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -274,16 +225,11 @@ fn rmtns10030() {
         Description:Reserved prefixes and namespaces: binding another prefix to the xml namespace
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/030.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -295,16 +241,11 @@ fn rmtns10031() {
         Description:Reserved prefixes and namespaces: declaring the xmlns prefix with its correct URI (illegal)
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml.clone(),
+    test_eduni_namespaces_10_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/031.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -316,16 +257,11 @@ fn rmtns10032() {
         Description:Reserved prefixes and namespaces: declaring the xmlns prefix with an incorrect URI
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/032.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -337,16 +273,11 @@ fn rmtns10033() {
         Description:Reserved prefixes and namespaces: binding another prefix to the xmlns namespace
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/033.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -358,16 +289,11 @@ fn rmtns10035() {
         Description:Attribute uniqueness: repeated identical attribute
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/035.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -379,16 +305,11 @@ fn rmtns10036() {
         Description:Attribute uniqueness: repeated attribute with different prefixes
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/036.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -400,16 +321,11 @@ fn rmtns10042() {
         Description:Colon in PI name
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/042.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -421,16 +337,11 @@ fn rmtns10043() {
         Description:Colon in entity name
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/043.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -442,14 +353,9 @@ fn rmtns10044() {
         Description:Colon in entity name
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/044.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }

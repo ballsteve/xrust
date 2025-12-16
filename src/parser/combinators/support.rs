@@ -11,7 +11,7 @@ where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
     move |(input, state), _ss| {
-        match input.find(|c:char| !c.is_ascii_digit()) {
+        match input.find(|c: char| !c.is_ascii_digit()) {
             Some(0) => Err(ParseError::Combinator(String::from("digit0: no digits"))),
             Some(pos) => {
                 //let result = (&mut input).take(pos).collect::<String>();

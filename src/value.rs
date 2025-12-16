@@ -110,7 +110,6 @@ impl Default for ValueBuilder {
     }
 }
 impl ValueBuilder {
-
     pub fn new() -> Self {
         ValueBuilder {
             value: None,

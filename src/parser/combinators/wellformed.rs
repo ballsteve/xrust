@@ -47,8 +47,7 @@ where
                 } else {
                     Err(ParseError::NotWellFormed(format!(
                         "{} - \"{}\"",
-                        reason,
-                        input2
+                        reason, input2
                     )))
                 }
             } else if validate_fn10(&result) {
@@ -56,8 +55,7 @@ where
             } else {
                 Err(ParseError::NotWellFormed(format!(
                     "{} - \"{}\"",
-                    reason,
-                    input2
+                    reason, input2
                 )))
             }
         }

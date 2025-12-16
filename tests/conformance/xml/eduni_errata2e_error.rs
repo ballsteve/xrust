@@ -10,6 +10,17 @@ use xrust::parser::ParseError;
 use xrust::parser::xml;
 use xrust::trees::smite::RNode;
 
+fn test_eduni_errata2e_error(xmldoc: &str) {
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        xmldoc,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+    );
+
+    assert!(parseresult.is_err());
+}
+
 #[test]
 #[ignore]
 fn rmte2e34() {
@@ -19,17 +30,11 @@ fn rmte2e34() {
         Spec Sections:E34
         Description:A non-deterministic content model is an error even if the element type is not used.
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata2e_error(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E34.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -40,17 +45,11 @@ fn rmte2e55() {
         Spec Sections:E55
         Description:A reference to an unparsed entity in an entity value is an error rather than forbidden (unless the entity is referenced, of course)
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata2e_error(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E55.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -61,15 +60,9 @@ fn rmte2e57() {
         Spec Sections:E57
         Description:A value other than preserve or default for xml:space is an error
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata2e_error(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E57.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }

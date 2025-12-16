@@ -57,15 +57,15 @@ pub(crate) fn compose<
     let mut context = ctxt.clone();
     let mut it = steps.iter();
     while let Some(t) = it.next() {
-            // previous context is the last step's context.
-            // If the initial previous context is None, then the current context is also the previous context (XSLT 20.4.1)
-            let previous = ctxt.context.clone();
-            let new = context.dispatch(stctxt, t)?;
-            let new_ctxt = ContextBuilder::from(&context)
-                .context(new.clone())
-                .current(previous)
-                .build();
-            context = new_ctxt;
+        // previous context is the last step's context.
+        // If the initial previous context is None, then the current context is also the previous context (XSLT 20.4.1)
+        let previous = ctxt.context.clone();
+        let new = context.dispatch(stctxt, t)?;
+        let new_ctxt = ContextBuilder::from(&context)
+            .context(new.clone())
+            .current(previous)
+            .build();
+        context = new_ctxt;
     }
     Ok(context.context)
 }
@@ -258,7 +258,7 @@ pub(crate) fn step<N: Node>(ctxt: &Context<N>, nm: &NodeMatch) -> Result<Sequenc
             });
             // Eliminate duplicates
             r.dedup_by(|a, b| {
-                get_node(a).map_or(false, |aa| get_node(b).is_ok_and( |bb| aa.is_same(bb)))
+                get_node(a).map_or(false, |aa| get_node(b).is_ok_and(|bb| aa.is_same(bb)))
             });
             Ok(r)
         }

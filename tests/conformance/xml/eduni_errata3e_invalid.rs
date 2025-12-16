@@ -9,6 +9,16 @@ use xrust::item::Node;
 use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 
+fn test_eduni_errata3e_invalid(xmldoc: &str) {
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        xmldoc,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+    );
+    assert!(parseresult.is_err());
+}
+
 #[test]
 fn rmte3e06a() {
     /*
@@ -18,15 +28,11 @@ fn rmte3e06a() {
         Description:Default values for IDREF attributes must match Name.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata3e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06a.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -38,16 +44,11 @@ fn rmte3e06b() {
         Description:Default values for ENTITY attributes must match Name.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata3e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06b.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -59,16 +60,11 @@ fn rmte3e06c() {
         Description:Default values for IDREFS attributes must match Names.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata3e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06c.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -80,16 +76,11 @@ fn rmte3e06d() {
         Description:Default values for ENTITIES attributes must match Names.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata3e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06d.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -102,16 +93,11 @@ fn rmte3e06e() {
         Description:Default values for NMTOKEN attributes must match Nmtoken.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata3e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06e.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -124,16 +110,11 @@ fn rmte3e06f() {
         Description:Default values for NMTOKENS attributes must match Nmtokens.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata3e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06f.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -146,16 +127,11 @@ fn rmte3e06g() {
         Description:Default values for NOTATION attributes must match one of the enumerated values.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata3e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06g.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -168,16 +144,11 @@ fn rmte3e06h() {
         Description:Default values for enumerated attributes must match one of the enumerated values.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata3e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06h.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -189,14 +160,9 @@ fn rmte3e13() {
         Description:Even internal parameter entity references are enough to make undeclared entities into mere validity errors rather than well-formedness errors.
     */
 
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata3e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E13.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }

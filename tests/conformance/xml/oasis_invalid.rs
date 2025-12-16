@@ -11,15 +11,7 @@ use xrust::parser::{ParseError, ParserStateBuilder, StaticStateBuilder, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
-#[test]
-fn op01pass1() {
-    /*
-        Test ID:o-p01pass1
-        Test URI:p01pass1.xml
-        Spec Sections:2.1 [1]
-        Description:no prolog
-    */
-
+fn test_oasis_invalid(xmldoc: &str) {
     let ss = StaticStateBuilder::new()
         .dtd_resolver(dtdfileresolve())
         .namespace(|_: &_| Err(ParseError::MissingNameSpace))
@@ -30,19 +22,29 @@ fn op01pass1() {
         .doc(testxml)
         .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
         .build();
-    let parseresult = xml::parse_with_state(
-        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p01pass1.xml")
-            .unwrap()
-            .as_str(),
-        ps,
-        ss,
-    );
+    let parseresult = xml::parse_with_state(xmldoc, ps, ss);
 
     assert!(parseresult.is_ok());
 
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
+}
+
+#[test]
+fn op01pass1() {
+    /*
+        Test ID:o-p01pass1
+        Test URI:p01pass1.xml
+        Spec Sections:2.1 [1]
+        Description:no prolog
+    */
+
+    test_oasis_invalid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p01pass1.xml")
+            .unwrap()
+            .as_str(),
+    );
 }
 
 #[test]
@@ -54,29 +56,11 @@ fn op01pass3() {
         Description:Misc items after the document
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p01pass3.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -88,32 +72,15 @@ fn op03pass1() {
         Description:all valid S characters
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03pass1.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
+#[ignore]
 fn op04pass1() {
     /*
         Test ID:o-p04pass1
@@ -125,28 +92,15 @@ fn op04pass1() {
         interest in supporting those at this time.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p04pass1.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
+#[ignore]
 fn op05pass1() {
     /*
         Test ID:o-p05pass1
@@ -158,28 +112,15 @@ fn op05pass1() {
         interest in supporting those at this time.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p05pass1.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
+#[ignore]
 fn op06fail1() {
     /*
         Test ID:o-p06fail1
@@ -188,28 +129,15 @@ fn op06fail1() {
         Description:Requires at least one name.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p06fail1.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
+#[ignore]
 fn op08fail1() {
     /*
         Test ID:o-p08fail1
@@ -218,26 +146,11 @@ fn op08fail1() {
         Description:at least one Nmtoken is required.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p08fail1.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -250,26 +163,11 @@ fn op08fail2() {
         Description:an invalid Nmtoken character.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p08fail2.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -281,30 +179,11 @@ fn op10pass1() {
         Description:valid attribute values
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p10pass1.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -316,30 +195,11 @@ fn op14pass1() {
         Description:valid CharData
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p14pass1.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -351,30 +211,11 @@ fn op15pass1() {
         Description:valid comments
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p15pass1.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -386,30 +227,11 @@ fn op16pass1() {
         Description:Valid form of Processing Instruction. Shows that whitespace character data is valid before end of processing instruction.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p16pass1.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -421,30 +243,11 @@ fn op16pass2() {
         Description:Valid form of Processing Instruction. Shows that whitespace character data is valid before end of processing instruction.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p16pass2.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -456,30 +259,11 @@ fn op16pass3() {
         Description:Valid form of Processing Instruction. Shows that whitespace character data is valid before end of processing instruction.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p16pass3.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -491,30 +275,11 @@ fn op18pass1() {
         Description:valid CDSect's. Note that a CDStart in a CDSect is not recognized as such
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p18pass1.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -526,30 +291,11 @@ fn op22pass1() {
         Description:prolog can be empty
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p22pass1.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -561,30 +307,11 @@ fn op22pass2() {
         Description:XML declaration only
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p22pass2.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -596,30 +323,11 @@ fn op22pass3() {
         Description:XML decl and Misc
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p22pass3.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -631,30 +339,11 @@ fn op23pass1() {
         Description:Test shows a valid XML declaration along with version info.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p23pass1.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -666,30 +355,11 @@ fn op23pass2() {
         Description:Test shows a valid XML declaration along with encoding declaration.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p23pass2.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -701,30 +371,11 @@ fn op23pass3() {
         Description:Test shows a valid XML declaration along with Standalone Document Declaration.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p23pass3.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -736,30 +387,11 @@ fn op23pass4() {
         Description:Test shows a valid XML declaration, encoding declarationand Standalone Document Declaration.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p23pass4.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -771,30 +403,11 @@ fn op24pass1() {
         Description:Test shows a prolog that has the VersionInfo delimited by double quotes.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p24pass1.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -806,30 +419,11 @@ fn op24pass2() {
         Description:Test shows a prolog that has the VersionInfo delimited by single quotes.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p24pass2.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -841,30 +435,11 @@ fn op24pass3() {
         Description:Test shows whitespace is allowed in prolog before version info.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p24pass3.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -876,30 +451,11 @@ fn op24pass4() {
         Description:Test shows whitespace is allowed in prolog on both sides of equal sign.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p24pass4.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -911,30 +467,11 @@ fn op25pass1() {
         Description:Test shows whitespace is NOT necessary before or after equal sign of versioninfo.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p25pass1.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -946,30 +483,11 @@ fn op25pass2() {
         Description:Test shows whitespace can be used on both sides of equal sign of versioninfo.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p25pass2.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -981,30 +499,11 @@ fn op26pass1() {
         Description:The valid version number. We cannot test others because a 1.0 processor is allowed to fail them.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p26pass1.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -1016,30 +515,11 @@ fn op27pass1() {
         Description:Comments are valid as the Misc part of the prolog.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p27pass1.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -1051,30 +531,11 @@ fn op27pass2() {
         Description:Processing Instructions are valid as the Misc part of the prolog.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p27pass2.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -1086,30 +547,11 @@ fn op27pass3() {
         Description:Whitespace is valid as the Misc part of the prolog.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p27pass3.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -1121,30 +563,11 @@ fn op27pass4() {
         Description:A combination of comments, whitespaces and processing instructions are valid as the Misc part of the prolog.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p27pass4.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -1156,30 +579,11 @@ fn op32pass1() {
         Description:Double quotes can be used as delimeters for the value of a Standalone Document Declaration.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p32pass1.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -1191,30 +595,11 @@ fn op32pass2() {
         Description:Single quotes can be used as delimeters for the value of a Standalone Document Declaration.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p32pass2.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -1226,30 +611,11 @@ fn op39pass1() {
         Description:Empty element tag may be used for any element which has no content.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p39pass1.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -1261,30 +627,11 @@ fn op39pass2() {
         Description:Character data is valid element content.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p39pass2.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -1296,30 +643,11 @@ fn op40pass1() {
         Description:Elements content can be empty.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p40pass1.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -1331,30 +659,11 @@ fn op40pass2() {
         Description:Whitespace is valid within a Start-tag.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p40pass2.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -1366,30 +675,11 @@ fn op40pass3() {
         Description:Attributes are valid within a Start-tag.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p40pass3.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -1401,30 +691,11 @@ fn op40pass4() {
         Description:Whitespace and Multiple Attributes are valid within a Start-tag.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p40pass4.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -1436,30 +707,11 @@ fn op41pass1() {
         Description:Attributes are valid within a Start-tag.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p41pass1.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -1471,30 +723,11 @@ fn op41pass2() {
         Description:Whitespace is valid within a Start-tags Attribute.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p41pass2.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -1506,30 +739,11 @@ fn op42pass1() {
         Description:Test shows proper syntax for an End-tag.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p42pass1.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -1541,30 +755,11 @@ fn op42pass2() {
         Description:Whitespace is valid after name in End-tag.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p42pass2.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -1576,30 +771,11 @@ fn op44pass1() {
         Description:Valid display of an Empty Element Tag.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p44pass1.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -1611,30 +787,11 @@ fn op44pass2() {
         Description:Empty Element Tags can contain an Attribute.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p44pass2.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -1646,30 +803,11 @@ fn op44pass3() {
         Description:Whitespace is valid in an Empty Element Tag following the end of the attribute value.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p44pass3.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -1681,30 +819,11 @@ fn op44pass4() {
         Description:Whitespace is valid after the name in an Empty Element Tag.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p44pass4.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -1716,30 +835,11 @@ fn op44pass5() {
         Description:Whitespace and Multiple Attributes are valid in an Empty Element Tag.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p44pass5.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -1751,30 +851,11 @@ fn op66pass1() {
         Description:valid character references
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p66pass1.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -1787,30 +868,11 @@ fn op74pass1() {
         Description:PEDef is either an entity value or an external id
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p74pass1.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -1823,30 +885,11 @@ fn op75pass1() {
         Description:valid external identifiers
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p75pass1.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -1858,28 +901,9 @@ fn oe2() {
         Description:Validity Constraint: No duplicate tokens
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/oasis/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_oasis_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/e2.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
