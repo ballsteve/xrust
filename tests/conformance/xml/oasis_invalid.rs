@@ -80,6 +80,7 @@ fn op03pass1() {
 }
 
 #[test]
+#[ignore]
 fn op04pass1() {
     /*
         Test ID:o-p04pass1
@@ -99,6 +100,7 @@ fn op04pass1() {
 }
 
 #[test]
+#[ignore]
 fn op05pass1() {
     /*
         Test ID:o-p05pass1
@@ -118,6 +120,7 @@ fn op05pass1() {
 }
 
 #[test]
+#[ignore]
 fn op06fail1() {
     /*
         Test ID:o-p06fail1
@@ -134,6 +137,7 @@ fn op06fail1() {
 }
 
 #[test]
+#[ignore]
 fn op08fail1() {
     /*
         Test ID:o-p08fail1

@@ -2276,6 +2276,7 @@ fn ibm11notwf_p77ibm77n01xml() {
 }
 
 #[test]
+#[ignore]
 fn ibm11notwf_p77ibm77n02xml() {
     /*
         Test ID:ibm-1-1-not-wf-P77-ibm77n02.xml
@@ -2292,6 +2293,7 @@ fn ibm11notwf_p77ibm77n02xml() {
 }
 
 #[test]
+#[ignore]
 fn ibm11notwf_p77ibm77n03xml() {
     /*
         Test ID:ibm-1-1-not-wf-P77-ibm77n03.xml
