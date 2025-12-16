@@ -385,21 +385,21 @@ pub(crate) fn copy<
         result.push(cp.clone());
         if let Item::Node(mut im) = cp {
             for j in ctxt.dispatch(stctxt, c)? {
-                    match &j {
-                        Item::Value(v) => im.push(im.new_text(v.clone())?)?,
-                        Item::Node(n) => match n.node_type() {
-                            NodeType::Attribute => im.add_attribute(n.clone())?,
-                            _ => im.push(n.clone())?,
-                        },
-                        _ => {
-                            return Err(Error::new(
-                                ErrorKind::NotImplemented,
-                                String::from("not yet implemented"),
-                            ));
-                        }
+                match &j {
+                    Item::Value(v) => im.push(im.new_text(v.clone())?)?,
+                    Item::Node(n) => match n.node_type() {
+                        NodeType::Attribute => im.add_attribute(n.clone())?,
+                        _ => im.push(n.clone())?,
+                    },
+                    _ => {
+                        return Err(Error::new(
+                            ErrorKind::NotImplemented,
+                            String::from("not yet implemented"),
+                        ));
                     }
                 }
             }
+        }
     }
     Ok(result)
 }

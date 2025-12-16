@@ -9,6 +9,17 @@ use xrust::item::Node;
 use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 
+fn test_eduni_misc_notwf(xmldoc: &str) {
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        xmldoc,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+    );
+
+    assert!(parseresult.is_err());
+}
+
 #[test]
 fn hstbh001() {
     /*
@@ -17,17 +28,11 @@ fn hstbh001() {
         Spec Sections:2.2 [2], 4.1 [66]
         Description:decimal charref > 10FFFF, indeed > max 32 bit integer, checking for recovery from possible overflow
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_misc_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/001.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -38,17 +43,11 @@ fn hstbh002() {
         Spec Sections:2.2 [2], 4.1 [66]
         Description:hex charref > 10FFFF, indeed > max 32 bit integer, checking for recovery from possible overflow
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_misc_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/002.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -59,17 +58,11 @@ fn hstbh003() {
         Spec Sections:2.2 [2], 4.1 [66]
         Description:decimal charref > 10FFFF, indeed > max 64 bit integer, checking for recovery from possible overflow
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_misc_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/003.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -80,17 +73,11 @@ fn hstbh004() {
         Spec Sections:2.2 [2], 4.1 [66]
         Description:hex charref > 10FFFF, indeed > max 64 bit integer, checking for recovery from possible overflow
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_misc_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/004.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -102,17 +89,11 @@ fn hstlhs007() {
         Spec Sections:4.3.3
         Description:UTF-8 BOM plus xml decl of iso-8859-1 incompatible
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_misc_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/007.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -124,17 +105,11 @@ fn hstlhs008() {
         Spec Sections:4.3.3
         Description:UTF-16 BOM plus xml decl of utf-8 (using UTF-16 coding) incompatible
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_misc_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/008.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -146,15 +121,9 @@ fn hstlhs009() {
         Spec Sections:4.3.3
         Description:UTF-16 BOM plus xml decl of utf-8 (using UTF-8 coding) incompatible
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_misc_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/009.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }

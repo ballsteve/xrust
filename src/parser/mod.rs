@@ -107,7 +107,6 @@ where
     }
 }
 
-
 impl<L> StaticStateBuilder<L>
 where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,

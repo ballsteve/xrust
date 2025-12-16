@@ -1,7 +1,7 @@
 //! These functions are for features defined in XPath Functions 1.0 and 2.0.
 
-use std::cmp::Ordering;
 use qualname::{NcName, QName};
+use std::cmp::Ordering;
 use std::rc::Rc;
 use url::Url;
 
@@ -427,7 +427,6 @@ pub(crate) fn tr_range<
             seq.push_value(&Rc::new(Value::from(i)));
             Ok(seq)
         }
-
     }
 }
 

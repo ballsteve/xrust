@@ -142,7 +142,7 @@ where
                 if state1.id_tracking {
                     for idref in ss.ids_pending.iter() {
                         if ss.ids_read.get(idref).is_none() {
-                            return Err(ParseError::IDError(String::from("ID missing")))
+                            return Err(ParseError::IDError(String::from("ID missing")));
                         }
                     }
                 }

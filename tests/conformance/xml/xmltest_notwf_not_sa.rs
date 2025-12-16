@@ -13,15 +13,7 @@ use xrust::item::Node;
 use xrust::parser::{ParseError, ParserStateBuilder, StaticStateBuilder, xml};
 use xrust::trees::smite::RNode;
 
-#[test]
-fn notwfnotsa001() {
-    /*
-        Test ID:not-wf-not-sa-001
-        Test URI:not-wf/not-sa/001.xml
-        Spec Sections:3.4 [62]
-        Description:Conditional sections must be properly terminated ("]>" usedinstead of "]]>").
-    */
-
+fn test_xmltest_notwf_not_sa(xmldoc: &str) {
     let ss = StaticStateBuilder::new()
         .dtd_resolver(dtdfileresolve())
         .namespace(|_: &_| Err(ParseError::MissingNameSpace))
@@ -33,15 +25,25 @@ fn notwfnotsa001() {
         .document_location("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/".to_string())
         .build();
 
-    let parseresult = xml::parse_with_state(
+    let parseresult = xml::parse_with_state(xmldoc, ps, ss);
+
+    assert!(parseresult.is_err());
+}
+
+#[test]
+fn notwfnotsa001() {
+    /*
+        Test ID:not-wf-not-sa-001
+        Test URI:not-wf/not-sa/001.xml
+        Spec Sections:3.4 [62]
+        Description:Conditional sections must be properly terminated ("]>" usedinstead of "]]>").
+    */
+
+    test_xmltest_notwf_not_sa(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/001.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -53,25 +55,11 @@ fn notwfnotsa002() {
         Description:Processing instruction target names may not be "XML"in any combination of cases.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/".to_string())
-        .build();
-    let parseresult = xml::parse_with_state(
+    test_xmltest_notwf_not_sa(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/002.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -83,25 +71,11 @@ fn notwfnotsa003() {
         Description:Conditional sections must be properly terminated ("]]>" omitted).
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/".to_string())
-        .build();
-    let parseresult = xml::parse_with_state(
+    test_xmltest_notwf_not_sa(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/003.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -113,25 +87,11 @@ fn notwfnotsa004() {
         Description:Conditional sections must be properly terminated ("]]>" omitted).
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/".to_string())
-        .build();
-    let parseresult = xml::parse_with_state(
+    test_xmltest_notwf_not_sa(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/004.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -143,25 +103,11 @@ fn notwfnotsa005() {
         Description:Tests the Entity Declared VC by referring to anundefined parameter entity within an external entity.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/".to_string())
-        .build();
-    let parseresult = xml::parse_with_state(
+    test_xmltest_notwf_not_sa(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/005.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -173,25 +119,11 @@ fn notwfnotsa006() {
         Description:Conditional sections need a '[' after the INCLUDE or IGNORE.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/".to_string())
-        .build();
-    let parseresult = xml::parse_with_state(
+    test_xmltest_notwf_not_sa(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/006.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -203,25 +135,11 @@ fn notwfnotsa007() {
         Description:A <!DOCTYPE ...> declaration may not begin any externalentity; it's only found once, in the document entity.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/".to_string())
-        .build();
-    let parseresult = xml::parse_with_state(
+    test_xmltest_notwf_not_sa(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/007.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -233,25 +151,11 @@ fn notwfnotsa008() {
         Description:In DTDs, the '%' character must be part of a parameterentity reference.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/".to_string())
-        .build();
-    let parseresult = xml::parse_with_state(
+    test_xmltest_notwf_not_sa(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/008.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -263,23 +167,9 @@ fn notwfnotsa009() {
         Description:This test violates WFC:PE Between Declarations in Production 28a.The last character of a markup declaration is not contained in the sameparameter-entity text replacement.
     */
 
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/".to_string())
-        .build();
-    let parseresult = xml::parse_with_state(
+    test_xmltest_notwf_not_sa(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/009.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_err());
 }

@@ -10,21 +10,11 @@ use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
-#[test]
-fn rmtns10001() {
-    /*
-        Test ID:rmt-ns10-001
-        Test URI:001.xml
-        Spec Sections:2
-        Description:Namespace name test: a perfectly good http URI
-    */
-
+fn test_eduni_namespaces_10_valid(xmldoc: &str) {
     let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/001.xml")
-            .unwrap()
-            .as_str(),
+        xmldoc,
         Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
@@ -34,6 +24,21 @@ fn rmtns10001() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
+}
+
+#[test]
+fn rmtns10001() {
+    /*
+        Test ID:rmt-ns10-001
+        Test URI:001.xml
+        Spec Sections:2
+        Description:Namespace name test: a perfectly good http URI
+    */
+    test_eduni_namespaces_10_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/001.xml")
+            .unwrap()
+            .as_str(),
+    );
 }
 
 #[test]
@@ -44,22 +49,11 @@ fn rmtns10002() {
         Spec Sections:2
         Description:Namespace name test: a syntactically plausible URI with a fictitious scheme
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_valid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/002.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
 }
 
 #[test]
@@ -70,22 +64,11 @@ fn rmtns10003() {
         Spec Sections:2
         Description:Namespace name test: a perfectly good http URI with a fragment
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/003.xml")
+    test_eduni_namespaces_10_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/002.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
 }
 
 #[test]
@@ -97,22 +80,11 @@ fn rmtns10007() {
         Spec Sections:1
         Description:Namespace inequality test: different capitalization
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_valid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/007.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
 }
 
 #[test]
@@ -124,22 +96,11 @@ fn rmtns10008() {
         Spec Sections:1
         Description:Namespace inequality test: different escaping
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_valid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/008.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
 }
 
 #[test]
@@ -150,22 +111,11 @@ fn htns10047() {
         Spec Sections:NE03
         Description:Reserved name: _not_ an error
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_valid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/047.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
 }
 
 #[test]
@@ -176,20 +126,9 @@ fn htns10048() {
         Spec Sections:NE03
         Description:Reserved name: _not_ an error
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_10_valid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/048.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
 }

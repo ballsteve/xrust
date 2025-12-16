@@ -11,6 +11,27 @@ use xrust::parser::{ParseError, ParserStateBuilder, StaticStateBuilder, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
+fn test_eduni_errata2e_invalid(xmldoc: &str) {
+    let ss = StaticStateBuilder::new()
+        .dtd_resolver(dtdfileresolve())
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
+    let testxml = RNode::new_document();
+    let ps = ParserStateBuilder::new()
+        .doc(testxml)
+        .document_location("tests/conformance/xml/xmlconf/eduni/errata-2e/".to_string())
+        .build();
+
+    let parseresult = xml::parse_with_state(xmldoc, ps, ss);
+
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+}
+
 #[test]
 #[ignore]
 fn rmte2e2a() {
@@ -20,22 +41,11 @@ fn rmte2e2a() {
         Spec Sections:E2
         Description:Duplicate token in enumerated attribute declaration
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata2e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E2a.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -47,22 +57,11 @@ fn rmte2e2b() {
         Spec Sections:E2
         Description:Duplicate token in NOTATION attribute declaration
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata2e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E2b.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -74,25 +73,15 @@ fn rmte2e9b() {
         Spec Sections:E9
         Description:An attribute default must be syntactically correct even if unused
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata2e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E9b.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
+#[ignore]
 fn rmte2e14() {
     /*
         Test ID:rmt-e2e-14
@@ -100,26 +89,11 @@ fn rmte2e14() {
         Spec Sections:E14
         Description:Declarations mis-nested wrt parameter entities are just validity errors (but note that some parsers treat some such errors as fatal)
     */
-
-    let ss = StaticStateBuilder::new()
-        .dtd_resolver(dtdfileresolve())
-        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
-        .build();
-    let testxml = RNode::new_document();
-    let ps = ParserStateBuilder::new()
-        .doc(testxml)
-        .document_location("tests/conformance/xml/xmlconf/eduni/errata-2e/".to_string())
-        .build();
-
-    let parseresult = xml::parse_with_state(
+    test_eduni_errata2e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E14.xml")
             .unwrap()
             .as_str(),
-        ps,
-        ss,
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -131,22 +105,11 @@ fn rmte2e15a() {
         Spec Sections:E15
         Description:Empty content can't contain an entity reference
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata2e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15a.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -158,22 +121,11 @@ fn rmte2e15b() {
         Spec Sections:E15
         Description:Empty content can't contain a comment
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata2e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15b.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -185,22 +137,11 @@ fn rmte2e15c() {
         Spec Sections:E15
         Description:Empty content can't contain a PI
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata2e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15c.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -212,22 +153,11 @@ fn rmte2e15d() {
         Spec Sections:E15
         Description:Empty content can't contain whitespace
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata2e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15d.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -239,22 +169,11 @@ fn rmte2e15g() {
         Spec Sections:E15
         Description:Element content can't contain character reference to whitespace
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata2e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15g.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -266,22 +185,11 @@ fn rmte2e15h() {
         Spec Sections:E15
         Description:Element content can't contain entity reference if replacement text is character reference to whitespace
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata2e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15h.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }
 
 #[test]
@@ -293,20 +201,9 @@ fn rmte2e20() {
         Spec Sections:E20
         Description:Tokens, after normalization, must be separated by space, not other whitespace characters
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata2e_invalid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E20.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_err());
 }

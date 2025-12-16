@@ -8,21 +8,11 @@ use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
-#[test]
-fn rmte3e05a() {
-    /*
-        Test ID:rmt-e3e-05a
-        Test URI:E05a.xml
-        Spec Sections:E05
-        Description:CDATA sections may occur in Mixed content.
-    */
-
+fn test_eduni_errata3e_valid(xmldoc: &str) {
     let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E05a.xml")
-            .unwrap()
-            .as_str(),
+        xmldoc,
         Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
@@ -35,6 +25,21 @@ fn rmte3e05a() {
 }
 
 #[test]
+fn rmte3e05a() {
+    /*
+        Test ID:rmt-e3e-05a
+        Test URI:E05a.xml
+        Spec Sections:E05
+        Description:CDATA sections may occur in Mixed content.
+    */
+    test_eduni_errata3e_valid(
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E05a.xml")
+            .unwrap()
+            .as_str(),
+    );
+}
+
+#[test]
 fn rmte3e05b() {
     /*
         Test ID:rmt-e3e-05b
@@ -42,22 +47,11 @@ fn rmte3e05b() {
         Spec Sections:E05
         Description:CDATA sections, comments and PIs may occur in ANY content.
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata3e_valid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E05b.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
 }
 
 #[test]
@@ -69,20 +63,9 @@ fn rmte3e06i() {
         Spec Sections:E06
         Description:Non-syntactic validity errors in default attributes only happen if the attribute is in fact defaulted.
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_errata3e_valid(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06i.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_ok());
-
-    let doc = parseresult.unwrap();
-
-    let validation = doc.validate(Schema::DTD);
-    assert!(validation.is_ok());
 }

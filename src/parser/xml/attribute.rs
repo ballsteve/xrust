@@ -38,7 +38,10 @@ where
             ) = attrs
                 .into_iter()
                 .partition(|((prefix, local_part), value)| {
-                    matches!((prefix.as_deref(), local_part.as_str(), value), (Some("xmlns"), _, _) | (None, "xmlns", _))
+                    matches!(
+                        (prefix.as_deref(), local_part.as_str(), value),
+                        (Some("xmlns"), _, _) | (None, "xmlns", _)
+                    )
                 });
 
             let doc = state1.doc.clone().unwrap().clone();

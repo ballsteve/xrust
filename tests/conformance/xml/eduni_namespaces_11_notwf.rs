@@ -9,6 +9,17 @@ use xrust::item::Node;
 use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 
+fn test_eduni_namespaces_11_notwf(xmldoc: &str) {
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        xmldoc,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+    );
+
+    assert!(parseresult.is_err());
+}
+
 #[test]
 fn rmtns11005() {
     /*
@@ -17,17 +28,11 @@ fn rmtns11005() {
         Spec Sections:5
         Description:Illegal use of prefix that has been unbound
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_11_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/005.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -38,17 +43,11 @@ fn htbhns11007() {
         Spec Sections:3
         Description:Attempt to unbind xmlns 'namespace'
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_11_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/007.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -59,15 +58,9 @@ fn htbhns11008() {
         Spec Sections:3
         Description:Attempt to unbind xml namespace
     */
-
-    let testxml = RNode::new_document();
-    let parseresult = xml::parse(
-        testxml,
+    test_eduni_namespaces_11_notwf(
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/008.xml")
             .unwrap()
             .as_str(),
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
-
-    assert!(parseresult.is_err());
 }

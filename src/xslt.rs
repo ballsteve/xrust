@@ -1046,9 +1046,7 @@ fn to_transform<N: Node>(
                     match (
                         n.get_attribute(&ATTRGROUPBY).to_string().as_str(),
                         n.get_attribute(&ATTRGROUPADJACENT).to_string().as_str(),
-                        n.get_attribute(&ATTRGROUPSTARTINGWITH)
-                            .to_string()
-                            .as_str(),
+                        n.get_attribute(&ATTRGROUPSTARTINGWITH).to_string().as_str(),
                         n.get_attribute(&ATTRGROUPENDINGWITH).to_string().as_str(),
                     ) {
                         (by, "", "", "") => Ok(Transform::ForEach(
@@ -1493,9 +1491,7 @@ fn get_sort_keys<N: Node>(n: &N) -> Result<Vec<(Order, Transform<N>)>, Error> {
         }
     }
     // Check that there are no more sort elements
-    if nit.any(|c| {
-        c.node_type() == NodeType::Element && c.name().is_some_and(|d| d == *XSLSORT)
-    }) {
+    if nit.any(|c| c.node_type() == NodeType::Element && c.name().is_some_and(|d| d == *XSLSORT)) {
         Err(Error::new(ErrorKind::TypeError, "sort elements in body"))
     } else {
         Ok(result)

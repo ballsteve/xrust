@@ -1,4 +1,4 @@
-/*mod eduni_errata2e_error;
+mod eduni_errata2e_error;
 mod eduni_errata2e_invalid;
 mod eduni_errata2e_notwf;
 mod eduni_errata2e_valid;
@@ -40,7 +40,7 @@ mod sun_valid;
 mod xmltest_invalid;
 mod xmltest_notwf_ext_sa;
 mod xmltest_notwf_not_sa;
-mod xmltest_notwf_sa;*/
+mod xmltest_notwf_sa;
 mod xmltest_valid_ext_sa;
 mod xmltest_valid_not_sa;
 mod xmltest_valid_sa;

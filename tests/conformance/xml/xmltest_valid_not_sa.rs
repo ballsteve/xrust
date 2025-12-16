@@ -14,7 +14,7 @@ use xrust::parser::{ParseError, ParserStateBuilder, StaticStateBuilder, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
-fn test_xmltest_valid_not_sa(xmldoc: &str, xmlcanondoc: &str){
+fn test_xmltest_valid_not_sa(xmldoc: &str, xmlcanondoc: &str) {
     let ss = StaticStateBuilder::new()
         .dtd_resolver(dtdfileresolve())
         .namespace(|_: &_| Err(ParseError::MissingNameSpace))
@@ -26,11 +26,7 @@ fn test_xmltest_valid_not_sa(xmldoc: &str, xmlcanondoc: &str){
         .document_location("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string())
         .build();
 
-    let parseresult = xml::parse_with_state(
-        xmldoc,
-        ps,
-        ss,
-    );
+    let parseresult = xml::parse_with_state(xmldoc, ps, ss);
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
@@ -47,7 +43,6 @@ fn test_xmltest_valid_not_sa(xmldoc: &str, xmlcanondoc: &str){
     assert!(validation.is_ok());
 
     assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
-
 }
 
 #[test]
@@ -64,7 +59,8 @@ fn validnotsa001() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/001.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -82,7 +78,8 @@ fn validnotsa002() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/002.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -101,7 +98,8 @@ fn validnotsa003() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/003.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -120,7 +118,8 @@ fn validnotsa004() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/004.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -139,7 +138,8 @@ fn validnotsa005() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/005.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -158,7 +158,8 @@ fn validnotsa006() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/006.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -177,7 +178,8 @@ fn validnotsa007() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/007.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -196,7 +198,8 @@ fn validnotsa008() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/008.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -215,7 +218,8 @@ fn validnotsa009() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/009.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -234,7 +238,8 @@ fn validnotsa010() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/010.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -253,7 +258,8 @@ fn validnotsa011() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/011.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -272,7 +278,8 @@ fn validnotsa012() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/012.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -291,7 +298,8 @@ fn validnotsa013() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/013.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -310,7 +318,8 @@ fn validnotsa014() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/014.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -329,7 +338,8 @@ fn validnotsa015() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/015.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -348,7 +358,8 @@ fn validnotsa016() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/016.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -367,7 +378,8 @@ fn validnotsa017() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/017.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -386,7 +398,8 @@ fn validnotsa018() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/018.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -405,7 +418,8 @@ fn validnotsa019() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/019.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -424,7 +438,8 @@ fn validnotsa020() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/020.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -443,7 +458,8 @@ fn validnotsa021() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/021.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -462,7 +478,8 @@ fn validnotsa023() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/023.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -481,7 +498,8 @@ fn validnotsa024() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/024.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -500,7 +518,8 @@ fn validnotsa025() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/025.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -519,7 +538,8 @@ fn validnotsa026() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/026.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -538,7 +558,8 @@ fn validnotsa027() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/027.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -557,7 +578,8 @@ fn validnotsa028() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/028.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -576,7 +598,8 @@ fn validnotsa029() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/029.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -595,7 +618,8 @@ fn validnotsa030() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/030.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
 
 #[test]
@@ -614,5 +638,6 @@ fn validnotsa031() {
             .as_str(),
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/031.xml")
             .unwrap()
-            .as_str());
+            .as_str(),
+    );
 }
