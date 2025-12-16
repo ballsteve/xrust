@@ -1291,6 +1291,13 @@ fn to_xml_int(
                     format!(" {}='{}'", to_prefixed_name(&a), serialise(&a.value())).as_str(),
                 )
             });
+
+            // deal with the empty element case and emit a self-closing tag e.g. <tag/> instead of <tag></tag>
+            if node.first_child().is_none() {
+                result.push_str("/>");
+                return result;
+            }
+
             result.push('>');
 
             // Content of the element.
@@ -1684,7 +1691,7 @@ mod tests {
             .new_element(QName::try_from("Test").expect("not a QName"))
             .expect("unable to create element node");
         root.push(c).expect("unable to add node");
-        assert_eq!(root.to_xml(), "<Test></Test>")
+        assert_eq!(root.to_xml(), "<Test/>")
     }
     #[test]
     fn smite_element_2() {
@@ -1697,7 +1704,7 @@ mod tests {
             .new_element(QName::try_from("MoreTest").expect("not a QName"))
             .expect("unable to create child element");
         child1.push(child2).expect("unable to add node");
-        assert_eq!(root.to_xml(), "<Test><MoreTest></MoreTest></Test>")
+        assert_eq!(root.to_xml(), "<Test><MoreTest/></Test>")
     }
 
     #[test]

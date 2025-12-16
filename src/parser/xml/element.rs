@@ -157,51 +157,7 @@ where
                     }
                     Some(atts) => {
                         // Keep track of attributes that are created as defaults
-                        let mut default_attrs = vec![];
-                        if state1.attr_defaults {
-                            for ((attprefix, attlocalname), (atttype, defdecl, _)) in atts.iter() {
-                                match defdecl {
-                                    DefaultDecl::Default(s) | DefaultDecl::FIXED(s) => {
-                                        let qn = attprefix.as_ref().map_or_else(
-                                            || {
-                                                QName::from_local_name(
-                                                    NcName::try_from(attlocalname.as_str())
-                                                        .unwrap(),
-                                                )
-                                            },
-                                            |ap| {
-                                                QName::new_from_parts(
-                                                    NcName::try_from(attlocalname.as_str())
-                                                        .unwrap(),
-                                                    state1.in_scope_namespaces.namespace_uri(
-                                                        &Some(
-                                                            NamespacePrefix::try_from(ap.as_str())
-                                                                .unwrap(),
-                                                        ),
-                                                    ), // TODO: return error if no namespace found
-                                                )
-                                            },
-                                        );
-                                        //https://www.w3.org/TR/xml11/#AVNormalize
-                                        let attval = match atttype {
-                                            AttType::CDATA => s.clone(),
-                                            _ => s.trim().replace("  ", " "),
-                                        };
-                                        default_attrs.push(qn.clone());
-                                        let a = d
-                                            .new_attribute(qn.clone(), Rc::new(Value::from(attval)))
-                                            .expect("unable to create attribute");
-                                        if e.add_attribute(a).is_err() {
-                                            return Err(ParseError::DuplicateAttribute(
-                                                qn.to_string(),
-                                            ));
-                                        }
-                                    }
-                                    _ => {}
-                                }
-                            }
-                        }
-
+                        let mut created_attrs = vec![];
                         for attnode in av.into_iter() {
                             if attnode.name().unwrap() == *XMLID {
                                 let a = d
@@ -212,6 +168,7 @@ where
                                         attnode.name().unwrap().to_string(),
                                     ));
                                 }
+                                created_attrs.push(attnode.name().clone());
                             } else {
                                 let thisatprefix =
                                     attnode.name().unwrap().namespace_uri().and_then(|ns| {
@@ -235,6 +192,7 @@ where
                                                 attnode.name().unwrap().to_string(),
                                             ));
                                         }
+                                        created_attrs.push(attnode.name().clone());
                                     }
                                     Some((atttype, _, _)) => {
                                         //https://www.w3.org/TR/xml11/#AVNormalize
@@ -294,22 +252,64 @@ where
                                             }
                                         }
 
-                                        if default_attrs
-                                            .iter()
-                                            .any(|aqn| *aqn == attnode.name().unwrap())
+                                        let a = d
+                                            .new_attribute(attnode.name().unwrap(), v)
+                                            .expect("unable to create attribute");
+                                        if e.add_attribute(a).is_err() {
+                                            return Err(ParseError::DuplicateAttribute(
+                                                attnode.name().unwrap().to_string(),
+                                            ));
+                                        }
+                                        created_attrs.push(attnode.name().clone());
+                                    }
+                                }
+                            }
+                        }
+                        if state1.attr_defaults {
+                            for ((attprefix, attlocalname), (atttype, defdecl, _)) in atts.iter() {
+                                match defdecl {
+                                    DefaultDecl::Default(s) | DefaultDecl::FIXED(s) => {
+                                        let qn = attprefix.as_ref().map_or_else(
+                                            || {
+                                                QName::from_local_name(
+                                                    NcName::try_from(attlocalname.as_str())
+                                                        .unwrap(),
+                                                )
+                                            },
+                                            |ap| {
+                                                QName::new_from_parts(
+                                                    NcName::try_from(attlocalname.as_str())
+                                                        .unwrap(),
+                                                    state1.in_scope_namespaces.namespace_uri(
+                                                        &Some(
+                                                            NamespacePrefix::try_from(ap.as_str())
+                                                                .unwrap(),
+                                                        ),
+                                                    ), // TODO: return error if no namespace found
+                                                )
+                                            },
+                                        );
+                                        //https://www.w3.org/TR/xml11/#AVNormalize
+                                        if !created_attrs.iter().any(|aqn| *aqn == Some(qn.clone()))
                                         {
-                                            //eprintln!("already created this attribute as default")
-                                        } else {
+                                            let attval = match atttype {
+                                                AttType::CDATA => s.clone(),
+                                                _ => s.trim().replace("  ", " "),
+                                            };
                                             let a = d
-                                                .new_attribute(attnode.name().unwrap(), v)
+                                                .new_attribute(
+                                                    qn.clone(),
+                                                    Rc::new(Value::from(attval)),
+                                                )
                                                 .expect("unable to create attribute");
                                             if e.add_attribute(a).is_err() {
                                                 return Err(ParseError::DuplicateAttribute(
-                                                    attnode.name().unwrap().to_string(),
+                                                    qn.to_string(),
                                                 ));
                                             }
                                         }
                                     }
+                                    _ => {}
                                 }
                             }
                         }

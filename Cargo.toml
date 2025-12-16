@@ -1,6 +1,6 @@
 [package]
 name = "xrust"
-version = "1.3.0"
+version = "2.0.0"
 keywords = ["xml", "json", "xpath", "xslt", "tree"]
 categories = ["parser-implementations"]
 description = "Support for XPath and XSLT"
@@ -9,7 +9,7 @@ authors = [
     "Daniel Murphy <daniel@devasta.ie>",
 ]
 license = "Apache-2.0"
-repository = "https://gitlab.gnome.org/balls/xrust.git"
+repository = "https://gitlab.gnome.org/World/Rust/markup-rs/xrust.git"
 documentation = "https://docs.rs/xrust/"
 readme = "README.md"
 edition = "2024"
