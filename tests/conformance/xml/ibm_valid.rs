@@ -4,12 +4,10 @@ IBM test cases
 
 */
 
-use crate::conformance::dtdfileresolve;
 use std::fs;
 //use hexdump::hexdump;
 use xrust::item::Node;
-use xrust::parser::xml::parse_with_state;
-use xrust::parser::{ParseError, ParserState, ParserStateBuilder, StaticStateBuilder, xml};
+use xrust::parser::{ParseError, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
 
