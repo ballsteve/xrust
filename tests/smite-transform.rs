@@ -585,6 +585,16 @@ fn tr_name_0() {
         .expect("test failed")
 }
 #[test]
+fn tr_name_1() {
+    transformgeneric::generic_tr_name_1::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
+#[test]
+fn tr_name_2() {
+    transformgeneric::generic_tr_name_2::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
+#[test]
 fn tr_string() {
     transformgeneric::generic_tr_string::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
         .expect("test failed")

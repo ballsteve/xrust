@@ -11,10 +11,14 @@ use crate::parser::xml::dtd::pedecl::pedecl;
 use crate::parser::xml::dtd::pereference::pereference;
 use crate::parser::xml::misc::comment;
 use crate::parser::xml::misc::processing_instruction;
-use crate::parser::{ParseError, ParseInput};
+use crate::parser::{ParseError, ParseInput, StaticState};
+use qualname::{NamespacePrefix, NamespaceUri};
 
-pub(crate) fn intsubset<N: Node>()
--> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<()>), ParseError> {
+pub(crate) fn intsubset<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, Vec<()>), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
     many0(alt9(
         elementdecl(),
         attlistdecl(),

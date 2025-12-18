@@ -1,9 +1,9 @@
 //! Generic node tests
 
+use qualname::{NcName, QName};
 use std::rc::Rc;
 use xrust::item::{Node, NodeType};
 use xrust::output::OutputSpec;
-use xrust::qname::QualifiedName;
 use xrust::value::{Value, ValueBuilder, ValueData};
 use xrust::xdmerror::Error;
 
@@ -12,30 +12,26 @@ where
     G: Fn() -> N,
 {
     let mut sd = make_doc();
-    let t = sd.new_element(Rc::new(QualifiedName::new(
-        None,
-        None,
-        String::from("Test"),
-    )))?;
+    let t = sd.new_element(QName::from_local_name(NcName::try_from("Test").unwrap()))?;
     sd.push(t.clone())?;
     let a1 = sd.new_attribute(
-        Rc::new(QualifiedName::new(None, None, String::from("role"))),
+        QName::from_local_name(NcName::try_from("role").unwrap()),
         Rc::new(Value::from("testing")),
     )?;
     t.add_attribute(a1)?;
     let a2 = sd.new_attribute(
-        Rc::new(QualifiedName::new(None, None, String::from("phase"))),
+        QName::from_local_name(NcName::try_from("phase").unwrap()),
         Rc::new(Value::from("one")),
     )?;
     t.add_attribute(a2)?;
 
     // NB. attributes could be returned in a different order
     assert!(
-        sd.to_xml() == "<Test role='testing' phase='one'></Test>"
-            || sd.to_xml() == "<Test phase='one' role='testing'></Test>"
+        sd.to_xml() == "<Test role='testing' phase='one'/>"
+            || sd.to_xml() == "<Test phase='one' role='testing'/>"
     );
 
-    match t.get_attribute_node(&QualifiedName::new(None, None, "role")) {
+    match t.get_attribute_node(&QName::from_local_name(NcName::try_from("role").unwrap())) {
         Some(at) => {
             assert_eq!(at.node_type(), NodeType::Attribute);
             assert_eq!(at.to_string(), "testing");
@@ -50,14 +46,10 @@ where
     G: Fn() -> N,
 {
     let mut sd = make_doc();
-    let mut t = sd.new_element(Rc::new(QualifiedName::new(
-        None,
-        None,
-        String::from("Test"),
-    )))?;
+    let mut t = sd.new_element(QName::from_local_name(NcName::try_from("Test").unwrap()))?;
     sd.push(t.clone())?;
     let a1 = sd.new_attribute(
-        Rc::new(QualifiedName::new(None, None, String::from("attr"))),
+        QName::from_local_name(NcName::try_from("attr").unwrap()),
         Rc::new(Value::from("'")),
     )?;
     t.add_attribute(a1)?;
@@ -83,14 +75,10 @@ where
     G: Fn() -> N,
 {
     let mut sd = make_doc();
-    let mut t = sd.new_element(Rc::new(QualifiedName::new(
-        None,
-        None,
-        String::from("Test"),
-    )))?;
+    let mut t = sd.new_element(QName::from_local_name(NcName::try_from("Test").unwrap()))?;
     sd.push(t.clone())?;
     let a1 = sd.new_attribute(
-        Rc::new(QualifiedName::new(None, None, String::from("attr"))),
+        QName::from_local_name(NcName::try_from("attr").unwrap()),
         Rc::new(Value::from("'")),
     )?;
     t.add_attribute(a1)?;

@@ -6,9 +6,14 @@ use crate::parser::combinators::many::{many0, many1};
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::tuple3;
-use crate::parser::{ParseError, ParseInput};
+use crate::parser::{ParseError, ParseInput, StaticState};
+use qualname::{NamespacePrefix, NamespaceUri};
 
-pub fn whitespace0<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub fn whitespace0<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, ()), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
     //TODO add support for xml:space
     map(
         many0(alt4(tag(" "), tag("\t"), tag("\r"), tag("\n"))),
@@ -16,8 +21,11 @@ pub fn whitespace0<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>
     )
 }
 
-pub(crate) fn whitespace1<N: Node>()
--> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn whitespace1<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, ()), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
     //TODO add support for xml:space
     map(
         many1(alt4(tag(" "), tag("\t"), tag("\r"), tag("\n"))),
@@ -25,8 +33,11 @@ pub(crate) fn whitespace1<N: Node>()
     )
 }
 
-pub(crate) fn xpwhitespace<N: Node>()
--> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn xpwhitespace<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, ()), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
     map(
         tuple3(
             whitespace0(),
@@ -52,11 +63,14 @@ pub(crate) fn xpwhitespace<N: Node>()
 /// * There is no open delimiter. In this case, consume up to and including the close delimiter. If the bracket count is 1 then return Ok, otherwise error.
 /// * There is an open delimiter. If the open occurs after the close, then consume up to and including the close delimiter. If the bracket count is 1 then return Ok, otherwise error.
 /// * The open delimiter occurs before the close. In this case, increment the bracket count and continue after the open delimiter.
-fn take_until_balanced<N: Node>(
+fn take_until_balanced<'a, N: Node, L>(
     open: &'static str,
     close: &'static str,
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
-    move |(input, state)| {
+) -> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, ()), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
+    move |(input, state), _ss| {
         let mut pos = 0;
         let mut counter = 0;
         let mut bracket_counter = 0;

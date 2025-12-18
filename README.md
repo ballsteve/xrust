@@ -16,9 +16,23 @@ However, it is not *compliant* with XPath/XSLT v1.0. This is because it implemen
 
 In addition to the (rudimentary) implementation of the [XQuery and XPath Data Model 3.1](https://www.w3.org/TR/xpath-datamodel-31/) data model, a few other features of XPath and XSLT 2.0/3.0 have been implemented, such as FLWR expressions, grouping (i.e. xsl:for-each-group), and user-defined functions.
 
+## Umbrella Group
+
+χrust is part of the [markup-rs](https://gitlab.gnome.org/World/Rust/markup-rs) family of projects providing support for the XML tech stack in Rust.
+
+The various modules in χrust are being slowly picked apart and moved into separate projects in the markup-rs group. The Qualified Name module was the first to undergo this transition, and is now the qualname crate.
+
+## Canonical Repository
+
+Development of χrust takes place on [Gitlab](https://gitlab.gnome.org/World/Rust/markup-rs/xrust). The github repository is not mirrored (at the moment), so we try and keep the two repositories in sync.
+
+## Version 2.0 Release Notes
+
+When building χrust v2.0 we have noticed unusually long compile times. If your application is adversely affected by this then please let us know. We're working on identifying the cause and developing a solution.
+
 ## Design
 
-The library separates parsing from evaluation. The XPath and XSLT are parsed (or "compiled") into an internal representation, a "transformation", which is then evaluated.
+The library separates parsing from evaluation. XPath expressions and XSLT stylesheets are parsed (or "compiled") into an internal representation, a "transformation", which is then evaluated.
 
 This means it won't matter how an expression is written; it will be compiled into the same internal form. For example, the XPath expression:
 
@@ -40,7 +54,7 @@ This approach means that the XPath and XSLT modules are simply mappings from the
 
 The "Tree" is the fundamental data object for transformations.
 χrust provides a tree implementation, smite, that is both mutable and fully navigable.
-By "fully navigable" we mean that from any given node you can access its children, parent, or attributes.
+By "fully navigable" we mean that from any given node you can access its children, parent, siblings, or attributes.
 It achieves mutability by using the interior mutability pattern.
 
 ### XML Namespaces
@@ -53,7 +67,7 @@ Support for XML Namespaces is in three parts:
 
 There is a convenience routine that builds the flat mapping, i.e. a NamespaceMap, from the Namespace node declarations.
 
-NamespaceNode objects are Rc-shared because they are often used but don't change much.
+NamespaceNode objects are Rc-shared because they are often used but rarely change.
 
 ## The Plan
 
@@ -71,12 +85,6 @@ Although the eventual desire is to implement all of XSLT v3.0 functionality, som
 
 See the [XSLT module](https://docs.rs/xrust/latest/xrust/xslt/index.html) for an example of how to evaluate an XSL stylesheet.
 
-## Canonical Repository
-
-Development of χrust takes place on [Gitlab](https://gitlab.gnome.org/World/Rust/markup-rs/xrust).
-
-χrust is part of the [markup-rs](https://gitlab.gnome.org/World/Rust/markup-rs) family of projects providing support for the XML tech stack in Rust.
-
 ## Examples
 
 * [Integration](https://gitlab.gnome.org/World/Rust/markup-rs/xrust/-/blob/main/examples/ixml.rs) with [Invisible XML](https://www.w3.org/community/ixml/2021/03/19/welcome-to-ixml/).
@@ -90,6 +98,7 @@ Status of [standards implementation](https://gitlab.gnome.org/World/Rust/markup-
 
 | Releases      | Notes                                                                                    |
 |---------------|------------------------------------------------------------------------------------------|
+| Version 2.0.0 | Use qualname::QName to intern Qualified Names. Update all APIs to use QNames. Improve XML Namespace support. Improve error reporting. Upgrade benchmarks. |
 | Version 1.3.0 | Implement xsl:for-each-group/@group-starting-with. Improved serialisation of XML, including canonical format. Fix bug in adding attribute node to result tree. Support predicates for postfix expressions. |
 | Version 1.2.5 | Fixed disable-output-escaping. |
 | Version 1.2.4 | Improved performance of DTD validation. Bug fixes for ANT declaration and white space handling. |

@@ -1,6 +1,6 @@
 [package]
 name = "xrust"
-version = "1.3.0"
+version = "2.0.0"
 keywords = ["xml", "json", "xpath", "xslt", "tree"]
 categories = ["parser-implementations"]
 description = "Support for XPath and XSLT"
@@ -18,6 +18,10 @@ edition = "2024"
 # The xslt feature enables XSLT support
 default = ["xslt"]
 xslt = []
+# Do you want to run unit tests for the conformance suite
+test-conformance-xml = []
+test-conformance-xmlid = []
+
 
 [[bench]]
 name = "bench_smite"
@@ -26,6 +30,8 @@ harness = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+#qualname = { path = "../qualname" }
+qualname = "0.0.1"
 rust_decimal = "1.38.0"
 rust_decimal_macros = "1.38.0"
 lexers = "0.1.4"

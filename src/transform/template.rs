@@ -5,11 +5,11 @@ use std::fmt::{Debug, Formatter};
 use std::rc::Rc;
 use url::Url;
 
-use crate::qname::QualifiedName;
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::{Order, Transform, do_sort};
 use crate::xdmerror::Error;
 use crate::{Node, Pattern, Sequence};
+use qualname::QName;
 
 #[derive(Clone)]
 pub struct Template<N: Node> {
@@ -18,7 +18,7 @@ pub struct Template<N: Node> {
     pub(crate) priority: Option<f64>,
     pub(crate) import: Vec<usize>,
     pub(crate) document_order: Option<usize>,
-    pub(crate) mode: Option<Rc<QualifiedName>>,
+    pub(crate) mode: Option<QName>,
     pub(crate) mtch: String, // used for debugging
 }
 
@@ -29,7 +29,7 @@ impl<N: Node> Template<N> {
         priority: Option<f64>,
         import: Vec<usize>,
         document_order: Option<usize>,
-        mode: Option<Rc<QualifiedName>>,
+        mode: Option<QName>,
         mtch: String,
     ) -> Self {
         Template {
@@ -101,7 +101,7 @@ pub(crate) fn apply_templates<
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<N, F, G, H>,
     s: &Transform<N>,
-    m: &Option<Rc<QualifiedName>>,
+    m: &Option<QName>,
     o: &Vec<(Order, Transform<N>)>, // sort keys
 ) -> Result<Sequence<N>, Error> {
     // s is the select expression. Evaluate it, and then iterate over its items.

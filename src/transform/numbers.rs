@@ -1,5 +1,7 @@
 //! These functions are for features defined in XPath Functions 1.0 and 2.0.
 
+use qualname::{NcName, QName};
+use std::cmp::Ordering;
 use std::rc::Rc;
 use url::Url;
 
@@ -9,11 +11,10 @@ use italian_numbers::roman_converter;
 
 use crate::item::{Item, Node, NodeType, Sequence, SequenceTrait};
 use crate::pattern::{Branch, Pattern, Step};
-use crate::qname::QualifiedName;
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::{
     ArithmeticOperand, ArithmeticOperator, Axis, KindTest, NameTest, NodeTest, Transform,
-    WildcardOrName,
+    WildcardOrName, WildcardOrNamespaceUri,
 };
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
@@ -74,9 +75,12 @@ pub fn generate_integers<
                             Axis::SelfAxis,
                             Axis::SelfAxis,
                             NodeTest::Name(NameTest::new(
-                                m.name().namespace_uri().map(WildcardOrName::Name),
-                                None,
-                                Some(WildcardOrName::Name(m.name().localname())),
+                                m.name()
+                                    .unwrap()
+                                    .namespace_uri()
+                                    .map(WildcardOrNamespaceUri::NamespaceUri),
+                                //None,
+                                Some(WildcardOrName::Name(m.name().unwrap())),
                             )),
                         ),
                         NodeType::Text => Step::new(
@@ -146,14 +150,18 @@ pub fn generate_integers<
             Err(Error::new_with_code(
                 ErrorKind::TypeError,
                 "not a singleton node",
-                Some(QualifiedName::new(None, None, "XTTE1000")),
+                Some(QName::from_local_name(
+                    NcName::try_from("XTTE1000").unwrap(),
+                )),
             ))
         }
     } else {
         Err(Error::new_with_code(
             ErrorKind::TypeError,
             "not a singleton node",
-            Some(QualifiedName::new(None, None, "XTTE1000")),
+            Some(QName::from_local_name(
+                NcName::try_from("XTTE1000").unwrap(),
+            )),
         ))
     }
 }
@@ -405,19 +413,20 @@ pub(crate) fn tr_range<
     }
     let i = s[0].to_int()?;
     let j = e[0].to_int()?;
-    if i > j {
-        // empty sequence result
-        Ok(vec![])
-    } else if i == j {
-        let mut seq = Sequence::new();
-        seq.push_value(&Rc::new(Value::from(i)));
-        Ok(seq)
-    } else {
-        let mut result = Sequence::new();
-        for k in i..=j {
-            result.push_value(&Rc::new(Value::from(k)))
+    match i.cmp(&j) {
+        Ordering::Greater => Ok(vec![]),
+        Ordering::Less => {
+            let mut result = Sequence::new();
+            for k in i..=j {
+                result.push_value(&Rc::new(Value::from(k)))
+            }
+            Ok(result)
         }
-        Ok(result)
+        Ordering::Equal => {
+            let mut seq = Sequence::new();
+            seq.push_value(&Rc::new(Value::from(i)));
+            Ok(seq)
+        }
     }
 }
 
@@ -532,21 +541,19 @@ pub fn format_integer<
                         // length specification
                         // TODO: non-arabic-roman numerals
                         let mut token = String::from(d);
-                        loop {
-                            if let Some(p) = pit.peek() {
-                                if p.eq(&'0') {
-                                    pit.next();
-                                    token.push('0');
-                                } else if p.eq(&'1') {
-                                    pit.next();
-                                    token.push('1');
-                                } else {
-                                    break;
-                                }
+
+                        while let Some(p) = pit.peek() {
+                            if p.eq(&'0') {
+                                pit.next();
+                                token.push('0');
+                            } else if p.eq(&'1') {
+                                pit.next();
+                                token.push('1');
                             } else {
                                 break;
                             }
                         }
+
                         if let Some(num) = nit.next() {
                             result.push_str(
                                 format!("{:0>1$}", num.to_int()?.to_string(), token.len()).as_str(),

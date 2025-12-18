@@ -13,18 +13,26 @@ use crate::parser::xml::chardata::chardata_unicode_codepoint;
 use crate::parser::xml::dtd::externalid::textexternalid;
 use crate::parser::xml::dtd::intsubset::intsubset;
 use crate::parser::xml::dtd::pereference::petextreference;
-use crate::parser::xml::qname::qualname;
-use crate::parser::{ParseError, ParseInput};
+use crate::parser::xml::qname::qualname_to_parts;
+use crate::parser::{ParseError, ParseInput, StaticState};
+use qualname::{NamespacePrefix, NamespaceUri};
 
-pub(crate) fn pedecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError>
+pub(crate) fn pedecl<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, ()), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
-    move |input| match wellformed_ver(
+    move |input, ss| match wellformed_ver(
         tuple9(
             tag("<!ENTITY"),
             whitespace1(),
             tag("%"),
             whitespace1(),
-            wellformed(qualname(), |n| !n.to_string().contains(':')),
+            wellformed(
+                qualname_to_parts(),
+                |(p, _)| p.is_none(),
+                "colon in parameter entity name not allowed",
+            ),
             whitespace1(),
             alt3(
                 textexternalid(),
@@ -36,15 +44,19 @@ pub(crate) fn pedecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<
         ),
         |(_, _, _, _, _, _, s, _, _)| !s.contains(|c: char| !is_char10(&c)), //XML 1.0
         |(_, _, _, _, _, _, s, _, _)| !s.contains(|c: char| !is_unrestricted_char11(&c)), //XML 1.1
-    )(input)
+        "invalid character in entity declaration",
+    )(input, ss)
     {
-        Ok(((input2, mut state2), (_, _, _, _, n, _, s, _, _))) => {
+        Ok(((input2, mut state2), (_, _, _, _, (_, l), _, s, _, _))) => {
             /*
             Numeric entities expanded immediately, since there'll be namespaces and the like to
             deal with later, after that we just store the entity as a string and parse again when called.
              */
             if !state2.currentlyexternal && s.contains('%') {
-                return Err(ParseError::NotWellFormed(s));
+                return Err(ParseError::NotWellFormed(format!(
+                    "unable to expand parameter entity \"{}\"",
+                    s
+                )));
             }
             let entityparse = map(
                 tuple2(
@@ -63,36 +75,42 @@ pub(crate) fn pedecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<
                         )),
                         |ve| ve.concat(),
                     ),
-                    wellformed(take_until_end(), |s| !s.contains('&') && !s.contains('%')),
+                    wellformed(
+                        take_until_end(),
+                        |s| !s.contains('&') && !s.contains('%'),
+                        "entity has invalid character",
+                    ),
                 ),
                 |(a, b)| [a, b].concat(),
-            )((s.as_str(), state2.clone()));
+            )((s.as_str(), state2.clone()), ss);
 
             match entityparse {
                 Ok(((_, _), res)) => {
                     if !state2.currentlyexternal {
-                        match intsubset()((res.as_str(), state2.clone())) {
+                        match intsubset()((res.as_str(), state2.clone()), ss) {
                             Ok(((_i, _s), _)) => {}
-                            Err(_) => return Err(ParseError::NotWellFormed(res)),
+                            Err(_) => {
+                                return Err(ParseError::NotWellFormed(format!(
+                                    "unable to parse entity \"{}\"",
+                                    res.clone()
+                                )));
+                            }
                         }
                     };
 
                     /* Entities should always bind to the first value */
                     let replaceable = state2.currentlyexternal;
 
-                    match state2.dtd.paramentities.get(n.to_string().as_str()) {
+                    match state2.dtd.paramentities.get(l.as_str()) {
                         None => {
-                            state2
-                                .dtd
-                                .paramentities
-                                .insert(n.to_string(), (res, replaceable));
+                            state2.dtd.paramentities.insert(l, (res, replaceable));
                             Ok(((input2, state2), ()))
                         }
                         Some((_, true)) => {
                             state2
                                 .dtd
                                 .paramentities
-                                .entry(n.to_string())
+                                .entry(l)
                                 .or_insert((res, replaceable));
                             Ok(((input2, state2), ()))
                         }

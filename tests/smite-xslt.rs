@@ -44,7 +44,7 @@ fn xslt_literal_element() {
     xsltgeneric::generic_literal_element(
         smite::make_from_str,
         smite::make_from_str_with_ns,
-        smite::make_sd_cooked,
+        smite::make_empty_doc_cooked,
     )
     .expect("test failed")
 }

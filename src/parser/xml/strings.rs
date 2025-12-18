@@ -7,13 +7,20 @@ use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::take_while;
 use crate::parser::xml::chardata::chardata_escapes;
 use crate::parser::xml::chardata::chardata_unicode_codepoint;
-use crate::parser::{ParseError, ParseInput};
+use crate::parser::{ParseError, ParseInput, StaticState};
+use qualname::{NamespacePrefix, NamespaceUri};
 
-pub(crate) fn delimited_string<N: Node>()
--> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn delimited_string<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, String), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
     alt2(string_single(), string_double())
 }
-fn string_single<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError>
+fn string_single<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, String), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
     delimited(
         tag("\'"),
@@ -28,7 +35,10 @@ fn string_single<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, 
         tag("\'"),
     )
 }
-fn string_double<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError>
+fn string_double<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, String), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
     delimited(
         tag("\""),

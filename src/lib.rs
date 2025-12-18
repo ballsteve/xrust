@@ -73,7 +73,6 @@ pub use xdmerror::{Error, ErrorKind};
 
 pub mod externals;
 pub mod output;
-pub mod qname;
 pub mod xmldecl;
 
 pub mod value;
@@ -96,6 +95,5 @@ pub use transform::template::Template;
 
 pub mod trees;
 
-pub mod namespace;
 pub mod testutils;
 pub mod validators;

@@ -7,9 +7,10 @@ An [Item] is a [Node], Function or atomic [Value].
 [Node]s are defined as a trait.
 */
 
+use qualname::{NamespacePrefix, NamespaceUri, QName};
+
 use crate::item;
 use crate::output::OutputDefinition;
-use crate::qname::QualifiedName;
 use crate::validators::{Schema, ValidationError};
 use crate::value::{Operator, Value};
 use crate::xdmerror::{Error, ErrorKind};
@@ -270,10 +271,10 @@ impl<N: Node> Item<N> {
     }
 
     /// Gives the name of the item. Certain types of Nodes have names, such as element-type nodes. If the item does not have a name returns an empty string.
-    pub fn name(&self) -> Rc<QualifiedName> {
+    pub fn name(&self) -> Option<QName> {
         match self {
             Item::Node(n) => n.name(),
-            _ => Rc::new(QualifiedName::new(None, None, "")),
+            _ => None,
         }
     }
 
@@ -297,10 +298,7 @@ impl<N: Node> Item<N> {
 
     /// Is this item a node?
     pub fn is_node(&self) -> bool {
-        match self {
-            Item::Node(_) => true,
-            _ => false,
-        }
+        matches!(self, Item::Node(_))
     }
 
     /// Is this item an element-type node?
@@ -384,7 +382,8 @@ impl<N: Node> fmt::Debug for Item<N> {
 ///
 /// Element nodes have children and attributes.
 ///
-/// Element nodes may have a Namespace node attached. This is the declaration of an XML Namespace.
+/// Element nodes may have Namespace nodes attached. These are the declaration of XML Namespaces.
+/// An XML Namespace declaration consists of an optional prefix and a namespace URI.
 /// The namespace-iter() method iterates over all in-scope namespaces, which will include namespaces that are declared on ancestor elements.
 ///
 /// Nodes must implement the PartialEq trait. This allows two (sub-)trees to be compared. The comparison is against the XML Infoset of each tree;
@@ -399,14 +398,36 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
 
     /// Get the type of the node
     fn node_type(&self) -> NodeType;
-    /// Get the name of the node.
-    /// If the node doesn't have a name, then returns a [QualifiedName] with an empty string for it's localname.
-    /// If the node is a namespace-type node, then the local part of the name is the namespace prefix. An unprefixed namespace has the empty string as its name.
-    fn name(&self) -> Rc<QualifiedName>;
+    /// Get the name of the node, if it has one.
+    /// A namespace-type returns the prefix as a [QName] where the prefix is the local-part.
+    /// An unprefixed namespace node returns None.
+    fn name(&self) -> Option<QName>;
     /// Get the value of the node.
     /// If the node doesn't have a value, then returns a [Value] that is an empty string.
-    /// If the node is a namespace-type node, then the value is the namespace URI.
+    /// If the node is a namespace-type node, gives the namespace URI.
     fn value(&self) -> Rc<Value>;
+
+    /// Resolve a name using the in-scope namespace declarations in the document,
+    /// resulting in a Qualified Name.
+    /// This will fail if the name is not a QName, or has a prefix that is unknown.
+    fn to_qname(&self, name: impl AsRef<str>) -> Result<QName, Error>;
+    /// Convert the node's qualified name to a prefixed name using the in-scope namespace declarations in the document.
+    fn to_prefixed_name(&self) -> String;
+    /// Find the prefix for the given namespace URI using the node's in-scope namespaces. If the namespace is the default, then None is returned.
+    /// If the namespace URI is not found in the in-scope namespaces returns an error.
+    fn to_namespace_prefix(&self, nsuri: &NamespaceUri) -> Result<Option<NamespacePrefix>, Error>;
+    /// Find the namespace URI for the given namespace prefix using the node's in-scope namespaces.
+    /// If the namespace prefix is not found in the in-scope namespaces returns an error.
+    fn to_namespace_uri(&self, prefix: &Option<NamespacePrefix>) -> Result<NamespaceUri, Error>;
+    /// For a namespace node give the prefix. If the namespace is the default namespace, then None is given.
+    /// If the node is not a namespace-type node then returns an error.
+    fn as_namespace_prefix(&self) -> Result<Option<&NamespacePrefix>, Error>;
+    /// For a namespace node give the namespace URI.
+    /// If the node is not a namespace-type node then returns an error.
+    fn as_namespace_uri(&self) -> Result<&NamespaceUri, Error>;
+    /// Is this namespace in scope, or is it a descoping declaration? See Namespaces in XML v1.1 s6.1.
+    /// This only applies to Namespace-type nodes. All other node types return false.
+    fn is_in_scope(&self) -> bool;
 
     /// Get a unique identifier for this node.
     fn get_id(&self) -> String;
@@ -439,6 +460,8 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     fn is_element(&self) -> bool {
         self.node_type() == NodeType::Element
     }
+    /// Check if a node is unattached
+    fn is_unattached(&self) -> bool;
 
     /// Check if a node is an XML ID
     fn is_id(&self) -> bool;
@@ -474,26 +497,28 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     /// An iterator over the attributes of an element
     fn attribute_iter(&self) -> Self::NodeIterator;
     /// Get an attribute of the node. Returns a copy of the attribute's value. If the node does not have an attribute of the given name, a value containing an empty string is returned.
-    fn get_attribute(&self, a: &QualifiedName) -> Rc<Value>;
+    fn get_attribute(&self, a: &QName) -> Rc<Value>;
     /// Get an attribute of the node. If the node is not an element returns None. Otherwise returns the attribute node. If the node does not have an attribute of the given name, returns None.
-    fn get_attribute_node(&self, a: &QualifiedName) -> Option<Self>;
+    fn get_attribute_node(&self, a: &QName) -> Option<Self>;
 
     /// Create a new element-type node in the same document tree. The new node is not attached to the tree.
-    fn new_element(&self, qn: Rc<QualifiedName>) -> Result<Self, Error>;
+    fn new_element(&self, qn: QName) -> Result<Self, Error>;
     /// Create a new text-type node in the same document tree. The new node is not attached to the tree.
     fn new_text(&self, v: Rc<Value>) -> Result<Self, Error>;
     /// Create a new attribute-type node in the same document tree. The new node is not attached to the tree.
-    fn new_attribute(&self, qn: Rc<QualifiedName>, v: Rc<Value>) -> Result<Self, Error>;
+    fn new_attribute(&self, qn: QName, v: Rc<Value>) -> Result<Self, Error>;
     /// Create a new comment-type node in the same document tree. The new node is not attached to the tree.
     fn new_comment(&self, v: Rc<Value>) -> Result<Self, Error>;
     /// Create a new processing-instruction-type node in the same document tree. The new node is not attached to the tree.
-    fn new_processing_instruction(
-        &self,
-        qn: Rc<QualifiedName>,
-        v: Rc<Value>,
-    ) -> Result<Self, Error>;
+    fn new_processing_instruction(&self, qn: Rc<Value>, v: Rc<Value>) -> Result<Self, Error>;
     /// Create a namespace node for an XML Namespace declaration.
-    fn new_namespace(&self, ns: Rc<Value>, prefix: Option<Rc<Value>>) -> Result<Self, Error>;
+    /// A namespace may be descoped (see Namespace in XML v1.1). In this case, the prefix and namespace URI are given for the namespace being descoped, but with the in_scope argument 'false'.
+    fn new_namespace(
+        &self,
+        ns: NamespaceUri,
+        prefix: Option<NamespacePrefix>,
+        in_scope: bool,
+    ) -> Result<Self, Error>;
 
     /// Append a node to the child list
     fn push(&mut self, n: Self) -> Result<(), Error>;
@@ -502,6 +527,7 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     /// Insert a node in the child list before the given node. The node will be detached from it's current position prior to insertion.
     fn insert_before(&mut self, n: Self) -> Result<(), Error>;
     /// Set an attribute. self must be an element-type node. att must be an attribute-type node.
+    /// Returns an error if an attribute with the same name is already attached to this element.
     fn add_attribute(&self, att: Self) -> Result<(), Error>;
 
     /// Shallow copy the node, i.e. copy only the node, but not it's attributes or content.
@@ -544,8 +570,8 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
                 if other.node_type() == NodeType::Element {
                     if self.name() == other.name() {
                         // Attributes
-                        let mut at_names: Vec<Rc<QualifiedName>> =
-                            self.attribute_iter().map(|a| a.name()).collect();
+                        let mut at_names: Vec<QName> =
+                            self.attribute_iter().map(|a| a.name().unwrap()).collect();
                         if at_names.len() == other.attribute_iter().count() {
                             at_names.sort();
                             if at_names.iter().fold(true, |mut acc, qn| {
@@ -599,7 +625,7 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
             _ => self.node_type() == other.node_type(), // Other types of node do not affect the equality
         }
     }
-    /// An iterator over the in-scope namespace nodes of an element.
+    /// An iterator over the namespace nodes of an element.
     /// Note: These nodes are calculated at the time the iterator is created.
     /// It is not guaranteed that the namespace nodes returned
     /// will specify the current element node as their parent.
@@ -612,4 +638,7 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     fn set_dtd(&self, dtd: DTD) -> Result<(), Error>;
 
     fn validate(&self, schema: Schema) -> Result<(), ValidationError>;
+
+    /// Return a list of nodes that are associated with this document, but are not attached.
+    fn unattached(&self) -> Vec<Self>;
 }

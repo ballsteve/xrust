@@ -8,11 +8,15 @@ use crate::parser::combinators::value::value;
 use crate::parser::combinators::whitespace::whitespace0;
 use crate::parser::xml::dtd::extsubset::extsubsetdecl;
 use crate::parser::xml::dtd::pereference::petextreference;
-use crate::parser::{ParseError, ParseInput};
+use crate::parser::{ParseError, ParseInput, StaticState};
+use qualname::{NamespacePrefix, NamespaceUri};
 
-pub(crate) fn conditionalsect<N: Node>()
--> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
-    move |(input, state)| match tuple5(
+pub(crate) fn conditionalsect<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, ()), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
+    move |(input, state), ss| match tuple5(
         tag("<!["),
         whitespace0(),
         alt3(
@@ -22,42 +26,54 @@ pub(crate) fn conditionalsect<N: Node>()
         ),
         whitespace0(),
         tag("["),
-    )((input, state))
+    )((input, state), ss)
     {
         Ok(((input2, state2), (_, _, ii, _, _))) => match ii.as_str() {
-            "INCLUDE" => includesect()((input2, state2)),
-            "IGNORE" => ignoresect()((input2, state2)),
-            _ => Err(ParseError::Combinator),
+            "INCLUDE" => includesect()((input2, state2), ss),
+            "IGNORE" => ignoresect()((input2, state2), ss),
+            _ => Err(ParseError::Combinator(String::from("conditionalsect"))),
         },
         Err(e) => Err(e),
     }
 }
 
-pub(crate) fn includesect<N: Node>()
--> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
-    move |(input, state)| match tuple2(extsubsetdecl(), tag("]]>"))((input, state)) {
+pub(crate) fn includesect<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, ()), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
+    move |(input, state), ss| match tuple2(extsubsetdecl(), tag("]]>"))((input, state), ss) {
         Ok(((input2, state2), (_, _))) => Ok(((input2, state2), ())),
         Err(e) => Err(e),
     }
 }
 
-pub(crate) fn ignoresect<N: Node>()
--> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
-    move |(input, state)| match tuple2(ignoresectcontents(), tag("]]>"))((input, state.clone())) {
+pub(crate) fn ignoresect<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, ()), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
+    move |(input, state), ss| match tuple2(ignoresectcontents(), tag("]]>"))(
+        (input, state.clone()),
+        ss,
+    ) {
         Ok(((input2, _), (_, _))) => Ok(((input2, state), ())),
         Err(e) => Err(e),
     }
 }
 
-fn ignoresectcontents<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError>
+fn ignoresectcontents<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, ()), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
-    move |(input, state)| match tuple2(
+    move |(input, state), ss| match tuple2(
         many0(tuple2(
             take_until_either_or("<![", "]]>"),
             tuple3(tag("<!["), ignoresectcontents(), tag("]]>")),
         )),
         take_until("]]>"),
-    )((input, state.clone()))
+    )((input, state.clone()), ss)
     {
         Ok(((input2, _), (_, _))) => Ok(((input2, state), ())),
         Err(e) => Err(e),

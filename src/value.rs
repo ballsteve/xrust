@@ -2,8 +2,9 @@
 //!
 //! An atomic value that is an item in a sequence.
 
+use qualname::{NamespaceUri, NcName, QName};
+
 use crate::output::OutputSpec;
-use crate::qname::QualifiedName;
 use crate::xdmerror::{Error, ErrorKind};
 use chrono::{DateTime, Local, NaiveDate};
 use core::fmt;
@@ -14,8 +15,7 @@ use rust_decimal::prelude::ToPrimitive;
 use rust_decimal_macros::dec;
 use std::cmp::Ordering;
 use std::convert::TryFrom;
-use std::fmt::Formatter;
-use std::rc::Rc;
+use std::fmt::{Display, Formatter};
 
 /// Comparison operators for values
 #[derive(Copy, Clone, Debug)]
@@ -93,11 +93,22 @@ impl Value {
     }
 }
 
+impl Display for Value {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        self.value.fmt(f)
+    }
+}
+
 pub struct ValueBuilder {
     value: Option<ValueData>,
     output: OutputSpec,
 }
 
+impl Default for ValueBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 impl ValueBuilder {
     pub fn new() -> Self {
         ValueBuilder {
@@ -121,7 +132,7 @@ impl ValueBuilder {
         }
     }
 }
-/// Derive a new [ValueBuilder] from an existing [Value]. The value data in the old Value will be copie to the builder.
+/// Derive a new [ValueBuilder] from an existing [Value]. The value data in the old Value will be copied to the builder.
 impl From<&Value> for ValueBuilder {
     fn from(v: &Value) -> Self {
         ValueBuilder {
@@ -188,7 +199,7 @@ pub enum ValueData {
     /// NameStartChar NameChar+
     Name(Name),
     /// (Letter | '_') NCNameChar+ (i.e. a Name without the colon)
-    NCName(NCName),
+    NCName(NcName),
     /// Same format as NCName
     ID(ID),
     /// Same format as NCName
@@ -200,15 +211,14 @@ pub enum ValueData {
     //hexBinary,
     //anyURI,
     /// Qualified Name
-    QName(QualifiedName),
-    /// Rc-shared Qualified Name
-    RQName(Rc<QualifiedName>),
+    QName(QName),
+    NamespaceUri(NamespaceUri),
     //NOTATION
 }
 
-impl fmt::Display for Value {
+impl fmt::Display for ValueData {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        let result = match &self.value {
+        let result = match self {
             ValueData::String(s) => s.to_string(),
             ValueData::NormalizedString(s) => s.0.to_string(),
             ValueData::Decimal(d) => d.to_string(),
@@ -231,17 +241,22 @@ impl fmt::Display for Value {
             ValueData::DateTime(dt) => dt.format("%Y-%m-%dT%H:%M:%S%z").to_string(),
             ValueData::Date(d) => d.format("%Y-%m-%d").to_string(),
             ValueData::QName(q) => q.to_string(),
-            ValueData::RQName(q) => q.to_string(),
+            ValueData::NCName(n) => n.to_string(),
+            ValueData::NamespaceUri(n) => n.to_string(),
             ValueData::ID(s) => s.to_string(),
             ValueData::IDREF(s) => s.to_string(),
-            // TODO: use .intersperse() when it is available
-            ValueData::IDREFS(v) => {
-                let mut result = v
-                    .iter()
-                    .fold(String::new(), |s, i| s + i.to_string().as_str() + " ");
-                result.pop();
-                result
-            }
+            ValueData::IDREFS(s) => s.iter().map(|i| i.to_string()).enumerate().fold(
+                String::new(),
+                |mut acc, (j, i)| {
+                    if j > 0 {
+                        let new = format!(" {}", i);
+                        acc.push_str(new.as_str())
+                    } else {
+                        acc.push_str(i.as_str())
+                    }
+                    acc
+                },
+            ),
             _ => "".to_string(),
         };
         f.write_str(result.as_str())
@@ -282,6 +297,10 @@ impl Value {
             ValueData::Double(n) => *n != 0.0,
             ValueData::Integer(i) => *i != 0,
             ValueData::Int(i) => *i != 0,
+
+            // These are non-empty strings by definition, so must be true
+            ValueData::NCName(_) | ValueData::NamespaceUri(_) | ValueData::QName(_) => true,
+
             _ => false,
         }
     }
@@ -348,13 +367,13 @@ impl Value {
             ValueData::Language => "Language",
             ValueData::NMTOKEN(_) => "NMTOKEN",
             ValueData::Name(_) => "Name",
+            ValueData::NamespaceUri(_) => "NamespaceUri",
             ValueData::NCName(_) => "NCName",
             ValueData::ID(_) => "ID",
             ValueData::IDREF(_) => "IDREF",
             ValueData::ENTITY(_) => "ENTITY",
             ValueData::Boolean(_) => "boolean",
             ValueData::QName(_) => "QName",
-            ValueData::RQName(_) => "QName",
         }
     }
     pub fn compare(&self, other: &Value, op: Operator) -> Result<bool, Error> {
@@ -431,16 +450,17 @@ impl Value {
             }
             ValueData::QName(q) => match (op, &other.value) {
                 (Operator::Equal, ValueData::QName(r)) => Ok(*q == *r),
-                (Operator::Equal, ValueData::RQName(r)) => Ok(*q == **r),
                 (Operator::NotEqual, ValueData::QName(r)) => Ok(*q != *r),
-                (Operator::NotEqual, ValueData::RQName(r)) => Ok(*q != **r),
                 _ => Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
             },
-            ValueData::RQName(q) => match (op, &other.value) {
-                (Operator::Equal, ValueData::QName(r)) => Ok(**q == *r),
-                (Operator::Equal, ValueData::RQName(r)) => Ok(**q == **r),
-                (Operator::NotEqual, ValueData::QName(r)) => Ok(**q != *r),
-                (Operator::NotEqual, ValueData::RQName(r)) => Ok(**q != **r),
+            ValueData::NCName(q) => match (op, &other.value) {
+                (Operator::Equal, ValueData::NCName(r)) => Ok(*q == *r),
+                (Operator::NotEqual, ValueData::NCName(r)) => Ok(*q != *r),
+                _ => Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
+            },
+            ValueData::NamespaceUri(q) => match (op, &other.value) {
+                (Operator::Equal, ValueData::NamespaceUri(r)) => Ok(*q == *r),
+                (Operator::NotEqual, ValueData::NamespaceUri(r)) => Ok(*q != *r),
                 _ => Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
             },
             _ => Result::Err(Error::new(
@@ -473,6 +493,18 @@ impl PartialEq for Value {
             ValueData::Double(d) => match other.value {
                 ValueData::Double(e) => *d == e,
                 _ => false, // type error? coerce to integer?
+            },
+            ValueData::NCName(n) => match &other.value {
+                ValueData::NCName(o) => *n == *o,
+                _ => false,
+            },
+            ValueData::QName(n) => match &other.value {
+                ValueData::QName(o) => *n == *o,
+                _ => false,
+            },
+            ValueData::NamespaceUri(n) => match &other.value {
+                ValueData::NamespaceUri(o) => *n == *o,
+                _ => false,
             },
             _ => false, // not yet implemented
         }
@@ -691,14 +723,6 @@ impl From<NormalizedString> for Value {
         }
     }
 }
-impl From<NCName> for Value {
-    fn from(n: NCName) -> Self {
-        Value {
-            value: ValueData::NCName(n),
-            output: OutputSpec::Normal,
-        }
-    }
-}
 impl From<ID> for Value {
     fn from(n: ID) -> Self {
         Value {
@@ -723,26 +747,34 @@ impl From<Vec<IDREF>> for Value {
         }
     }
 }
-impl From<QualifiedName> for Value {
-    fn from(q: QualifiedName) -> Self {
+impl From<QName> for Value {
+    fn from(q: QName) -> Self {
         Value {
             value: ValueData::QName(q),
             output: OutputSpec::Normal,
         }
     }
 }
-impl From<Rc<QualifiedName>> for Value {
-    fn from(q: Rc<QualifiedName>) -> Self {
+impl From<NcName> for Value {
+    fn from(q: NcName) -> Self {
         Value {
-            value: ValueData::RQName(q),
+            value: ValueData::NCName(q),
+            output: OutputSpec::Normal,
+        }
+    }
+}
+impl From<NamespaceUri> for Value {
+    fn from(q: NamespaceUri) -> Self {
+        Value {
+            value: ValueData::NamespaceUri(q),
             output: OutputSpec::Normal,
         }
     }
 }
 impl From<DateTime<Local>> for Value {
-    fn from(d: DateTime<Local>) -> Self {
+    fn from(dt: DateTime<Local>) -> Self {
         Value {
-            value: ValueData::DateTime(d),
+            value: ValueData::DateTime(dt),
             output: OutputSpec::Normal,
         }
     }
