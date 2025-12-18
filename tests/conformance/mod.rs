@@ -1,7 +1,7 @@
 //mod relaxng;
-mod xml;
-//mod xml_id;
 
+//mod xml_id;
+/*
 use encoding_rs::UTF_8;
 use encoding_rs::UTF_16BE;
 use encoding_rs::UTF_16LE;
@@ -59,3 +59,6 @@ fn non_utf8_file_reader(filedir: &str) -> String {
 
     dest
 }
+
+
+ */
