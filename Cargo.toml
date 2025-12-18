@@ -18,6 +18,10 @@ edition = "2024"
 # The xslt feature enables XSLT support
 default = ["xslt"]
 xslt = []
+# Do you want to run unit tests for the conformance suite
+test-conformance-xml = []
+test-conformance-xmlid = []
+
 
 [[bench]]
 name = "bench_smite"
