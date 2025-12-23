@@ -451,6 +451,10 @@ impl ItemNode for RNode {
     fn attribute_iter(&self) -> Self::NodeIterator {
         Box::new(Attributes::new(self))
     }
+    /// Iterator for in-scope namespaces for a node.
+    /// For a document-type node, if there is a document element then it's in-scope namespaces are returned.
+    /// If the document has multiple top-level elements, then the namespaces of the first element-type node are returned.
+    /// Otherwise, the default "xml" namespace is returned.
     fn namespace_iter(&self) -> Self::NodeIterator {
         Box::new(NamespaceNodes::new(self.clone()))
     }
@@ -1752,7 +1756,12 @@ mod tests {
     }
 
     #[test]
-    fn smite_ns() {
+    fn smite_ns_1() {
+        let root = Rc::new(Node::new());
+        assert_eq!(root.namespace_iter().count(), 1)
+    }
+    #[test]
+    fn smite_ns_2() {
         let mut root = Rc::new(Node::new());
         let child1 = root
             .new_element(QName::from_local_name(NcName::try_from("Test").unwrap()))
