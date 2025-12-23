@@ -98,6 +98,7 @@ Status of [standards implementation](https://gitlab.gnome.org/World/Rust/markup-
 
 | Releases      | Notes                                                                                    |
 |---------------|------------------------------------------------------------------------------------------|
+| Version 2.0.1 | Bug fix for smite::namespace_iter(). |
 | Version 2.0.0 | Use qualname::QName to intern Qualified Names. Update all APIs to use QNames. Improve XML Namespace support. Improve error reporting. Upgrade benchmarks. |
 | Version 1.3.0 | Implement xsl:for-each-group/@group-starting-with. Improved serialisation of XML, including canonical format. Fix bug in adding attribute node to result tree. Support predicates for postfix expressions. |
 | Version 1.2.5 | Fixed disable-output-escaping. |
