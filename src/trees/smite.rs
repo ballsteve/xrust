@@ -1544,6 +1544,21 @@ pub struct NamespaceNodes {
 impl NamespaceNodes {
     fn new(n: RNode) -> Self {
         match &n.0 {
+            NodeInner::Document(_, _, _, _) => {
+                let top = n.child_iter().find(|c| c.node_type() == NodeType::Element);
+                if let Some(t) = top {
+                    NamespaceNodes::new(t)
+                } else {
+                    NamespaceNodes {
+                        //in_scope: vec![],
+                        cur_element: n.clone(),
+                        ancestor_it: n.clone().ancestor_iter(),
+                        ns_it: None,
+                        descoped: vec![],
+                        xmlns: false,
+                    }
+                }
+            }
             NodeInner::Element(_, _, _, _, ns) => {
                 let nsit = ns.borrow().clone().into_iter();
                 NamespaceNodes {
@@ -1555,14 +1570,17 @@ impl NamespaceNodes {
                     xmlns: false,
                 }
             }
-            _ => NamespaceNodes {
-                //in_scope: vec![],
-                cur_element: n.parent().unwrap(),
-                ancestor_it: n.parent().unwrap().ancestor_iter(),
-                ns_it: None,
-                descoped: vec![],
-                xmlns: false,
-            },
+            _ => {
+                eprintln!("Namespace Nodes: n {:?}", n);
+                NamespaceNodes {
+                    //in_scope: vec![],
+                    cur_element: n.parent().unwrap(),
+                    ancestor_it: n.parent().unwrap().ancestor_iter(),
+                    ns_it: None,
+                    descoped: vec![],
+                    xmlns: false,
+                }
+            }
         }
     }
 }
@@ -1731,5 +1749,15 @@ mod tests {
         root.push(child1.clone()).expect("unable to add node");
         assert_eq!(child1.is_attached(), true);
         assert_eq!(root.child_iter().count(), 1)
+    }
+
+    #[test]
+    fn smite_ns() {
+        let mut root = Rc::new(Node::new());
+        let child1 = root
+            .new_element(QName::from_local_name(NcName::try_from("Test").unwrap()))
+            .expect("unable to create element node");
+        root.push(child1.clone()).expect("unable to add node");
+        assert_eq!(root.namespace_iter().count(), 1)
     }
 }
