@@ -1848,6 +1848,97 @@ where
     Ok(())
 }
 
+// Namespaces
+
+// Evaluate an XPath expression that specifies different XML Namespace declarations than the source document.
+pub fn generic_ns_1<N: Node, G, H>(make_empty_doc: G, _: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    let mut sd = make_empty_doc();
+    let mut top = sd
+        .new_element(QName::new_from_parts(
+            NcName::try_from("Top").unwrap(),
+            Some(NamespaceUri::try_from("urn:example.org/test").unwrap()),
+        ))
+        .expect("unable to create element");
+    sd.push(top.clone()).expect("unable to add node");
+    let ns = sd
+        .new_namespace(
+            NamespaceUri::try_from("urn:example.org/test").unwrap(),
+            Some(NamespacePrefix::try_from("tst").unwrap()),
+            true,
+        )
+        .expect("unable to create namespace declaration");
+    top.add_namespace(ns).expect("unable to add namespace");
+    let mut red1 = sd
+        .new_element(QName::new_from_parts(
+            NcName::try_from("one").unwrap(),
+            Some(NamespaceUri::try_from("urn:example.org/test").unwrap()),
+        ))
+        .expect("unable to create element");
+    red1.push(
+        sd.new_text(Rc::new(Value::from("red")))
+            .expect("unable to create text"),
+    )
+    .expect("unable to create element");
+    top.push(red1).expect("unable to add node");
+    let mut blue1 = sd
+        .new_element(QName::new_from_parts(
+            NcName::try_from("two").unwrap(),
+            Some(NamespaceUri::try_from("urn:example.org/test").unwrap()),
+        ))
+        .expect("unable to create element");
+    blue1
+        .push(
+            sd.new_text(Rc::new(Value::from("blue")))
+                .expect("unable to create text"),
+        )
+        .expect("unable to create element");
+    top.push(blue1).expect("unable to add node");
+
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|m| {
+            eprintln!("{}", m);
+            Ok(())
+        })
+        .fetcher(|_url| {
+            Err(Error::new(
+                ErrorKind::Unknown,
+                String::from("loading external resources not implemented"),
+            ))
+        })
+        .parser(|_s| {
+            Err(Error::new(
+                ErrorKind::Unknown,
+                String::from("loading resources not implemented"),
+            ))
+        })
+        .build();
+    let rd = make_empty_doc();
+    let mut nsmap = NamespaceMap::new();
+    nsmap.push(
+        NamespaceDeclaration::new(
+            Some(NamespacePrefix::try_from("xl").unwrap()),
+            NamespaceUri::try_from("urn:example.org/test").unwrap(),
+        )
+        .expect("unable to add namespace"),
+    );
+    let result = ContextBuilder::new()
+        .context(vec![Item::Node(sd.clone())])
+        .result_document(rd)
+        .build()
+        .dispatch(
+            &mut stctxt,
+            &parse("/xl:Top/xl:one", None, Some(nsmap)).expect("XPath expression error"),
+        )
+        .expect("XPath error");
+
+    assert_eq!(result.len(), 1);
+    Ok(())
+}
+
 fn unimplemented_rig<N: Node, G, H>(
     e: impl AsRef<str>,
     make_empty_doc: G,
