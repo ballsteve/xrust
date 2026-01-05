@@ -1384,6 +1384,7 @@ where
     let e: Transform<N> = parse("test:my_func(123)", None, Some(namemap))
         .expect("failed to parse expression \"test:my_func(123)\"");
     if let Transform::Compose(f) = e {
+        assert!(f.len() > 1);
         match &f[0] {
             Transform::Invoke(qn, ap, _) => {
                 assert_eq!(

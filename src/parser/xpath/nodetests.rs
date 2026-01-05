@@ -2,14 +2,14 @@
 
 use crate::item::Node;
 use crate::parser::combinators::alt::{alt2, alt5};
+//use crate::parser::combinators::debug::inspect;
 use crate::parser::combinators::map::{map, map_with_state};
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::tuple3;
+use crate::parser::xml::qname::{ncname, qualname_to_qname};
 use crate::parser::{ParseError, ParseInput, StaticState};
 use crate::transform::{KindTest, NameTest, NodeTest, WildcardOrName, WildcardOrNamespaceUri};
-//use crate::parser::combinators::debug::inspect;
-use crate::parser::xml::qname::{ncname, qualname_to_qname};
 use qualname::{NamespacePrefix, NamespaceUri, NcName, QName};
 
 pub(crate) fn qualname_test<'a, N: Node + 'a, L>() -> Box<
@@ -35,15 +35,11 @@ where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError> + 'a,
 {
     Box::new(map(ncname(), |localpart| {
-        NodeTest::Name(NameTest {
-            ns: None,
-            //prefix: None,
-            name: Some(WildcardOrName::Name(QName::from_local_name(
-                NcName::try_from(localpart.as_str())
-                    .map_err(|_| ParseError::MissingNameSpace)
-                    .expect("not a NcName"),
-            ))),
-        })
+        NodeTest::Name(NameTest::Name(QName::from_local_name(
+            NcName::try_from(localpart.as_str())
+                .map_err(|_| ParseError::MissingNameSpace)
+                .expect("not a NcName"),
+        )))
     }))
 }
 fn prefixed_name<'a, N: Node + 'a, L>() -> Box<
@@ -59,21 +55,17 @@ where
     Box::new(map_with_state(
         tuple3(ncname::<N, L>(), tag(":"), ncname()),
         |(prefix, _, localpart), _state, ss| {
-            NodeTest::Name(NameTest {
-                ns: Some(WildcardOrNamespaceUri::NamespaceUri(
-                    ss.namespace.as_mut().map_or_else(
-                        || panic!("no namespace resolver"),
-                        |nsr| {
-                            nsr(&NamespacePrefix::try_from(prefix.as_str()).unwrap())
-                                .expect("unable to resolve namespace")
-                        },
-                    ),
+            // TODO: don't panic
+            NodeTest::Name(NameTest::Name(QName::new_from_parts(
+                NcName::try_from(localpart.as_str()).unwrap(),
+                Some(ss.namespace.as_mut().map_or_else(
+                    || panic!("no namespace resolver"),
+                    |nsr| {
+                        nsr(&NamespacePrefix::try_from(prefix.as_str()).unwrap())
+                            .expect("unable to resolve namespace")
+                    },
                 )),
-                //prefix: Some(Rc::new(Value::from(prefix))),
-                name: Some(WildcardOrName::Name(QName::from_local_name(
-                    NcName::try_from(localpart.as_str()).unwrap(),
-                ))),
-            })
+            )))
         },
     ))
 }
@@ -318,10 +310,9 @@ where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError> + 'a,
 {
     Box::new(map(tag("*"), |_| {
-        NodeTest::Name(NameTest {
-            ns: Some(WildcardOrNamespaceUri::Wildcard),
-            //prefix: None,
-            name: Some(WildcardOrName::Wildcard),
-        })
+        NodeTest::Name(NameTest::Wildcard(
+            WildcardOrNamespaceUri::Wildcard,
+            WildcardOrName::Wildcard,
+        ))
     }))
 }
