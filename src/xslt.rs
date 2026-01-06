@@ -315,20 +315,11 @@ where
     strip_whitespace(
         styledoc.clone(),
         true,
-        &vec![NodeTest::Name(NameTest {
-            ns: None,
-            //prefix: None,
-            name: Some(WildcardOrName::Wildcard),
-        })],
-        &vec![NodeTest::Name(NameTest {
-            ns: Some(WildcardOrNamespaceUri::NamespaceUri(
-                XSLTNS.clone().unwrap(),
-            )),
-            //prefix: Some(Rc::new(Value::from("xsl"))),
-            name: Some(WildcardOrName::Name(QName::from_local_name(
-                NcName::try_from("text").unwrap(),
-            ))),
-        })],
+        &vec![NodeTest::Name(NameTest::Wildcard(
+            WildcardOrNamespaceUri::Wildcard,
+            WildcardOrName::Wildcard,
+        ))],
+        &vec![NodeTest::Name(NameTest::Name(XSLTEXT.clone()))],
     )?;
 
     // Setup the serialization of the primary result document
@@ -528,10 +519,9 @@ where
                                 (Axis::SelfAxis, Axis::Parent)
                                 | (Axis::SelfAxis, Axis::Ancestor)
                                 | (Axis::SelfAxis, Axis::AncestorOrSelf) => match q {
-                                    NodeTest::Name(nm) => match nm.name {
-                                        Some(WildcardOrName::Wildcard) => -0.5,
-                                        Some(_) => 0.0,
-                                        _ => -0.5,
+                                    NodeTest::Name(nm) => match nm {
+                                        NameTest::Wildcard(_, _) => -0.5,
+                                        _ => 0.0,
                                     },
                                     NodeTest::Kind(_kt) => -0.5,
                                 },
@@ -1583,128 +1573,41 @@ fn strip_whitespace_node<N: Node>(
             let mut ps = -1.0;
             strip.iter().for_each(|t| match t {
                 NodeTest::Kind(KindTest::Any) | NodeTest::Kind(KindTest::Element) => ss = -0.5,
-                NodeTest::Name(nt) => match (nt.ns.as_ref(), nt.name.as_ref()) {
-                    (None, Some(WildcardOrName::Wildcard)) => {
-                        ss = -0.25;
-                    }
-                    (None, Some(WildcardOrName::Name(name))) => {
-                        if *name == n.name().unwrap() {
+                NodeTest::Name(nt) => match nt {
+                    NameTest::Wildcard(
+                        WildcardOrNamespaceUri::Wildcard,
+                        WildcardOrName::Name(_),
+                    ) => ss = -0.25,
+                    NameTest::Wildcard(
+                        WildcardOrNamespaceUri::NamespaceUri(_),
+                        WildcardOrName::Wildcard,
+                    ) => ss = -0.25,
+                    NameTest::Wildcard(_, _) => ss = -0.5,
+                    NameTest::Name(qn) => {
+                        if *qn == n.name().unwrap() {
                             ss = 0.5
                         }
-                        /*match (
-                            n.name().unwrap().namespace_uri(),
-                            n.name().unwrap().local_name(),
-                        ) {
-                            (Some(_), _) => {}
-                            (None, ename) => {
-                                if *name == ename {
-                                    ss = 0.5;
-                                }
-                            }
-                        }*/
                     }
-                    (
-                        Some(WildcardOrNamespaceUri::NamespaceUri(ns)),
-                        Some(WildcardOrName::Name(name)),
-                    ) => {
-                        if n.name().unwrap().namespace_uri().is_some_and(|f| f == *ns) {
-                            if n.name().unwrap() == *name {
-                                ss = 0.5;
-                            }
-                        } else if n.name().unwrap() == *name {
-                            ss = 0.5;
-                        }
-                        /*match (
-                            n.name().map_or("", |f| f.namespace_uri()),
-                            n.name().map_or("", |g| g.local_name()),
-                        ) {
-                            (Some(ens), ename) => {
-                                if *ns == ens && *name == ename {
-                                    ss = 0.5;
-                                }
-                            }
-                            (None, ename) => {
-                                if *name == ename {
-                                    ss = 0.5;
-                                }
-                            }
-                        }*/
-                    }
-                    (Some(WildcardOrNamespaceUri::Wildcard), Some(WildcardOrName::Name(_))) => {
-                        ss = -0.25;
-                    }
-                    (
-                        Some(WildcardOrNamespaceUri::NamespaceUri(_)),
-                        Some(WildcardOrName::Wildcard),
-                    ) => {
-                        ss = -0.25;
-                    }
-                    (Some(WildcardOrNamespaceUri::Wildcard), Some(WildcardOrName::Wildcard)) => {
-                        ss = -0.5;
-                    }
-                    _ => {}
                 },
                 _ => {}
             });
             preserve.iter().for_each(|t| match t {
                 NodeTest::Kind(KindTest::Any) | NodeTest::Kind(KindTest::Element) => ps = -0.5,
-                NodeTest::Name(nt) => match (nt.ns.as_ref(), nt.name.as_ref()) {
-                    (None, Some(WildcardOrName::Name(name))) => {
-                        if *name == n.name().unwrap() {
-                            ps = 0.5
+                NodeTest::Name(nt) => match nt {
+                    NameTest::Wildcard(
+                        WildcardOrNamespaceUri::Wildcard,
+                        WildcardOrName::Name(_),
+                    ) => ss = -0.25,
+                    NameTest::Wildcard(
+                        WildcardOrNamespaceUri::NamespaceUri(_),
+                        WildcardOrName::Wildcard,
+                    ) => ss = -0.25,
+                    NameTest::Wildcard(_, _) => ss = -0.5,
+                    NameTest::Name(qn) => {
+                        if *qn == n.name().unwrap() {
+                            ss = 0.5
                         }
-                        /*match (
-                            n.name().map_or("", |f| f.namespace_uri()),
-                            n.name().map_or("", |g| g.local_name()),
-                        ) {
-                            (Some(_), _) => {}
-                            (None, ename) => {
-                                if *name == ename {
-                                    ps = 0.5;
-                                }
-                            }
-                        }*/
                     }
-                    (
-                        Some(WildcardOrNamespaceUri::NamespaceUri(ns)),
-                        Some(WildcardOrName::Name(name)),
-                    ) => {
-                        if n.name().unwrap().namespace_uri().is_some_and(|f| f == *ns) {
-                            if n.name().unwrap() == *name {
-                                ps = 0.5;
-                            }
-                        } else if n.name().unwrap() == *name {
-                            ps = 0.5;
-                        }
-                        /*match (
-                            n.name().map_or("", |f| f.namespace_uri()),
-                            n.name().map_or("", |g| g.local_name()),
-                        ) {
-                            (Some(ens), ename) => {
-                                if *ns == ens && *name == ename {
-                                    ps = 0.5;
-                                }
-                            }
-                            (None, ename) => {
-                                if *name == ename {
-                                    ps = 0.5;
-                                }
-                            }
-                        }*/
-                    }
-                    (Some(WildcardOrNamespaceUri::Wildcard), Some(WildcardOrName::Name(_))) => {
-                        ps = -0.25;
-                    }
-                    (
-                        Some(WildcardOrNamespaceUri::NamespaceUri(_)),
-                        Some(WildcardOrName::Wildcard),
-                    ) => {
-                        ps = -0.25;
-                    }
-                    (Some(WildcardOrNamespaceUri::Wildcard), Some(WildcardOrName::Wildcard)) => {
-                        ps = -0.5;
-                    }
-                    _ => {}
                 },
                 _ => {}
             });

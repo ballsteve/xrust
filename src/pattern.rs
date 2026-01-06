@@ -79,7 +79,7 @@ use crate::parser::xpath::nodetests::{nodetest, qualname_test};
 use crate::parser::xpath::predicates::predicate_list;
 use crate::parser::xpath::variables::variable_reference;
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
-use crate::transform::{Axis, KindTest, NameTest, NodeTest, Transform, WildcardOrName};
+use crate::transform::{Axis, KindTest, NameTest, NodeTest, Transform};
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 
@@ -249,7 +249,7 @@ fn is_match<N: Node>(a: &Axis, nt: &NodeTest, i: &Item<N>) -> bool {
             match i {
                 Item::Node(n) => {
                     if n.node_type() == NodeType::Document {
-                        nt.matches(i)
+                        nt.matches_item(i)
                     } else {
                         false
                     }
@@ -259,7 +259,7 @@ fn is_match<N: Node>(a: &Axis, nt: &NodeTest, i: &Item<N>) -> bool {
         }
         Axis::SelfAxis => {
             // Select item if it is an element-type node
-            nt.matches(i)
+            nt.matches_item(i)
             /*            match i {
                 Item::Node(n) => {
                     if n.node_type() == NodeType::Element {
@@ -274,14 +274,14 @@ fn is_match<N: Node>(a: &Axis, nt: &NodeTest, i: &Item<N>) -> bool {
         Axis::Parent => {
             // Select the parent node
             match i {
-                Item::Node(n) => n.parent().is_some_and(|p| nt.matches(&Item::Node(p))),
+                Item::Node(n) => n.parent().is_some_and(|p| nt.matches(&p)),
                 _ => false,
             }
         }
         Axis::SelfAttribute => match i {
             Item::Node(n) => {
                 if n.node_type() == NodeType::Attribute {
-                    nt.matches(i)
+                    nt.matches(n)
                 } else {
                     false
                 }
@@ -1050,49 +1050,30 @@ where
 {
     Box::new(alt6(
         map(tag("doc"), |_| {
-            NodeTest::Name(NameTest {
-                ns: None,
-                //prefix: None,
-                name: Some(WildcardOrName::Name(QName::from_local_name(
-                    NcName::try_from("doc").unwrap(),
-                ))),
-            })
+            // TODO: Don't Panic
+            NodeTest::Name(NameTest::Name(QName::from_local_name(
+                NcName::try_from("doc").unwrap(),
+            )))
         }),
         map(tag("id"), |_| {
-            NodeTest::Name(NameTest {
-                ns: None,
-                //prefix: None,
-                name: Some(WildcardOrName::Name(QName::from_local_name(
-                    NcName::try_from("id").unwrap(),
-                ))),
-            })
+            NodeTest::Name(NameTest::Name(QName::from_local_name(
+                NcName::try_from("id").unwrap(),
+            )))
         }),
         map(tag("element-with-id"), |_| {
-            NodeTest::Name(NameTest {
-                ns: None,
-                //prefix: None,
-                name: Some(WildcardOrName::Name(QName::from_local_name(
-                    NcName::try_from("element-with-id").unwrap(),
-                ))),
-            })
+            NodeTest::Name(NameTest::Name(QName::from_local_name(
+                NcName::try_from("element-with-id").unwrap(),
+            )))
         }),
         map(tag("key"), |_| {
-            NodeTest::Name(NameTest {
-                ns: None,
-                //prefix: None,
-                name: Some(WildcardOrName::Name(QName::from_local_name(
-                    NcName::try_from("key").unwrap(),
-                ))),
-            })
+            NodeTest::Name(NameTest::Name(QName::from_local_name(
+                NcName::try_from("key").unwrap(),
+            )))
         }),
         map(tag("root"), |_| {
-            NodeTest::Name(NameTest {
-                ns: None,
-                //prefix: None,
-                name: Some(WildcardOrName::Name(QName::from_local_name(
-                    NcName::try_from("root").unwrap(),
-                ))),
-            })
+            NodeTest::Name(NameTest::Name(QName::from_local_name(
+                NcName::try_from("root").unwrap(),
+            )))
         }),
         map(qualname_test(), |q| q),
     ))

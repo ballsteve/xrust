@@ -16,7 +16,10 @@ use crate::parser::xpath::nodetests::{kindtest, nodetest};
 use crate::parser::xpath::predicates::predicate_list;
 use crate::parser::xpath::types::instanceof_expr;
 use crate::parser::{ParseError, ParseInput, StaticState};
-use crate::transform::{Axis, KindTest, NameTest, NodeMatch, NodeTest, Transform, WildcardOrName};
+use crate::transform::{
+    Axis, KindTest, NameTest, NodeMatch, NodeTest, Transform, WildcardOrName,
+    WildcardOrNamespaceUri,
+};
 use qualname::{NamespacePrefix, NamespaceUri};
 
 // UnionExpr ::= IntersectExceptExpr ( ('union' | '|') IntersectExceptExpr)*
@@ -115,11 +118,10 @@ where
             Transform::Compose(vec![
                 Transform::Step(NodeMatch {
                     axis: Axis::DescendantOrSelfOrRoot,
-                    nodetest: NodeTest::Name(NameTest {
-                        ns: None,
-                        //prefix: None,
-                        name: Some(WildcardOrName::Wildcard),
-                    }),
+                    nodetest: NodeTest::Name(NameTest::Wildcard(
+                        WildcardOrNamespaceUri::Wildcard,
+                        WildcardOrName::Wildcard,
+                    )),
                 }),
                 r,
             ])
@@ -182,11 +184,10 @@ where
                             // Insert a descendant-or-self::* step
                             r.push(Transform::Step(NodeMatch {
                                 axis: Axis::DescendantOrSelf,
-                                nodetest: NodeTest::Name(NameTest {
-                                    ns: None,
-                                    //prefix: None,
-                                    name: Some(WildcardOrName::Wildcard),
-                                }),
+                                nodetest: NodeTest::Name(NameTest::Wildcard(
+                                    WildcardOrNamespaceUri::Wildcard,
+                                    WildcardOrName::Wildcard,
+                                )),
                             }));
                             r.push(c)
                         }
