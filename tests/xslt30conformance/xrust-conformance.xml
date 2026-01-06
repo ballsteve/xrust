@@ -1,0 +1,5 @@
+<conformance>
+    <test>apply-templates</test>
+    <ignore />
+    <not-implemented>as</not-implemented>
+</conformance>
