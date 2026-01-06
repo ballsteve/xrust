@@ -12,7 +12,7 @@ use xrust::transform::numbers::{Level, Numbering};
 use xrust::transform::template::Template;
 use xrust::transform::{
     ArithmeticOperand, ArithmeticOperator, Axis, Grouping, KindTest, NameTest, NodeMatch, NodeTest,
-    Order, Transform, WildcardOrName,
+    Order, Transform, WildcardOrName, WildcardOrNamespaceUri,
 };
 use xrust::value::{Operator, Value, ValueData};
 use xrust::xdmerror::{Error, ErrorKind};
@@ -285,21 +285,15 @@ where
 {
     let x1 = Transform::GenerateId(Some(Box::new(Transform::Step(NodeMatch {
         axis: Axis::Child,
-        nodetest: NodeTest::Name(NameTest::new(
-            None,
-            Some(WildcardOrName::Name(QName::from_local_name(
-                NcName::try_from("Test1").unwrap(),
-            ))),
-        )),
+        nodetest: NodeTest::Name(NameTest::Name(QName::from_local_name(
+            NcName::try_from("Test1").unwrap(),
+        ))),
     }))));
     let x2 = Transform::GenerateId(Some(Box::new(Transform::Step(NodeMatch {
         axis: Axis::Child,
-        nodetest: NodeTest::Name(NameTest::new(
-            None,
-            Some(WildcardOrName::Name(QName::from_local_name(
-                NcName::try_from("Test2").unwrap(),
-            ))),
-        )),
+        nodetest: NodeTest::Name(NameTest::Name(QName::from_local_name(
+            NcName::try_from("Test2").unwrap(),
+        ))),
     }))));
     let mut sd = make_empty_doc();
     let n1 = sd
@@ -1045,13 +1039,9 @@ where
     // XPath == self::Level-1
     let x = Transform::Step(NodeMatch {
         axis: Axis::SelfAxis,
-        nodetest: NodeTest::Name(NameTest {
-            ns: None,
-            //prefix: None,
-            name: Some(WildcardOrName::Name(QName::from_local_name(
-                NcName::try_from("Level-1").unwrap(),
-            ))),
-        }),
+        nodetest: NodeTest::Name(NameTest::Name(QName::from_local_name(
+            NcName::try_from("Level-1").unwrap(),
+        ))),
     });
 
     // Setup a source document
@@ -1108,13 +1098,9 @@ where
 {
     let x = Transform::Step(NodeMatch {
         axis: Axis::SelfDocument,
-        nodetest: NodeTest::Name(NameTest {
-            ns: None,
-            //prefix: None,
-            name: Some(WildcardOrName::Name(QName::from_local_name(
-                NcName::try_from("Level-1").unwrap(),
-            ))),
-        }),
+        nodetest: NodeTest::Name(NameTest::Name(QName::from_local_name(
+            NcName::try_from("Level-1").unwrap(),
+        ))),
     });
 
     // Setup a source document
@@ -1164,13 +1150,9 @@ where
 {
     let x = Transform::Step(NodeMatch {
         axis: Axis::SelfDocument,
-        nodetest: NodeTest::Name(NameTest {
-            ns: None,
-            //prefix: None,
-            name: Some(WildcardOrName::Name(QName::from_local_name(
-                NcName::try_from("Level-1").unwrap(),
-            ))),
-        }),
+        nodetest: NodeTest::Name(NameTest::Name(QName::from_local_name(
+            NcName::try_from("Level-1").unwrap(),
+        ))),
     });
 
     // Setup a source document
@@ -1533,7 +1515,7 @@ where
     let seq = Context::from(vec![Item::Node(t2)])
         .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
-    assert_eq!(seq.len(), 3);
+    assert_eq!(seq.len(), 4);
     Ok(())
 }
 
@@ -1579,7 +1561,7 @@ where
     let seq = Context::from(vec![Item::Node(t2)])
         .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
-    assert_eq!(seq.len(), 4);
+    assert_eq!(seq.len(), 5);
     Ok(())
 }
 
@@ -1886,11 +1868,10 @@ where
         }),
         Transform::Step(NodeMatch {
             axis: Axis::Attribute,
-            nodetest: NodeTest::Name(NameTest {
-                name: Some(WildcardOrName::Wildcard),
-                ns: None,
-                //prefix: None,
-            }),
+            nodetest: NodeTest::Name(NameTest::Wildcard(
+                WildcardOrNamespaceUri::Wildcard,
+                WildcardOrName::Wildcard,
+            )),
         }),
     ]);
 
@@ -2468,23 +2449,15 @@ where
     let x = Transform::Union(vec![
         Transform::Step(NodeMatch {
             axis: Axis::Child,
-            nodetest: NodeTest::Name(NameTest {
-                ns: None,
-                //prefix: None,
-                name: Some(WildcardOrName::Name(QName::from_local_name(
-                    NcName::try_from("a").unwrap(),
-                ))),
-            }),
+            nodetest: NodeTest::Name(NameTest::Name(QName::from_local_name(
+                NcName::try_from("a").unwrap(),
+            ))),
         }),
         Transform::Step(NodeMatch {
             axis: Axis::Child,
-            nodetest: NodeTest::Name(NameTest {
-                ns: None,
-                //prefix: None,
-                name: Some(WildcardOrName::Name(QName::from_local_name(
-                    NcName::try_from("b").unwrap(),
-                ))),
-            }),
+            nodetest: NodeTest::Name(NameTest::Name(QName::from_local_name(
+                NcName::try_from("b").unwrap(),
+            ))),
         }),
     ]);
 
