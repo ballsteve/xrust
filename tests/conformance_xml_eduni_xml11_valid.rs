@@ -15,7 +15,6 @@ use xrust::trees::smite::RNode;
 #[cfg(all(test, feature = "test-conformance-xml"))]
 use xrust::validators::Schema;
 
-
 #[cfg(all(test, feature = "test-conformance-xml"))]
 fn test_eduni_xml11_valid(xmldoc: &str, xmlcanondoc: &str) {
     let testxml = RNode::new_document();

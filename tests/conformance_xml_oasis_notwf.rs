@@ -15,7 +15,6 @@ use xrust::trees::smite::RNode;
 #[cfg(all(test, feature = "test-conformance-xml"))]
 use xrust::{Error, ErrorKind};
 
-
 #[cfg(all(test, feature = "test-conformance-xml"))]
 fn test_oasis_notwf(xmldoc: &str) {
     let ss = StaticStateBuilder::new()

@@ -14,7 +14,6 @@ use crate::pattern::{Branch, Pattern, Step};
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::{
     ArithmeticOperand, ArithmeticOperator, Axis, KindTest, NameTest, NodeTest, Transform,
-    WildcardOrName, WildcardOrNamespaceUri,
 };
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
@@ -74,14 +73,7 @@ pub fn generate_integers<
                         NodeType::Element => Step::new(
                             Axis::SelfAxis,
                             Axis::SelfAxis,
-                            NodeTest::Name(NameTest::new(
-                                m.name()
-                                    .unwrap()
-                                    .namespace_uri()
-                                    .map(WildcardOrNamespaceUri::NamespaceUri),
-                                //None,
-                                Some(WildcardOrName::Name(m.name().unwrap())),
-                            )),
+                            NodeTest::Name(NameTest::Name(m.name().unwrap())),
                         ),
                         NodeType::Text => Step::new(
                             Axis::SelfAxis,

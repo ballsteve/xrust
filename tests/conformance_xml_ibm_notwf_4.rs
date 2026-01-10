@@ -20,7 +20,6 @@ use xrust::trees::smite::RNode;
 #[cfg(all(test, feature = "test-conformance-xml"))]
 use xrust::{Error, ErrorKind};
 
-
 #[cfg(all(test, feature = "test-conformance-xml"))]
 fn test_ibm_notwf(xmldoc: &str) {
     let testxml = RNode::new_document();

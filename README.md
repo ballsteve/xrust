@@ -69,6 +69,13 @@ There is a convenience routine that builds the flat mapping, i.e. a NamespaceMap
 
 NamespaceNode objects are Rc-shared because they are often used but rarely change.
 
+## Applications
+
+There are two applications for using χrust:
+
+* [xrusty](https://gitlab.gnome.org/World/Rust/markup-rs/xrusty) - a command line interface
+* [xrunchy](https://gitlab.gnome.org/balls/xrunchy) - use χrust in a Web page via WASM
+
 ## The Plan
 
 1. Complete the XPath 1.0 implementation. (Done!)
@@ -98,6 +105,7 @@ Status of [standards implementation](https://gitlab.gnome.org/World/Rust/markup-
 
 | Releases      | Notes                                                                                    |
 |---------------|------------------------------------------------------------------------------------------|
+| Version 2.0.2 | Rationalise and simplify use of QNames in NameTest. |
 | Version 2.0.1 | Bug fix for smite::namespace_iter(). |
 | Version 2.0.0 | Use qualname::QName to intern Qualified Names. Update all APIs to use QNames. Improve XML Namespace support. Improve error reporting. Upgrade benchmarks. |
 | Version 1.3.0 | Implement xsl:for-each-group/@group-starting-with. Improved serialisation of XML, including canonical format. Fix bug in adding attribute node to result tree. Support predicates for postfix expressions. |

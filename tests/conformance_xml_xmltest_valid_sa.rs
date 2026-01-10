@@ -21,7 +21,6 @@ use xrust::validators::Schema;
 #[cfg(all(test, feature = "test-conformance-xml"))]
 use xrust::{Error, ErrorKind};
 
-
 #[cfg(feature = "test-conformance-xml")]
 fn test_xmltest_valid_sa(xmldoc: &str, xmlcanondoc: &str) {
     /*
