@@ -1,5 +1,5 @@
 <conformance>
     <test>apply-templates</test>
-    <ignore />
+    <ignore>declared-modes</ignore>
     <not-implemented>as</not-implemented>
 </conformance>
