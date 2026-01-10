@@ -7,8 +7,6 @@ University of Edinburgh XML 1.0 4th edition errata test suite.
 #[cfg(all(test, feature = "test-conformance-xml"))]
 use std::fs;
 #[cfg(all(test, feature = "test-conformance-xml"))]
-use xrust::{Error, ErrorKind};
-#[cfg(all(test, feature = "test-conformance-xml"))]
 use xrust::item::Node;
 #[cfg(all(test, feature = "test-conformance-xml"))]
 use xrust::parser::{ParseError, ParserStateBuilder, StaticStateBuilder, xml};
@@ -16,6 +14,8 @@ use xrust::parser::{ParseError, ParserStateBuilder, StaticStateBuilder, xml};
 use xrust::trees::smite::RNode;
 #[cfg(all(test, feature = "test-conformance-xml"))]
 use xrust::validators::Schema;
+#[cfg(all(test, feature = "test-conformance-xml"))]
+use xrust::{Error, ErrorKind};
 
 #[cfg(all(test, feature = "test-conformance-xml"))]
 fn test_eduni_errata4e_invalid(xmldoc: &str) {

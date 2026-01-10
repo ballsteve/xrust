@@ -9,13 +9,13 @@ James Clark XMLTEST cases
 #[cfg(all(test, feature = "test-conformance-xml"))]
 use std::fs;
 #[cfg(all(test, feature = "test-conformance-xml"))]
-use xrust::{Error, ErrorKind};
-#[cfg(all(test, feature = "test-conformance-xml"))]
 use xrust::item::Node;
 #[cfg(all(test, feature = "test-conformance-xml"))]
 use xrust::parser::{ParseError, ParserStateBuilder, StaticStateBuilder, xml};
 #[cfg(all(test, feature = "test-conformance-xml"))]
 use xrust::trees::smite::RNode;
+#[cfg(all(test, feature = "test-conformance-xml"))]
+use xrust::{Error, ErrorKind};
 
 #[cfg(all(test, feature = "test-conformance-xml"))]
 fn test_xmltest_invalid(xmldoc: &str) {
