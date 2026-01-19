@@ -85,6 +85,15 @@ fn xslt_apply_templates_mode() {
     .expect("test failed")
 }
 #[test]
+fn xslt_apply_templates_mode_bad_qname() {
+    xsltgeneric::generic_apply_templates_mode_bad_qname(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_sd_cooked,
+    )
+    .expect("test failed")
+}
+#[test]
 fn xslt_apply_templates_sort() {
     xsltgeneric::generic_apply_templates_sort(
         smite::make_from_str,

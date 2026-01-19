@@ -348,6 +348,40 @@ where
     }
 }
 
+pub fn generic_apply_templates_mode_bad_qname<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
+{
+    // Specify a QName for a mode that has not been declared as an XML Namespace
+    let result = test_rig(
+        "<Test>one<Level1>a</Level1>two<Level1>b</Level1>three<Level1>c</Level1>four<Level1>d</Level1></Test>",
+        r#"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Test'><HEAD><xsl:apply-templates select='child::Level1' mode='test:head'/></HEAD><BODY><xsl:apply-templates select='child::Level1' mode='body'/></BODY></xsl:template>
+  <xsl:template match='child::Level1' mode='test:head'><h1><xsl:apply-templates/></h1></xsl:template>
+  <xsl:template match='child::Level1' mode='test:body'><p><xsl:apply-templates/></p></xsl:template>
+  <xsl:template match='child::Level1'>should not see this</xsl:template>
+</xsl:stylesheet>"#,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    );
+    if result.is_err() {
+        Ok(())
+    } else {
+        Err(Error::new(
+            ErrorKind::Unknown,
+            "stylesheet succeeded, expected error",
+        ))
+    }
+}
+
 pub fn generic_apply_templates_mode<N: Node, G, H, J>(
     parse_from_str: G,
     parse_from_str_with_ns: J,

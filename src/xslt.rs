@@ -865,14 +865,19 @@ fn to_transform<N: Node>(
             } else if qn == *XSLAPPLYTEMPLATES {
                 let sel = n.get_attribute(&ATTRSELECT);
                 let m = n.get_attribute_node(&ATTRMODE);
+
+                // If a mode is specified then convert it to a QName.
+                // This may fail, so allow for an error result.
+                let mut qm = None;
+                if let Some(s) = m {
+                    qm = Some(n.to_qname(s.value().to_string())?)
+                }
+
                 let sort_keys = get_sort_keys(&n)?;
                 if !sel.to_string().is_empty() {
                     Ok(Transform::ApplyTemplates(
                         Box::new(parse::<N>(&sel.to_string(), Some(n.clone()), None)?),
-                        m.map(|s| {
-                            n.to_qname(s.value().to_string())
-                                .expect("unable to resolve qualified name")
-                        }),
+                        qm,
                         sort_keys,
                     )) // TODO: don't panic
                 } else {
@@ -882,10 +887,7 @@ fn to_transform<N: Node>(
                             Axis::Child,
                             NodeTest::Kind(KindTest::Any),
                         ))),
-                        m.map(|s| {
-                            n.to_qname(s.value().to_string())
-                                .expect("unable to resolve qualified name")
-                        }),
+                        qm,
                         sort_keys,
                     )) // TODO: don't panic
                 }

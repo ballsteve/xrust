@@ -1,7 +1,7 @@
 use crate::item::Node;
 use crate::parser::combinators::alt::alt2;
 use crate::parser::combinators::many::many1;
-use crate::parser::combinators::map::{map, map_with_state};
+use crate::parser::combinators::map::{map, map_with_state_and_result};
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::support::none_of;
@@ -121,7 +121,7 @@ fn prefixed_name_to_qname<'a, N: Node, L>()
 where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
-    map_with_state(
+    map_with_state_and_result(
         tuple3(
             alt2(petextreference::<N, L>(), ncname()),
             tag(":"),
@@ -129,16 +129,30 @@ where
         ),
         |(prefix, _, localpart), _state, ss| {
             if let Some(f) = &mut ss.namespace {
-                let uri = f(&NamespacePrefix::try_from(prefix.as_str()).unwrap())
-                    .expect("namespace resolver failed");
-                QName::new_from_parts(
-                    NcName::try_from(localpart.as_str()).expect("not a valid QName"),
-                    //Some(NamespaceUri::try_from(uri).expect("not a valid Namespace URI")),
-                    Some(uri),
-                )
+                if let Ok(uri) = f(&NamespacePrefix::try_from(prefix.as_str()).unwrap()) {
+                    if let Ok(lp) = NcName::try_from(localpart.as_str()) {
+                        Ok(QName::new_from_parts(
+                            lp,
+                            //Some(NamespaceUri::try_from(uri).expect("not a valid Namespace URI")),
+                            Some(uri),
+                        ))
+                    } else {
+                        Err(ParseError::NSResolveError(format!(
+                            "name \"{}\" is not valid",
+                            localpart
+                        )))
+                    }
+                } else {
+                    Err(ParseError::NSResolveError(format!(
+                        "namespace resolver failed on prefix \"{}\"",
+                        prefix
+                    )))
+                }
             } else {
                 // No closure to resolve prefix
-                panic!("no closure to resolve prefix");
+                Err(ParseError::NSResolveError(String::from(
+                    "no closure to resolve prefix",
+                )))
             }
         },
     )
