@@ -264,17 +264,21 @@ impl ItemNode for RNode {
         // First, make sure the supplied is valid
         let mut ss = StaticStateBuilder::new()
             .namespace(|prefix: &NamespacePrefix| {
-                let nsdo = self.namespace_iter().find(|ns| {
-                    // TODO: it's annoying to have to convert the namespace node name back to a prefix when we know it is a prefix
-                    NamespacePrefix::try_from(ns.name().unwrap().local_name().to_string().as_str())
-                        .unwrap()
-                        == *prefix
-                });
-                nsdo.map_or(
-                    Err(ParseError::MissingNameSpace),
-                    // It's annoying to have to convert the namespace node value to a namespace URI when we already know it is a namespace URI
-                    |nsd| Ok(NamespaceUri::try_from(nsd.value().to_string().as_str()).unwrap()),
-                )
+                self.namespace_iter()
+                    .find(|ns| {
+                        // TODO: it's annoying to have to convert the namespace node name back to a prefix when we know it is a prefix
+                        // Ignore default namespace, since there is no prefix to map
+                        ns.name().is_some_and(|nsprefix| {
+                            NamespacePrefix::try_from(nsprefix.local_name().to_string().as_str())
+                                .unwrap()
+                                == *prefix
+                        })
+                    })
+                    .map_or_else(
+                        || Err(ParseError::MissingNameSpace),
+                        // It's annoying to have to convert the namespace node value to a namespace URI when we already know it is a namespace URI
+                        |nsd| Ok(NamespaceUri::try_from(nsd.value().to_string().as_str()).unwrap()),
+                    )
             })
             .build();
         let state = ParserStateBuilder::new().doc(self.owner_document()).build();

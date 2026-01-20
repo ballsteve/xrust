@@ -131,11 +131,7 @@ where
             if let Some(f) = &mut ss.namespace {
                 if let Ok(uri) = f(&NamespacePrefix::try_from(prefix.as_str()).unwrap()) {
                     if let Ok(lp) = NcName::try_from(localpart.as_str()) {
-                        Ok(QName::new_from_parts(
-                            lp,
-                            //Some(NamespaceUri::try_from(uri).expect("not a valid Namespace URI")),
-                            Some(uri),
-                        ))
+                        Ok(QName::new_from_parts(lp, Some(uri)))
                     } else {
                         Err(ParseError::NSResolveError(format!(
                             "name \"{}\" is not valid",
