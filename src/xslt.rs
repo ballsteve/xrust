@@ -539,16 +539,17 @@ where
             if im.to_string() != "" {
                 import = im.to_int()? as usize
             }
+            let mut qmode = None;
+            if let Some(modenode) = mode {
+                qmode = Some(modenode.to_qname(modenode.to_string())?)
+            }
             templates.push(Template::new(
                 pat,
                 Transform::SequenceItems(body),
                 Some(prio),
                 vec![import],
                 None,
-                mode.map(|n| {
-                    n.to_qname(n.to_string())
-                        .expect("unable to resolve qualified name")
-                }), // TODO: don't panic
+                qmode,
                 m.to_string(),
             ));
             Ok::<(), Error>(())
