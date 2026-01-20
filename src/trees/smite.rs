@@ -1188,7 +1188,9 @@ fn doc_order(n: &RNode) -> Vec<usize> {
         | NodeInner::Comment(p, _)
         | NodeInner::ProcessingInstruction(p, _, _) => match Weak::upgrade(&p.borrow()) {
             Some(q) => {
-                let idx = find_index(&q, n).expect("unable to locate node in parent");
+                let idx = find_index(&q, n)
+                    .unwrap_or(0); // TODO: this may occur in a temporary tree
+                //.expect("unable to locate node in parent");
                 let mut a = doc_order(&q);
                 a.push(idx + 2);
                 a

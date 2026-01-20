@@ -1920,3 +1920,54 @@ where
     assert!(result.is_err());
     Ok(())
 }
+
+pub fn conform_3<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
+{
+    let result = test_rig(
+        "<article>
+          <heading1>Level 1 Heading</heading1>
+          <para>First paragraph with <emph>emphasised</emph> text, <emph role='strong'>bold</emph> text, and <emph role='underline'>underlined</emph> text</para>
+        </article>
+",
+        r###"<?xml version="1.0" encoding="UTF-8"?>
+        <t:transform xmlns:t="http://www.w3.org/1999/XSL/Transform" version="2.0">
+        <!-- Purpose: Test of select in xsl:value-of with current function -->
+
+           <t:variable name="var">
+		    <doc xmlns:xsl="http://www.w3.org/1999/XSL/Transform">6<num1>1<num2>2<num3>3</num3>
+                    </num2>
+                 </num1>
+                 <num4>4<num6>at3</num6>
+                 </num4>
+                 <num5>5</num5>
+              </doc>
+	  </t:variable>
+
+           <t:template match="doc">
+		    <out>
+                 <t1>
+                    <t:value-of select="name($var//*[string() = current()/@*])" separator="|"/>
+                 </t1>
+              </out>
+	  </t:template>
+
+           <t:template match="text()"/>
+        </t:transform>
+
+"###,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    );
+
+    assert!(result.is_ok());
+    Ok(())
+}
