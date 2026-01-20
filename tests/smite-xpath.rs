@@ -175,6 +175,22 @@ fn xpath_string_quot_esc() {
         .expect("test failed")
 }
 #[test]
+fn xpath_value_comparison_1_neg() {
+    xpathgeneric::generic_value_comparison_1_neg::<RNode, _, _>(
+        smite::make_empty_doc,
+        smite::make_sd,
+    )
+    .expect("test failed")
+}
+#[test]
+fn xpath_general_comparison_1_neg() {
+    xpathgeneric::generic_general_comparison_1_neg::<RNode, _, _>(
+        smite::make_empty_doc,
+        smite::make_sd,
+    )
+    .expect("test failed")
+}
+#[test]
 fn xpath_literal_sequence() {
     xpathgeneric::generic_literal_sequence::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
         .expect("test failed")

@@ -76,6 +76,7 @@ pub(crate) fn general_comparison<
     let mut b = false;
     for i in left {
         for j in &right {
+            eprintln!("comparing {:?} with {:?} operator {:?}", i, j, o);
             b = i.compare(j, *o).unwrap();
             if b {
                 break;
