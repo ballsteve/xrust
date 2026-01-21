@@ -3,7 +3,7 @@
 use crate::item::Node;
 use crate::parser::combinators::alt::{alt2, alt5};
 //use crate::parser::combinators::debug::inspect;
-use crate::parser::combinators::map::{map, map_with_state};
+use crate::parser::combinators::map::{map, map_with_state_and_result};
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::tuple3;
@@ -52,20 +52,25 @@ fn prefixed_name<'a, N: Node + 'a, L>() -> Box<
 where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError> + 'a,
 {
-    Box::new(map_with_state(
+    Box::new(map_with_state_and_result(
         tuple3(ncname::<N, L>(), tag(":"), ncname()),
         |(prefix, _, localpart), _state, ss| {
-            // TODO: don't panic
-            NodeTest::Name(NameTest::Name(QName::new_from_parts(
-                NcName::try_from(localpart.as_str()).unwrap(),
-                Some(ss.namespace.as_mut().map_or_else(
-                    || panic!("no namespace resolver"),
-                    |nsr| {
-                        nsr(&NamespacePrefix::try_from(prefix.as_str()).unwrap())
-                            .expect("unable to resolve namespace")
-                    },
-                )),
-            )))
+            let lp = NcName::try_from(localpart.as_str()).map_err(|_| {
+                ParseError::NSResolveError(format!("invalid local part \"{}\"", localpart))
+            })?;
+            if let Some(nsr) = ss.namespace.as_mut() {
+                let prefix = NamespacePrefix::try_from(prefix.as_str()).map_err(|_| {
+                    ParseError::NSResolveError(format!("invalid prefix \"{}\"", prefix))
+                })?;
+                Ok(NodeTest::Name(NameTest::Name(QName::new_from_parts(
+                    lp,
+                    Some(nsr(&prefix)?),
+                ))))
+            } else {
+                Err(ParseError::NSResolveError(String::from(
+                    "no namespace resolver",
+                )))
+            }
         },
     ))
 }
