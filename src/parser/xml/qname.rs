@@ -60,7 +60,14 @@ where
         pair(
             tuple3(
                 tag("Q{"),
-                map(many1(none_of("{}")), |v| v.iter().collect::<String>()),
+                map(many1(none_of("{}")), |v| {
+                    v.iter().fold(String::new(), |mut s, w| {
+                        s.push_str(w);
+                        s
+                    })
+                }),
+                //v.concat::<String>()),
+                //v.iter().collect::<String>()),
                 tag("}"),
             ),
             ncname(),

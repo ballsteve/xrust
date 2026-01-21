@@ -220,9 +220,16 @@ where
     Box::new(map(
         delimited(
             anychar('"'),
-            map(many0(alt2(map(tag("\"\""), |_| '"'), none_of("\""))), |v| {
-                v.iter().collect::<String>()
-            }),
+            map(
+                many0(alt2(map(tag("\"\""), |_| "\""), none_of("\""))),
+                |v| {
+                    v.iter().fold(String::new(), |mut t, w| {
+                        t.push_str(w);
+                        t
+                    })
+                    //.collect::<String>()
+                },
+            ),
             anychar('"'),
         ),
         |s| Transform::Literal(Item::Value(Rc::new(Value::from(s)))),
@@ -241,8 +248,12 @@ where
     Box::new(map(
         delimited(
             anychar('\''),
-            map(many0(alt2(map(tag("''"), |_| '\''), none_of("'"))), |v| {
-                v.iter().collect::<String>()
+            map(many0(alt2(map(tag("''"), |_| "'"), none_of("'"))), |v| {
+                v.iter().fold(String::new(), |mut t, w| {
+                    t.push_str(w);
+                    t
+                })
+                //.collect::<String>()
             }),
             anychar('\''),
         ),
