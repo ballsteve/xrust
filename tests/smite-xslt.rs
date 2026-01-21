@@ -373,3 +373,12 @@ fn xslt_conform_4() {
     )
     .expect("test failed")
 }
+#[test]
+fn xslt_conform_5() {
+    xsltgeneric::conform_5(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_empty_doc_cooked,
+    )
+    .expect("test failed")
+}

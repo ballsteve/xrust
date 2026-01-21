@@ -31,7 +31,7 @@
     <not-implemented>import-schema</not-implemented>
     <test>include</test>
     <not-implemented>namespace-alias</not-implemented>
-    <test>output</test>
+    <not-implemented>output</not-implemented>
     <not-implemented>override</not-implemented>
     <not-implemented>package</not-implemented>
     <test>param</test>

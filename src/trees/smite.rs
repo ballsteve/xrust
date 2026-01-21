@@ -1469,16 +1469,23 @@ impl Iterator for Descendants {
 }
 
 // Store the parent node and the index of the child node that we want the sibling of.
-// TODO: Don't Panic. If anything fails, then the iterator's next method should return None.
 pub struct Siblings(RNode, usize, i32);
 impl Siblings {
     fn new(n: &RNode, dir: i32) -> Self {
         match n.parent() {
-            Some(p) => Siblings(
-                p.clone(),
-                find_index(&p, n).expect("unable to find node within parent"),
-                dir,
-            ),
+            Some(p) => {
+                find_index(&p, n).map_or_else(|_| {
+                    // Something has gone wrong, so iterator will just return None
+                    // TODO: improve handling of this situation - e.g. current node is an attribute
+                    Siblings(n.clone(), 0, -1)
+                }, |i| {
+                    Siblings(
+                    p.clone(),
+                    i,
+                    dir,
+                )
+                })
+            }
             None => {
                 // Document nodes don't have siblings
                 Siblings(n.clone(), 0, -1)

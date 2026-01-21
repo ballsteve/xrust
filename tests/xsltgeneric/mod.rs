@@ -2013,3 +2013,50 @@ where
     assert!(result.is_ok());
     Ok(())
 }
+
+pub fn conform_5<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
+{
+    let result = test_rig(
+        "<doc>
+          <c x='attribute'>test</c>
+          <heading1>Level 1 Heading</heading1>
+          <para>First paragraph with <emph>emphasised</emph> text, <emph role='strong'>bold</emph> text, and <emph role='underline'>underlined</emph> text</para>
+        </doc>
+",
+        r###"<?xml version="1.0"?>
+        <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
+
+        <?spec xpath#id-path-expressions?>
+          <!-- Purpose: Tests following axis starting from an attribute. -->
+          <!-- Author: Scott Boag -->
+
+        <xsl:template match="/">
+          <out>
+            <xsl:for-each select="//c/@x">
+              <xsl:apply-templates select="following::*"/>
+            </xsl:for-each>
+          </out>
+        </xsl:template>
+
+        <xsl:template match="*">
+          <xsl:text> </xsl:text><xsl:value-of select="name()"/>
+        </xsl:template>
+
+        </xsl:stylesheet>
+"###,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    );
+
+    assert!(result.is_ok());
+    Ok(())
+}
