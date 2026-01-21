@@ -145,6 +145,11 @@ fn xpath_int() {
         .expect("test failed")
 }
 #[test]
+fn xpath_bigint() {
+    xpathgeneric::generic_bigint::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
+#[test]
 fn xpath_decimal() {
     xpathgeneric::generic_decimal::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
         .expect("test failed")

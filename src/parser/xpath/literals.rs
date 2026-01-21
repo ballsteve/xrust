@@ -16,6 +16,7 @@ use crate::parser::combinators::tuple::{tuple3, tuple4};
 use crate::parser::{ParseError, ParseInput, StaticState};
 use crate::transform::Transform;
 use crate::value::Value;
+use crate::xdmerror::ErrorKind;
 use qualname::{NamespacePrefix, NamespaceUri};
 
 use rust_decimal::Decimal;
@@ -63,8 +64,10 @@ where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError> + 'a,
 {
     Box::new(map(digit1(), |s: String| {
-        let n = s.parse::<i64>().unwrap();
-        Transform::Literal(Item::Value(Rc::new(Value::from(n))))
+        s.parse::<i64>().map_or(
+            Transform::Error(ErrorKind::ParseError, String::from("not a valid integer")),
+            |n| Transform::Literal(Item::Value(Rc::new(Value::from(n)))),
+        )
     }))
 }
 // DecimalLiteral ::= ('.' Digits) | (Digits '.' [0-9]*)

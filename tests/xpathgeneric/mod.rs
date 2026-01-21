@@ -612,6 +612,23 @@ where
     }
 }
 
+pub fn generic_bigint<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    let result: Result<Sequence<N>, Error> =
+        no_src_no_result("99999999999999999999999999999999999999999");
+    if result.is_err() {
+        Ok(())
+    } else {
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!("parsing big integer succeeded, expected to fail"),
+        ))
+    }
+}
+
 pub fn generic_decimal<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
 where
     G: Fn() -> N,
