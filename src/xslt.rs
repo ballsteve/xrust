@@ -1364,18 +1364,19 @@ fn to_transform<N: Node>(
 
                 // Uh-oh! Parsing the stylesheet has thrown away all qualified name prefixes
                 // But there will be a namespace declaration, so recover it from there
-                let prefix: Option<Box<Transform<N>>> = u.as_ref().map_or(None, |nsuri| {
-                    n.namespace_iter()
+                let mut prefix = None;
+                if let Some(nsuri) = u.as_ref() {
+                    if let Some(p) = n
+                        .namespace_iter()
                         .find(|nsd| nsd.as_namespace_uri().unwrap() == nsuri)
-                        .unwrap()
-                        .as_namespace_prefix()
-                        .unwrap()
-                        .map(|p| {
-                            Box::new(Transform::Literal(Item::Value(Rc::new(Value::from(
-                                p.to_string(),
-                            )))))
-                        })
-                });
+                    {
+                        if let Some(pp) = p.as_namespace_prefix()? {
+                            prefix = Some(Box::new(Transform::Literal(Item::Value(Rc::new(
+                                Value::from(pp.to_string()),
+                            )))));
+                        }
+                    }
+                }
 
                 // Process @xsl:use-attribute-sets
                 let use_atts = n.get_attribute(&XSLATTRUSEATTRIBUTESETS);
