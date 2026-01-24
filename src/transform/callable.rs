@@ -15,8 +15,8 @@ use url::Url;
 
 #[derive(Clone, Debug)]
 pub struct Callable<N: Node> {
-    pub(crate) body: Transform<N>,
-    pub(crate) parameters: FormalParameters<N>,
+    pub body: Transform<N>,
+    pub parameters: FormalParameters<N>,
     // TODO: return type
 }
 

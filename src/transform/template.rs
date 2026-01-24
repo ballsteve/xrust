@@ -159,6 +159,10 @@ pub(crate) fn apply_imports<
 ) -> Result<Sequence<N>, Error> {
     // Find the template with the next highest level within the same import tree
     // current_templates[0] is the currently matching template
+    if ctxt.current_templates.is_empty() {
+        // TODO: select built-in templates instead
+        return Ok(vec![]);
+    }
     let cur = &(ctxt.current_templates[0]);
     let next: Vec<Rc<Template<N>>> = ctxt
         .current_templates

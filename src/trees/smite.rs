@@ -264,17 +264,21 @@ impl ItemNode for RNode {
         // First, make sure the supplied is valid
         let mut ss = StaticStateBuilder::new()
             .namespace(|prefix: &NamespacePrefix| {
-                let nsdo = self.namespace_iter().find(|ns| {
-                    // TODO: it's annoying to have to convert the namespace node name back to a prefix when we know it is a prefix
-                    NamespacePrefix::try_from(ns.name().unwrap().local_name().to_string().as_str())
-                        .unwrap()
-                        == *prefix
-                });
-                nsdo.map_or(
-                    Err(ParseError::MissingNameSpace),
-                    // It's annoying to have to convert the namespace node value to a namespace URI when we already know it is a namespace URI
-                    |nsd| Ok(NamespaceUri::try_from(nsd.value().to_string().as_str()).unwrap()),
-                )
+                self.namespace_iter()
+                    .find(|ns| {
+                        // TODO: it's annoying to have to convert the namespace node name back to a prefix when we know it is a prefix
+                        // Ignore default namespace, since there is no prefix to map
+                        ns.name().is_some_and(|nsprefix| {
+                            NamespacePrefix::try_from(nsprefix.local_name().to_string().as_str())
+                                .unwrap()
+                                == *prefix
+                        })
+                    })
+                    .map_or_else(
+                        || Err(ParseError::MissingNameSpace),
+                        // It's annoying to have to convert the namespace node value to a namespace URI when we already know it is a namespace URI
+                        |nsd| Ok(NamespaceUri::try_from(nsd.value().to_string().as_str()).unwrap()),
+                    )
             })
             .build();
         let state = ParserStateBuilder::new().doc(self.owner_document()).build();
@@ -1188,7 +1192,9 @@ fn doc_order(n: &RNode) -> Vec<usize> {
         | NodeInner::Comment(p, _)
         | NodeInner::ProcessingInstruction(p, _, _) => match Weak::upgrade(&p.borrow()) {
             Some(q) => {
-                let idx = find_index(&q, n).expect("unable to locate node in parent");
+                let idx = find_index(&q, n)
+                    .unwrap_or(0); // TODO: this may occur in a temporary tree
+                //.expect("unable to locate node in parent");
                 let mut a = doc_order(&q);
                 a.push(idx + 2);
                 a
@@ -1467,16 +1473,23 @@ impl Iterator for Descendants {
 }
 
 // Store the parent node and the index of the child node that we want the sibling of.
-// TODO: Don't Panic. If anything fails, then the iterator's next method should return None.
 pub struct Siblings(RNode, usize, i32);
 impl Siblings {
     fn new(n: &RNode, dir: i32) -> Self {
         match n.parent() {
-            Some(p) => Siblings(
-                p.clone(),
-                find_index(&p, n).expect("unable to find node within parent"),
-                dir,
-            ),
+            Some(p) => {
+                find_index(&p, n).map_or_else(|_| {
+                    // Something has gone wrong, so iterator will just return None
+                    // TODO: improve handling of this situation - e.g. current node is an attribute
+                    Siblings(n.clone(), 0, -1)
+                }, |i| {
+                    Siblings(
+                    p.clone(),
+                    i,
+                    dir,
+                )
+                })
+            }
             None => {
                 // Document nodes don't have siblings
                 Siblings(n.clone(), 0, -1)

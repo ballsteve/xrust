@@ -16,6 +16,7 @@ use crate::parser::combinators::tuple::{tuple3, tuple4};
 use crate::parser::{ParseError, ParseInput, StaticState};
 use crate::transform::Transform;
 use crate::value::Value;
+use crate::xdmerror::ErrorKind;
 use qualname::{NamespacePrefix, NamespaceUri};
 
 use rust_decimal::Decimal;
@@ -63,8 +64,10 @@ where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError> + 'a,
 {
     Box::new(map(digit1(), |s: String| {
-        let n = s.parse::<i64>().unwrap();
-        Transform::Literal(Item::Value(Rc::new(Value::from(n))))
+        s.parse::<i64>().map_or(
+            Transform::Error(ErrorKind::ParseError, String::from("not a valid integer")),
+            |n| Transform::Literal(Item::Value(Rc::new(Value::from(n)))),
+        )
     }))
 }
 // DecimalLiteral ::= ('.' Digits) | (Digits '.' [0-9]*)
@@ -217,9 +220,16 @@ where
     Box::new(map(
         delimited(
             anychar('"'),
-            map(many0(alt2(map(tag("\"\""), |_| '"'), none_of("\""))), |v| {
-                v.iter().collect::<String>()
-            }),
+            map(
+                many0(alt2(map(tag("\"\""), |_| "\""), none_of("\""))),
+                |v| {
+                    v.iter().fold(String::new(), |mut t, w| {
+                        t.push_str(w);
+                        t
+                    })
+                    //.collect::<String>()
+                },
+            ),
             anychar('"'),
         ),
         |s| Transform::Literal(Item::Value(Rc::new(Value::from(s)))),
@@ -238,8 +248,12 @@ where
     Box::new(map(
         delimited(
             anychar('\''),
-            map(many0(alt2(map(tag("''"), |_| '\''), none_of("'"))), |v| {
-                v.iter().collect::<String>()
+            map(many0(alt2(map(tag("''"), |_| "'"), none_of("'"))), |v| {
+                v.iter().fold(String::new(), |mut t, w| {
+                    t.push_str(w);
+                    t
+                })
+                //.collect::<String>()
             }),
             anychar('\''),
         ),

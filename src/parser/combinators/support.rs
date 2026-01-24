@@ -1,5 +1,7 @@
 //! Supporting functions.
 
+use unicode_segmentation::UnicodeSegmentation;
+
 use crate::item::Node;
 use crate::parser::{ParseError, ParseInput, StaticState};
 use qualname::{NamespacePrefix, NamespaceUri};
@@ -49,7 +51,8 @@ where
 /// Return the next character if it is not from the given set
 pub(crate) fn none_of<'a, N: Node, L>(
     s: &str,
-) -> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, char), ParseError> + '_
+) -> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, &'a str), ParseError>
++ '_
 where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
@@ -57,12 +60,12 @@ where
         if input.is_empty() {
             Err(ParseError::Combinator(String::from("none_of: no input")))
         } else {
-            let a = input.chars().next().unwrap();
+            let a = input.graphemes(true).next().unwrap();
             match s.find(a) {
                 Some(_) => Err(ParseError::Combinator(String::from(
                     "none_of: found characters",
                 ))),
-                None => Ok(((&input[1..], state), a)),
+                None => Ok(((&input[a.len()..], state), a)),
             }
         }
     }

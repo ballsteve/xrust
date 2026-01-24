@@ -5,6 +5,7 @@ use crate::item::{Node, NodeType, Sequence, SequenceTrait};
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::{Axis, NodeMatch, Transform};
 use crate::xdmerror::{Error, ErrorKind};
+use qualname::{NcName, QName};
 use url::Url;
 
 /// The root node of the context item.
@@ -245,9 +246,12 @@ pub(crate) fn step<N: Node>(ctxt: &Context<N>, nm: &NodeMatch) -> Result<Sequenc
                     )),
                 }
             }
-            _ => Err(Error::new(
-                ErrorKind::Unknown,
-                String::from("context item is not a node"),
+            _ => Err(Error::new_with_code(
+                ErrorKind::DynamicAbsent,
+                "context item is not a node",
+                Some(QName::from_local_name(
+                    NcName::try_from("XTTE0510").unwrap(),
+                )),
             )),
         }
     }) {

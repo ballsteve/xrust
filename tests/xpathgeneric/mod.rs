@@ -612,6 +612,23 @@ where
     }
 }
 
+pub fn generic_bigint<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    let result: Result<Sequence<N>, Error> =
+        no_src_no_result("99999999999999999999999999999999999999999");
+    if result.is_err() {
+        Ok(())
+    } else {
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!("parsing big integer succeeded, expected to fail"),
+        ))
+    }
+}
+
 pub fn generic_decimal<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
 where
     G: Fn() -> N,
@@ -800,6 +817,38 @@ where
     assert_eq!(s[1].to_string(), "abc");
     assert_eq!(s[2].to_int().unwrap(), 2);
     Ok(())
+}
+
+pub fn generic_value_comparison_1_neg<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    let result: Result<Sequence<N>, Error> = no_src_no_result("1 eq 'xxxi'");
+    if result.is_err() {
+        Ok(())
+    } else {
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!("expression succeeded, expected failure"),
+        ))
+    }
+}
+
+pub fn generic_general_comparison_1_neg<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    let result: Result<Sequence<N>, Error> = no_src_no_result("1 = 'xxxi'");
+    if result.is_err() {
+        Ok(())
+    } else {
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!("expression succeeded, expected failure"),
+        ))
+    }
 }
 
 pub fn generic_xpath_comment<N: Node, G, H>(_: G, _: H) -> Result<(), Error>

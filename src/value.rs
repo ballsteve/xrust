@@ -167,7 +167,7 @@ pub enum ValueData {
     Decimal(Decimal),
     Float(f32),
     Double(f64),
-    Integer(i64),
+    Integer(i64), // TODO: support num_bigint
     NonPositiveInteger(NonPositiveInteger),
     NegativeInteger(NegativeInteger),
     Long(i64),
