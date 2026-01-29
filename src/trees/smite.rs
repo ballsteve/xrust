@@ -653,7 +653,17 @@ impl ItemNode for RNode {
                         let doc = self.owner_document();
                         unattached(&doc, self.clone())
                     }
-                    NodeInner::Document(_, _, _, _) => {} // node was in the unattached list
+                    NodeInner::Document(_, c, _, _) => {
+                        let idx = find_index(&p, self);
+                        match idx {
+                            Ok(u) => {
+                                c.borrow_mut().remove(u);
+                                let doc = self.owner_document();
+                                unattached(&doc, self.clone())
+                            }
+                            Err(_) => {} // node was in the unattached list
+                        }
+                    }
                     _ => {
                         return Err(Error::new(
                             ErrorKind::TypeError,
@@ -870,7 +880,7 @@ impl ItemNode for RNode {
         match &self.0 {
             NodeInner::Document(_, e, _, _) => {
                 let mut result = self.shallow_copy()?;
-                for n in e.borrow_mut().iter() {
+                for n in e.borrow().iter() {
                     if let Ok(rn) = n.get_canonical() {
                         result.push(rn)?
                     }
