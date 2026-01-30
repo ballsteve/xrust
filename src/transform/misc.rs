@@ -1,23 +1,28 @@
 //! Miscellaneous support functions.
 
-use crate::item::{Node, Sequence, SequenceTrait};
-use crate::qname::QualifiedName;
-use crate::transform::context::{Context, StaticContext};
-use crate::transform::Transform;
-use crate::xdmerror::Error;
 use crate::ErrorKind;
+use crate::item::{Node, Sequence, SequenceTrait};
+use crate::transform::Transform;
+use crate::transform::context::{Context, StaticContext};
+use crate::xdmerror::Error;
+use qualname::{NamespaceUri, NcName, QName};
 use url::Url;
 
-/// XSLT current function.
+/// XSLT current() function.
 pub fn current<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
-    if ctxt.previous_context.is_some() {
-        Ok(vec![ctxt.previous_context.as_ref().unwrap().clone()])
-    } else {
-        Err(Error::new(
-            ErrorKind::DynamicAbsent,
-            String::from("current item missing"),
-        ))
-    }
+    ctxt.current_item.as_ref().map_or_else(
+        || {
+            // Otherwise the current item is the same as the context item
+            ctxt.context_item.as_ref().map_or(
+                Err(Error::new(
+                    ErrorKind::DynamicAbsent,
+                    String::from("current item missing"),
+                )),
+                |c| Ok(vec![c.clone()]),
+            )
+        },
+        |c| Ok(vec![c.clone()]),
+    )
 }
 
 /// Emits a message from the stylesheet.
@@ -45,10 +50,9 @@ pub(crate) fn message<
             Err(Error {
                 kind: ErrorKind::Terminated,
                 message: msg,
-                code: Some(QualifiedName::new(
-                    Some(String::from("http://www.w3.org/2005/xqt-errors")),
-                    None,
-                    String::from("XTMM9000"),
+                code: Some(QName::new_from_parts(
+                    NcName::try_from("XTMM9000").unwrap(),
+                    Some(NamespaceUri::try_from("http://www.w3.org/2005/xqt-errors").unwrap()),
                 )),
             })
         }

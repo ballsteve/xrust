@@ -1,6 +1,6 @@
 [package]
 name = "xrust"
-version = "1.2.4"
+version = "2.0.2"
 keywords = ["xml", "json", "xpath", "xslt", "tree"]
 categories = ["parser-implementations"]
 description = "Support for XPath and XSLT"
@@ -9,15 +9,19 @@ authors = [
     "Daniel Murphy <daniel@devasta.ie>",
 ]
 license = "Apache-2.0"
-repository = "https://github.com/ballsteve/xrust"
+repository = "https://gitlab.gnome.org/World/Rust/markup-rs/xrust.git"
 documentation = "https://docs.rs/xrust/"
 readme = "README.md"
-edition = "2021"
+edition = "2024"
 
 [features]
 # The xslt feature enables XSLT support
 default = ["xslt"]
 xslt = []
+# Do you want to run unit tests for the conformance suite
+test-conformance-xml = []
+test-conformance-xmlid = []
+
 
 [[bench]]
 name = "bench_smite"
@@ -26,27 +30,29 @@ harness = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rust_decimal = "1.36.0"
-rust_decimal_macros = "1.36.0"
+#qualname = { path = "../qualname" }
+qualname = "0.0.1"
+rust_decimal = "1.38.0"
+rust_decimal_macros = "1.38.0"
 lexers = "0.1.4"
 unicode-segmentation = "1.12.0"
-chrono = "0.4.38"
-url = "2.5.2"
+chrono = "0.4.42"
+url = "2.5.7"
 pkg-version = "1.0.0"
 # This is for the forest tree implementation
 #generational-arena = "0.2"
-regex = "1.11.0"
+regex = "1.11.2"
 # For formatting numbers
-formato = "0.2.0"
+formato = "0.3.0"
 # For formatting integers
 english-numbers = "0.3.3"
-italian_numbers = "0.1.0"
+italian_numbers = "1.0.0"
 
 hexdump = "0.1.2"
 
 [dev-dependencies]
-criterion = "0.5.1"
-encoding_rs = "0.8.34"
+criterion = "0.7.0"
+encoding_rs = "0.8.35"
 encoding_rs_io = "0.1.7"
 earleybird = { git = "https://github.com/mdubinko/earleybird.git" }
-indextree = "4.6.1"
+indextree = "4.7.4"

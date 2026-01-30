@@ -59,11 +59,11 @@ One aim of the library is to be usable in a WASM environment. To allow that, the
 We need your help!
 
 - Download the crate and try it out. Tell us what you like or don't like. How can it be improved?
-- There are definitely gaps and missing parts in the v1.0 XPath and XSLT implementation. Let us know if you need them fixed. [Submit a bug report.](https://github.com/ballsteve/xrust/issues/new/choose)
-- Let us know what doesn't work. [Submit a bug report.](https://github.com/ballsteve/xrust/issues/new/choose)
-- Do you need more documentation? There can never be enough! [Submit an RFE.](https://github.com/ballsteve/xrust/issues/new/choose)
+- There are definitely gaps and missing parts in the v1.0 XPath and XSLT implementation. Let us know if you need them fixed. [Submit a bug report.](https://gitlab.gnome.org/World/Rust/markup-rs/xrust/-/issues)
+- Let us know what doesn't work. [Submit a bug report.](https://gitlab.gnome.org/World/Rust/markup-rs/xrust/-/issues)
+- Do you need more documentation? There can never be enough! [Submit an RFE.](https://gitlab.gnome.org/World/Rust/markup-rs/xrust/-/issues)
 - Add some tests.
-- Write some code. The χrust Wiki has a [list of desired features](https://github.com/ballsteve/xrust/wiki/Help-Wanted).
+- Write some code. The χrust Wiki has a [list of desired features](https://gitlab.gnome.org/World/Rust/markup-rs/xrust/-/wikis/home).
 - Donate resources (i.e. $$$)
 
 */
@@ -73,7 +73,6 @@ pub use xdmerror::{Error, ErrorKind};
 
 pub mod externals;
 pub mod output;
-pub mod qname;
 pub mod xmldecl;
 
 pub mod value;
@@ -90,12 +89,11 @@ pub mod xslt;
 pub mod parser;
 
 pub mod transform;
+pub use transform::Transform;
 pub use transform::context::Context;
 pub use transform::template::Template;
-pub use transform::Transform;
 
 pub mod trees;
 
-pub mod namespace;
 pub mod testutils;
 pub mod validators;

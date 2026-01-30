@@ -10,18 +10,27 @@ use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::{tuple2, tuple3};
 use crate::parser::combinators::whitespace::xpwhitespace;
 use crate::parser::xpath::nodes::{path_expr, union_expr};
-use crate::parser::{ParseError, ParseInput};
+use crate::parser::{ParseError, ParseInput, StaticState};
 use crate::transform::{ArithmeticOperand, ArithmeticOperator, Transform};
+use qualname::{NamespacePrefix, NamespaceUri};
 
 // RangeExpr ::= AdditiveExpr ( 'to' AdditiveExpr)?
-pub(crate) fn range_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+pub(crate) fn range_expr<'a, N: Node + 'a, L>() -> Box<
+    dyn Fn(
+            ParseInput<'a, N>,
+            &mut StaticState<L>,
+        ) -> Result<(ParseInput<'a, N>, Transform<N>), ParseError>
+        + 'a,
+>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError> + 'a,
+{
     Box::new(map(
         pair(
-            additive_expr::<N>(),
+            additive_expr::<N, L>(),
             opt(tuple2(
                 tuple3(xpwhitespace(), tag("to"), xpwhitespace()),
-                additive_expr::<N>(),
+                additive_expr::<N, L>(),
             )),
         ),
         |(v, o)| match o {
@@ -32,11 +41,19 @@ pub(crate) fn range_expr<'a, N: Node + 'a>(
 }
 
 // AdditiveExpr ::= MultiplicativeExpr ( ('+' | '-') MultiplicativeExpr)*
-fn additive_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn additive_expr<'a, N: Node + 'a, L>() -> Box<
+    dyn Fn(
+            ParseInput<'a, N>,
+            &mut StaticState<L>,
+        ) -> Result<(ParseInput<'a, N>, Transform<N>), ParseError>
+        + 'a,
+>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError> + 'a,
+{
     Box::new(map(
         pair(
-            multiplicative_expr::<N>(),
+            multiplicative_expr::<N, L>(),
             many0(tuple2(
                 alt2(
                     map(
@@ -56,7 +73,7 @@ fn additive_expr<'a, N: Node + 'a>(
                         |(_, x, _)| x,
                     ),
                 ),
-                multiplicative_expr::<N>(),
+                multiplicative_expr::<N, L>(),
             )),
         ),
         |(mut a, b)| {
@@ -81,12 +98,19 @@ fn additive_expr<'a, N: Node + 'a>(
 }
 
 // MultiplicativeExpr ::= UnionExpr ( ('*' | 'div' | 'idiv' | 'mod') UnionExpr)*
-fn multiplicative_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<ArithmeticOperand<N>>), ParseError> + 'a>
+fn multiplicative_expr<'a, N: Node + 'a, L>() -> Box<
+    dyn Fn(
+            ParseInput<'a, N>,
+            &mut StaticState<L>,
+        ) -> Result<(ParseInput<'a, N>, Vec<ArithmeticOperand<N>>), ParseError>
+        + 'a,
+>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError> + 'a,
 {
     Box::new(map(
         pair(
-            union_expr::<N>(),
+            union_expr::<N, L>(),
             many0(tuple2(
                 alt4(
                     tuple3(xpwhitespace(), map(tag("*"), |_| "*"), xpwhitespace()),
@@ -94,7 +118,7 @@ fn multiplicative_expr<'a, N: Node + 'a>(
                     tuple3(xpwhitespace(), map(tag("idiv"), |_| "idiv"), xpwhitespace()),
                     tuple3(xpwhitespace(), map(tag("mod"), |_| "mod"), xpwhitespace()),
                 ),
-                union_expr::<N>(),
+                union_expr::<N, L>(),
             )),
         ),
         |(a, b)| {
@@ -118,10 +142,18 @@ fn multiplicative_expr<'a, N: Node + 'a>(
 }
 
 // UnaryExpr ::= ('-' | '+')* ValueExpr
-pub(crate) fn unary_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+pub(crate) fn unary_expr<'a, N: Node + 'a, L>() -> Box<
+    dyn Fn(
+            ParseInput<'a, N>,
+            &mut StaticState<L>,
+        ) -> Result<(ParseInput<'a, N>, Transform<N>), ParseError>
+        + 'a,
+>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError> + 'a,
+{
     Box::new(map(
-        pair(many0(alt2(tag("-"), tag("+"))), value_expr::<N>()),
+        pair(many0(alt2(tag("-"), tag("+"))), value_expr::<N, L>()),
         |(u, v)| {
             if u.is_empty() {
                 v
@@ -133,10 +165,21 @@ pub(crate) fn unary_expr<'a, N: Node + 'a>(
 }
 
 // ValueExpr (SBox<dyneMapExpr) ::= PathExpr ('!' PathExpr)*
-fn value_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn value_expr<'a, N: Node + 'a, L>() -> Box<
+    dyn Fn(
+            ParseInput<'a, N>,
+            &mut StaticState<L>,
+        ) -> Result<(ParseInput<'a, N>, Transform<N>), ParseError>
+        + 'a,
+>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError> + 'a,
+{
     Box::new(map(
-        pair(path_expr::<N>(), many0(tuple2(tag("!"), path_expr::<N>()))),
+        pair(
+            path_expr::<N, L>(),
+            many0(tuple2(tag("!"), path_expr::<N, L>())),
+        ),
         |(u, v)| {
             if v.is_empty() {
                 u

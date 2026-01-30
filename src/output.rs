@@ -1,13 +1,13 @@
 /*! How to serialise a tree structure.
 */
 
-use crate::qname::QualifiedName;
 use core::fmt;
+use qualname::QName;
 
 /// An output definition. See XSLT v3.0 26 Serialization
 #[derive(Clone, Debug)]
 pub struct OutputDefinition {
-    name: Option<QualifiedName>, // TODO: EQName
+    name: Option<QName>, // TODO: EQName
     indent: bool,
     // TODO: all the other myriad output parameters
 }
@@ -25,10 +25,10 @@ impl OutputDefinition {
             indent: false,
         }
     }
-    pub fn get_name(&self) -> Option<QualifiedName> {
+    pub fn get_name(&self) -> Option<QName> {
         self.name.clone()
     }
-    pub fn set_name(&mut self, name: Option<QualifiedName>) {
+    pub fn set_name(&mut self, name: Option<QName>) {
         match name {
             Some(n) => {
                 self.name.replace(n);
@@ -53,4 +53,12 @@ impl fmt::Display for OutputDefinition {
             f.write_str("do not indent output")
         }
     }
+}
+
+/// Directive for how to treat a [Value] upon serialisation.
+#[derive(Clone, Debug, PartialEq)]
+pub enum OutputSpec {
+    Normal,
+    Escaped,
+    NoEscape,
 }

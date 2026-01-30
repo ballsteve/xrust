@@ -1,8 +1,8 @@
 //! Support for keys.
 
 use crate::item::{Node, Sequence};
-use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::Transform;
+use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::xdmerror::Error;
 use crate::{Item, SequenceTrait};
 use std::collections::HashMap;
@@ -12,8 +12,8 @@ use url::Url;
 /// 1. find the nodes in the document that match the pattern
 /// 2. Evaluate the expression to calculate the key value
 /// 3. Store the key value -> Node mapping
-/// NB. an optimisation is to calculate a key's value the first time that key is accessed
-/// TODO: support composite keys
+///     NB. an optimisation is to calculate a key's value the first time that key is accessed
+///     TODO: support composite keys
 pub(crate) fn populate_key_values<
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,

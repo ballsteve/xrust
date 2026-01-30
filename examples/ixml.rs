@@ -14,9 +14,11 @@ use std::path::Path;
 use std::rc::Rc;
 use url::Url;
 
+use qualname::{NcName, QName};
+
 use xrust::item::{Item, Node, SequenceTrait};
+use xrust::parser::ParseError;
 use xrust::parser::xml::parse;
-use xrust::qname::QualifiedName;
 use xrust::transform::context::StaticContextBuilder;
 use xrust::trees::smite::RNode;
 use xrust::value::Value;
@@ -48,7 +50,9 @@ fn to_rnode_aux(arena: &Arena<Content>, n: NodeId, mut t: RNode) {
             }
             Content::Element(name) => {
                 let new = t
-                    .new_element(Rc::new(QualifiedName::new(None, None, name.clone())))
+                    .new_element(QName::from_local_name(
+                        NcName::try_from(name.as_str()).unwrap(),
+                    ))
                     .expect("unable to create element node");
                 t.push(new.clone()).expect("unable to append node");
                 for attr in n
@@ -60,7 +64,9 @@ fn to_rnode_aux(arena: &Arena<Content>, n: NodeId, mut t: RNode) {
                     {
                         let new_attr = t
                             .new_attribute(
-                                Rc::new(QualifiedName::new(None, None, attr_name.clone())),
+                                QName::from_local_name(
+                                    NcName::try_from(attr_name.as_str()).unwrap(),
+                                ),
                                 Rc::new(Value::from(attr_value.clone())),
                             )
                             .expect("unable to create attribute node");
@@ -74,7 +80,7 @@ fn to_rnode_aux(arena: &Arena<Content>, n: NodeId, mut t: RNode) {
             Content::Attribute(name, value) => {
                 let new = t
                     .new_attribute(
-                        Rc::new(QualifiedName::new(None, None, name.clone())),
+                        QName::from_local_name(NcName::try_from(name.as_str()).unwrap()),
                         Rc::new(Value::from(value.clone())),
                     )
                     .expect("unable to create attribute node");
@@ -116,7 +122,12 @@ fn main() {
     };
 
     let style = RNode::new_document();
-    parse(style.clone(), stylexml.trim(), None).expect("failed to parse XSL stylesheet");
+    parse(
+        style.clone(),
+        stylexml.trim(),
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+    )
+    .expect("failed to parse XSL stylesheet");
 
     // Read the Markdown text file
     let srcpath = Path::new(&args[2]);
@@ -147,7 +158,7 @@ fn main() {
     -cr = #d.
     "###).expect("unable to parse grammar");
 
-     */
+    */
     // Let's try something simpler for now
     let g = ixml_grammar();
     let ixml = r###"doc = para+.
@@ -164,7 +175,7 @@ eol = "X".
     -cr = #d.
     "###;
 
-     */
+    */
     let mut parser = Parser::new(g);
     let arena = parser.parse(ixml).expect("unable to parse grammar");
     let gen_grammar = ixml_tree_to_grammar(&arena);

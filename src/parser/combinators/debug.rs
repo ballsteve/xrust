@@ -1,22 +1,25 @@
 use crate::item::Node;
-use crate::parser::{ParseError, ParseInput};
+use crate::parser::{ParseError, ParseInput, StaticState};
+use qualname::{NamespacePrefix, NamespaceUri};
 
 /// Emits a message to stderr from within the parser combinator. This can be useful for debugging.
 #[allow(dead_code)]
-pub fn inspect<'a, P1, A, N: Node>(
+pub fn inspect<'a, P1, A, N: Node, L>(
     msg: &'a str,
     parser: P1,
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, A), ParseError> + 'a
+) -> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, A), ParseError> + 'a
 where
-    P1: Fn(ParseInput<N>) -> Result<(ParseInput<N>, A), ParseError> + 'a,
+    P1: Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, A), ParseError>
+        + 'a,
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
-    move |(input, state)| {
+    move |(input, state), ss| {
         eprintln!(
             "inspect pre: {} - input: \"{}\"",
             msg,
             input.chars().take(80).collect::<String>()
         );
-        let result = parser((input, state.clone()));
+        let result = parser((input, state.clone()), ss);
         let errmsg = format!(
             "error: {:?}",
             result

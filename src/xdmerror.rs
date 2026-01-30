@@ -1,7 +1,7 @@
 //! XDM, XPath, XQuery, and XSLT errors.
 
-use crate::qname::QualifiedName;
 use core::str;
+use qualname::QName;
 use std::fmt;
 use std::fmt::Formatter;
 
@@ -34,6 +34,8 @@ pub enum ErrorKind {
     /// XTMM9000 - (http://)www.w3.org/2005/xqt-errors
     NotImplemented,
     ParseError,
+    /// SXXP0003 - attribute declared more than once
+    DuplicateAttribute,
     Unknown,
 }
 impl ErrorKind {
@@ -55,6 +57,7 @@ impl ErrorKind {
             ErrorKind::NotImplemented => "not implemented",
             ErrorKind::Unknown => "unknown",
             ErrorKind::ParseError => "XML Parse error",
+            ErrorKind::DuplicateAttribute => "XML parse error - attribute declared more than once",
         }
     }
 }
@@ -70,7 +73,7 @@ impl fmt::Display for ErrorKind {
 pub struct Error {
     pub kind: ErrorKind,
     pub message: String,
-    pub code: Option<QualifiedName>,
+    pub code: Option<QName>,
 }
 
 impl std::error::Error for Error {}
@@ -83,11 +86,7 @@ impl Error {
             code: None,
         }
     }
-    pub fn new_with_code(
-        kind: ErrorKind,
-        message: impl Into<String>,
-        code: Option<QualifiedName>,
-    ) -> Self {
+    pub fn new_with_code(kind: ErrorKind, message: impl Into<String>, code: Option<QName>) -> Self {
         Error {
             kind,
             message: message.into(),

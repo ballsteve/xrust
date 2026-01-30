@@ -4,8 +4,8 @@ use std::rc::Rc;
 use url::Url;
 
 use crate::item::{Item, Node, Sequence, SequenceTrait};
-use crate::transform::context::{Context, StaticContext};
 use crate::transform::Transform;
+use crate::transform::context::{Context, StaticContext};
 use crate::value::Value;
 use crate::xdmerror::Error;
 
@@ -20,7 +20,7 @@ pub fn boolean<
     stctxt: &mut StaticContext<N, F, G, H>,
     b: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
-    Ok(vec![Item::Value(Rc::new(Value::Boolean(
+    Ok(vec![Item::Value(Rc::new(Value::from(
         ctxt.dispatch(stctxt, b)?.to_bool(),
     )))])
 }
@@ -36,17 +36,17 @@ pub fn not<
     stctxt: &mut StaticContext<N, F, G, H>,
     n: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
-    Ok(vec![Item::Value(Rc::new(Value::Boolean(
+    Ok(vec![Item::Value(Rc::new(Value::from(
         !ctxt.dispatch(stctxt, n)?.to_bool(),
     )))])
 }
 
 /// XPath true function.
 pub fn tr_true<N: Node>(_ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
-    Ok(vec![Item::Value(Rc::new(Value::Boolean(true)))])
+    Ok(vec![Item::Value(Rc::new(Value::from(true)))])
 }
 
 /// XPath false function.
 pub fn tr_false<N: Node>(_ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
-    Ok(vec![Item::Value(Rc::new(Value::Boolean(false)))])
+    Ok(vec![Item::Value(Rc::new(Value::from(false)))])
 }

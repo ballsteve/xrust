@@ -23,9 +23,9 @@ use crate::parser::xml::dtd::extsubset::extsubset;
 use crate::parser::xml::dtd::intsubset::intsubset;
 use crate::parser::xml::qname::name;
 use crate::parser::xml::reference::reference;
-use crate::parser::{ParseError, ParseInput};
-use crate::qname::QualifiedName;
+use crate::parser::{ParseError, ParseInput, StaticState};
 use crate::xmldecl::{AttType, DTDPattern, DefaultDecl};
+use qualname::{NamespacePrefix, NamespaceUri};
 
 #[derive(Clone)]
 pub(crate) enum Occurances {
@@ -35,9 +35,12 @@ pub(crate) enum Occurances {
     ZeroOrOne,
 }
 
-pub(crate) fn doctypedecl<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
-    move |input| match tuple8(
+pub(crate) fn doctypedecl<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, ()), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
+    move |input, ss| match tuple8(
         tag("<!DOCTYPE"),
         whitespace1(),
         name(),
@@ -46,28 +49,25 @@ pub(crate) fn doctypedecl<N: Node>(
         whitespace0(),
         opt(delimited(tag("["), intsubset(), tag("]"))),
         tag(">"),
-    )(input)
+    )(input, ss)
     {
         Ok(((input1, mut state1), (_, _, n, _, _, _, _inss, _))) => {
-            let q: QualifiedName = if n.contains(':') {
+            if n.contains(':') {
                 let mut nameparts = n.split(':');
-                QualifiedName::new(
-                    None,
-                    Some(nameparts.next().unwrap().parse().unwrap()),
-                    nameparts.next().unwrap(),
-                )
+                let prefix = nameparts.next().unwrap();
+                let local_part = nameparts.next().unwrap();
+                state1.dtd.name = Some((Some(String::from(prefix)), String::from(local_part)));
             } else {
-                QualifiedName::new(None, None, n)
-            };
-            state1.dtd.name = Some(q);
+                state1.dtd.name = Some((None, n));
+            }
             /*  We're doing nothing with the below, just evaluating the external entity to check its well formed */
             let exdtd = state1.ext_entities_to_parse.clone().pop();
             match exdtd {
                 None => {}
-                Some(s) => match state1.clone().resolve(state1.docloc.clone(), s) {
+                Some(s) => match ss.resolve(state1.docloc.clone(), s) {
                     Err(_) => return Err(ParseError::ExtDTDLoadError),
                     Ok(s) => {
-                        if let Err(e) = extsubset()((s.as_str(), state1.clone())) {
+                        if let Err(e) = extsubset()((s.as_str(), state1.clone()), ss) {
                             return Err(e);
                         }
                     }
@@ -78,11 +78,11 @@ pub(crate) fn doctypedecl<N: Node>(
             for (k, (v, _)) in state1.clone().dtd.generalentities {
                 if v != *"<" {
                     /* A single < on its own will generate an error if used, but doesn't actually generate a not well formed error! */
-                    if let Err(ParseError::NotWellFormed(v)) = reference()((
-                        ["&".to_string(), k, ";".to_string()].join("").as_str(),
-                        state1.clone(),
-                    )) {
-                        return Err(ParseError::NotWellFormed(v));
+                    let i = ["&".to_string(), k, ";".to_string()].join("");
+                    if let Err(ParseError::NotWellFormed(w)) =
+                        reference()((i.as_str(), state1.clone()), ss)
+                    {
+                        return Err(ParseError::NotWellFormed(w));
                     }
                 }
             }
@@ -157,7 +157,6 @@ pub(crate) fn doctypedecl<N: Node>(
                     }
                 }
             }
-            //println!("{:?}", patternrefs);
             Ok(((input1, state1), ()))
         }
         Err(err) => Err(err),

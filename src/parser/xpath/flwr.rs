@@ -5,18 +5,27 @@ use crate::parser::combinators::list::separated_list1;
 use crate::parser::combinators::map::{map, map_with_state};
 use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::tag::tag;
-use crate::parser::combinators::tuple::{tuple10, tuple3, tuple5, tuple6};
+use crate::parser::combinators::tuple::{tuple3, tuple5, tuple6, tuple10};
 use crate::parser::combinators::whitespace::xpwhitespace;
 //use crate::parser::combinators::debug::inspect;
 use crate::parser::xpath::nodetests::qualname_test;
 use crate::parser::xpath::support::get_nt_localname;
 use crate::parser::xpath::{expr_single_wrapper, expr_wrapper};
-use crate::parser::{ParseError, ParseInput};
-use crate::transform::{in_scope_namespaces, Transform};
+use crate::parser::{ParseError, ParseInput, StaticState};
+use crate::transform::{Transform, in_scope_namespaces};
+use qualname::{NamespacePrefix, NamespaceUri};
 
 // IfExpr ::= 'if' '(' Expr ')' 'then' ExprSingle 'else' ExprSingle
-pub(crate) fn if_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+pub(crate) fn if_expr<'a, N: Node + 'a, L>() -> Box<
+    dyn Fn(
+            ParseInput<'a, N>,
+            &mut StaticState<L>,
+        ) -> Result<(ParseInput<'a, N>, Transform<N>), ParseError>
+        + 'a,
+>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError> + 'a,
+{
     Box::new(map(
         pair(
             // need tuple15
@@ -25,7 +34,7 @@ pub(crate) fn if_expr<'a, N: Node + 'a>(
                 xpwhitespace(),
                 tag("("),
                 xpwhitespace(),
-                expr_wrapper::<N>(true),
+                expr_wrapper::<N, L>(true),
                 xpwhitespace(),
                 tag(")"),
                 xpwhitespace(),
@@ -33,11 +42,11 @@ pub(crate) fn if_expr<'a, N: Node + 'a>(
                 xpwhitespace(),
             ),
             tuple5(
-                expr_single_wrapper::<N>(true),
+                expr_single_wrapper::<N, L>(true),
                 xpwhitespace(),
                 tag("else"),
                 xpwhitespace(),
-                expr_single_wrapper::<N>(true),
+                expr_single_wrapper::<N, L>(true),
             ),
         ),
         |((_, _, _, _, i, _, _, _, _, _), (t, _, _, _, e))| {
@@ -47,13 +56,21 @@ pub(crate) fn if_expr<'a, N: Node + 'a>(
 }
 
 // ForExpr ::= SimpleForClause 'return' ExprSingle
-pub(crate) fn for_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+pub(crate) fn for_expr<'a, N: Node + 'a, L>() -> Box<
+    dyn Fn(
+            ParseInput<'a, N>,
+            &mut StaticState<L>,
+        ) -> Result<(ParseInput<'a, N>, Transform<N>), ParseError>
+        + 'a,
+>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError> + 'a,
+{
     Box::new(map(
         tuple3(
-            simple_for_clause::<N>(),
+            simple_for_clause::<N, L>(),
             tuple3(xpwhitespace(), tag("return"), xpwhitespace()),
-            expr_single_wrapper::<N>(true),
+            expr_single_wrapper::<N, L>(true),
         ),
         |(f, _, e)| Transform::Loop(f, Box::new(e)), // tc_loop does not yet support multiple variable bindings
     ))
@@ -61,9 +78,16 @@ pub(crate) fn for_expr<'a, N: Node + 'a>(
 
 // SimpleForClause ::= 'for' SimpleForBinding (',' SimpleForBinding)*
 // SimpleForBinding ::= '$' VarName 'in' ExprSingle
-fn simple_for_clause<'a, N: Node + 'a>() -> Box<
-    dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<(String, Transform<N>)>), ParseError> + 'a,
-> {
+fn simple_for_clause<'a, N: Node + 'a, L>() -> Box<
+    dyn Fn(
+            ParseInput<'a, N>,
+            &mut StaticState<L>,
+        ) -> Result<(ParseInput<'a, N>, Vec<(String, Transform<N>)>), ParseError>
+        + 'a,
+>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError> + 'a,
+{
     Box::new(map(
         tuple3(
             tag("for"),
@@ -77,7 +101,7 @@ fn simple_for_clause<'a, N: Node + 'a>() -> Box<
                         xpwhitespace(),
                         tag("in"),
                         xpwhitespace(),
-                        expr_single_wrapper::<N>(true),
+                        expr_single_wrapper::<N, L>(true),
                     ),
                     |(_, qn, _, _, _, e)| (get_nt_localname(&qn), e),
                 ),
@@ -88,15 +112,23 @@ fn simple_for_clause<'a, N: Node + 'a>() -> Box<
 }
 
 // LetExpr ::= SimpleLetClause 'return' ExprSingle
-pub(crate) fn let_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+pub(crate) fn let_expr<'a, N: Node + 'a, L>() -> Box<
+    dyn Fn(
+            ParseInput<'a, N>,
+            &mut StaticState<L>,
+        ) -> Result<(ParseInput<'a, N>, Transform<N>), ParseError>
+        + 'a,
+>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError> + 'a,
+{
     Box::new(map_with_state(
         tuple3(
-            simple_let_clause::<N>(),
+            simple_let_clause::<N, L>(),
             tuple3(xpwhitespace(), tag("return"), xpwhitespace()),
-            expr_single_wrapper::<N>(true),
+            expr_single_wrapper::<N, L>(true),
         ),
-        |(mut v, _, e), state| {
+        |(mut v, _, e), state, _ss| {
             let (qn, f) = v.pop().unwrap();
             let mut result = Transform::VariableDeclaration(
                 qn,
@@ -126,9 +158,16 @@ pub(crate) fn let_expr<'a, N: Node + 'a>(
 // SimpleLetClause ::= 'let' SimpleLetBinding (',' SimpleLetBinding)*
 // SimpleLetBinding ::= '$' VarName ':=' ExprSingle
 // TODO: handle multiple bindings
-fn simple_let_clause<'a, N: Node + 'a>() -> Box<
-    dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<(String, Transform<N>)>), ParseError> + 'a,
-> {
+fn simple_let_clause<'a, N: Node + 'a, L>() -> Box<
+    dyn Fn(
+            ParseInput<'a, N>,
+            &mut StaticState<L>,
+        ) -> Result<(ParseInput<'a, N>, Vec<(String, Transform<N>)>), ParseError>
+        + 'a,
+>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError> + 'a,
+{
     Box::new(map(
         tuple3(
             tag("let"),
@@ -142,7 +181,7 @@ fn simple_let_clause<'a, N: Node + 'a>() -> Box<
                         xpwhitespace(),
                         tag(":="),
                         xpwhitespace(),
-                        expr_single_wrapper::<N>(true),
+                        expr_single_wrapper::<N, L>(true),
                     ),
                     |(_, qn, _, _, _, e)| (get_nt_localname(&qn), e),
                 ),

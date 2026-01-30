@@ -1,16 +1,16 @@
-use std::string::ParseError;
 use crate::item::Node;
-use crate::xmldecl::DTDDecl;
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::take_until;
-use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::parser::{ParseError, ParseInput, ParseResult, StaticState};
+use crate::xmldecl::DTDDecl;
+use qualname::{NamespacePrefix, NamespaceUri};
 
-pub(crate) fn geexpander(inp: RNode) -> RNode{
+pub(crate) fn geexpander(inp: RNode) -> RNode {}
 
-}
-
-pub(crate) fn genentityexpander<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> + 'static {
+pub(crate) fn genentityexpander<N: Node, L>()
+-> impl Fn(ParseInput<N>, &StaticState<L>) -> Result<(ParseInput<N>, String), ParseError> + 'static
+{
     move |input| {
         let e = delimited(tag("&"), take_until(";"), tag(";"))(input);
 
@@ -47,7 +47,9 @@ pub(crate) fn genentityexpander<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(
     }
 }
 
-pub(crate) fn paramentityexpander<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> + 'static {
+pub(crate) fn paramentityexpander<N: Node, L: NSResolver>()
+-> impl Fn(ParseInput<N>, &StaticState<L>) -> Result<(ParseInput<N>, String), ParseError> + 'static
+{
     move |input| {
         let e = delimited(tag("%"), take_until(";"), tag(";"))(input);
 

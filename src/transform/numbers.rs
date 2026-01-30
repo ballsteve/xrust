@@ -1,19 +1,19 @@
 //! These functions are for features defined in XPath Functions 1.0 and 2.0.
 
+use qualname::{NcName, QName};
+use std::cmp::Ordering;
 use std::rc::Rc;
 use url::Url;
 
-use english_numbers::{convert, Formatting};
+use english_numbers::{Formatting, convert};
 use formato::Formato;
 use italian_numbers::roman_converter;
 
 use crate::item::{Item, Node, NodeType, Sequence, SequenceTrait};
 use crate::pattern::{Branch, Pattern, Step};
-use crate::qname::QualifiedName;
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::{
     ArithmeticOperand, ArithmeticOperator, Axis, KindTest, NameTest, NodeTest, Transform,
-    WildcardOrName,
 };
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
@@ -73,11 +73,7 @@ pub fn generate_integers<
                         NodeType::Element => Step::new(
                             Axis::SelfAxis,
                             Axis::SelfAxis,
-                            NodeTest::Name(NameTest::new(
-                                m.name().namespace_uri().map(WildcardOrName::Name),
-                                None,
-                                Some(WildcardOrName::Name(m.name().localname())),
-                            )),
+                            NodeTest::Name(NameTest::Name(m.name().unwrap())),
                         ),
                         NodeType::Text => Step::new(
                             Axis::SelfAxis,
@@ -88,7 +84,7 @@ pub fn generate_integers<
                             return Err(Error::new(
                                 ErrorKind::TypeError,
                                 "cannot match this type of node",
-                            ))
+                            ));
                         }
                     },
                 )));
@@ -146,14 +142,18 @@ pub fn generate_integers<
             Err(Error::new_with_code(
                 ErrorKind::TypeError,
                 "not a singleton node",
-                Some(QualifiedName::new(None, None, "XTTE1000")),
+                Some(QName::from_local_name(
+                    NcName::try_from("XTTE1000").unwrap(),
+                )),
             ))
         }
     } else {
         Err(Error::new_with_code(
             ErrorKind::TypeError,
             "not a singleton node",
-            Some(QualifiedName::new(None, None, "XTTE1000")),
+            Some(QName::from_local_name(
+                NcName::try_from("XTTE1000").unwrap(),
+            )),
         ))
     }
 }
@@ -174,11 +174,11 @@ pub fn number<
         1 => {
             // First try converting to an integer
             match n[0].to_int() {
-                Ok(i) => Ok(vec![Item::Value(Rc::new(Value::Integer(i)))]),
+                Ok(i) => Ok(vec![Item::Value(Rc::new(Value::from(i)))]),
                 _ => {
                     // Otherwise convert to double.
                     // NB. This can't fail. At worst it returns NaN.
-                    Ok(vec![Item::Value(Rc::new(Value::Double(n[0].to_double())))])
+                    Ok(vec![Item::Value(Rc::new(Value::from(n[0].to_double())))])
                 }
             }
         }
@@ -200,7 +200,7 @@ pub fn sum<
     stctxt: &mut StaticContext<N, F, G, H>,
     s: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
-    Ok(vec![Item::Value(Rc::new(Value::Double(
+    Ok(vec![Item::Value(Rc::new(Value::from(
         ctxt.dispatch(stctxt, s)?.iter().fold(0.0, |mut acc, i| {
             acc += i.to_double();
             acc
@@ -229,7 +229,7 @@ pub fn avg<
         acc += i.to_double();
         acc
     });
-    Ok(vec![Item::Value(Rc::new(Value::Double(
+    Ok(vec![Item::Value(Rc::new(Value::from(
         sum / (seq.len() as f64),
     )))])
 }
@@ -250,7 +250,7 @@ pub fn min<
     if seq.is_empty() {
         Ok(seq)
     } else {
-        Ok(vec![Item::Value(Rc::new(Value::Double(
+        Ok(vec![Item::Value(Rc::new(Value::from(
             seq.iter().skip(1).fold(seq[0].to_double(), |acc, i| {
                 if acc > i.to_double() {
                     i.to_double()
@@ -278,7 +278,7 @@ pub fn max<
     if seq.is_empty() {
         Ok(seq)
     } else {
-        Ok(vec![Item::Value(Rc::new(Value::Double(
+        Ok(vec![Item::Value(Rc::new(Value::from(
             seq.iter().skip(1).fold(seq[0].to_double(), |acc, i| {
                 if acc < i.to_double() {
                     i.to_double()
@@ -303,7 +303,7 @@ pub fn floor<
 ) -> Result<Sequence<N>, Error> {
     let n = ctxt.dispatch(stctxt, f)?;
     match n.len() {
-        1 => Ok(vec![Item::Value(Rc::new(Value::Double(
+        1 => Ok(vec![Item::Value(Rc::new(Value::from(
             n[0].to_double().floor(),
         )))]),
         _ => Err(Error::new(
@@ -326,7 +326,7 @@ pub fn ceiling<
 ) -> Result<Sequence<N>, Error> {
     let n = ctxt.dispatch(stctxt, c)?;
     match n.len() {
-        1 => Ok(vec![Item::Value(Rc::new(Value::Double(
+        1 => Ok(vec![Item::Value(Rc::new(Value::from(
             n[0].to_double().ceil(),
         )))]),
         _ => Err(Error::new(
@@ -353,7 +353,7 @@ pub fn round<
             let n = ctxt.dispatch(stctxt, r)?;
             let m = ctxt.dispatch(stctxt, p)?;
             match (n.len(), m.len()) {
-                (1, 1) => Ok(vec![Item::Value(Rc::new(Value::Double(
+                (1, 1) => Ok(vec![Item::Value(Rc::new(Value::from(
                     ((n[0].to_double() * (10.0_f64).powi(m[0].to_int().unwrap() as i32)).round())
                         * (10.0_f64).powi(-m[0].to_int().unwrap() as i32),
                 )))]),
@@ -367,7 +367,7 @@ pub fn round<
             // precision is 0, i.e. round to nearest whole number
             let n = ctxt.dispatch(stctxt, r)?;
             match n.len() {
-                1 => Ok(vec![Item::Value(Rc::new(Value::Double(
+                1 => Ok(vec![Item::Value(Rc::new(Value::from(
                     n[0].to_double().round(),
                 )))]),
                 _ => Err(Error::new(
@@ -405,19 +405,20 @@ pub(crate) fn tr_range<
     }
     let i = s[0].to_int()?;
     let j = e[0].to_int()?;
-    if i > j {
-        // empty sequence result
-        Ok(vec![])
-    } else if i == j {
-        let mut seq = Sequence::new();
-        seq.push_value(&Rc::new(Value::Integer(i)));
-        Ok(seq)
-    } else {
-        let mut result = Sequence::new();
-        for k in i..=j {
-            result.push_value(&Rc::new(Value::from(k)))
+    match i.cmp(&j) {
+        Ordering::Greater => Ok(vec![]),
+        Ordering::Less => {
+            let mut result = Sequence::new();
+            for k in i..=j {
+                result.push_value(&Rc::new(Value::from(k)))
+            }
+            Ok(result)
         }
-        Ok(result)
+        Ordering::Equal => {
+            let mut seq = Sequence::new();
+            seq.push_value(&Rc::new(Value::from(i)));
+            Ok(seq)
+        }
     }
 }
 
@@ -482,13 +483,13 @@ pub fn format_number<
         1 => {
             // First try converting to an integer
             match n[0].to_int() {
-                Ok(i) => Ok(vec![Item::Value(Rc::new(Value::String(
+                Ok(i) => Ok(vec![Item::Value(Rc::new(Value::from(
                     i.formato(p.as_str()),
                 )))]),
                 _ => {
                     // Otherwise convert to double.
                     // NB. This can't fail. At worst it returns NaN.
-                    Ok(vec![Item::Value(Rc::new(Value::String(
+                    Ok(vec![Item::Value(Rc::new(Value::from(
                         n[0].to_double().formato(p.as_str()),
                     )))])
                 }
@@ -532,21 +533,19 @@ pub fn format_integer<
                         // length specification
                         // TODO: non-arabic-roman numerals
                         let mut token = String::from(d);
-                        loop {
-                            if let Some(p) = pit.peek() {
-                                if p.eq(&'0') {
-                                    pit.next();
-                                    token.push('0');
-                                } else if p.eq(&'1') {
-                                    pit.next();
-                                    token.push('1');
-                                } else {
-                                    break;
-                                }
+
+                        while let Some(p) = pit.peek() {
+                            if p.eq(&'0') {
+                                pit.next();
+                                token.push('0');
+                            } else if p.eq(&'1') {
+                                pit.next();
+                                token.push('1');
                             } else {
                                 break;
                             }
                         }
+
                         if let Some(num) = nit.next() {
                             result.push_str(
                                 format!("{:0>1$}", num.to_int()?.to_string(), token.len()).as_str(),
