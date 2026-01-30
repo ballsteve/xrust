@@ -1765,6 +1765,71 @@ where
     Ok(())
 }
 
+pub fn ghissue_147<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
+{
+    let result = test_rig(
+        "<document>
+        <listitem><paragraph>first</paragraph></listitem>
+        <listitem><paragraph>second</paragraph></listitem>
+        </document>
+",
+        r#"<?xml version="1.0"?>
+        <xsl:stylesheet
+          xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+          version="1.0"
+          xmlns:miramo="http://ExternalFunction.miramo.com"
+          exclude-result-prefixes="miramo"
+          xmlns:mmc="http://www.miramo.com/mmc"
+          xmlns:xlink="http://xlink"
+          >
+          <xsl:output encoding="utf-8" indent="yes" />
+
+          <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+          <xsl:template match="document">
+          <testXML>
+            	<xsl:apply-templates/>
+          </testXML>
+          </xsl:template>
+
+
+          <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+          <!-- paragraph element maps to <P> whose name is defined from context -->
+          <xsl:template match="paragraph">
+              <P>
+                <!-- Restart label numbering on first listitem -->
+                <xsl:if test="local-name(..) = 'listitem' and not(../preceding-sibling::listitem)">
+                  <xsl:attribute name="numberValue">1</xsl:attribute>
+                </xsl:if>
+                <xsl:apply-templates/>
+              </P>
+          </xsl:template>
+
+        </xsl:stylesheet>
+"#,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    )?;
+
+    assert_eq!(
+        result.1.to_xml(),
+        r##"<?xml version="1.0" encoding="utf-8"?>
+<testXML xmlns:mmc="http://www.miramo.com/mmc" xmlns:xlink="http://xlink">
+<P numberValue="1">first</P>
+<P>second</P>
+</testXML>"##
+    );
+    Ok(())
+}
+
 pub fn conform_1<N: Node, G, H, J>(
     parse_from_str: G,
     parse_from_str_with_ns: J,

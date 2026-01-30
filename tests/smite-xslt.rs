@@ -338,6 +338,15 @@ fn xslt_md_1() {
     .expect("test failed")
 }
 #[test]
+fn xslt_ghissue_147() {
+    xsltgeneric::ghissue_147(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_empty_doc_cooked,
+    )
+    .expect("test failed")
+}
+#[test]
 fn xslt_conform_1() {
     xsltgeneric::conform_1(
         smite::make_from_str,
