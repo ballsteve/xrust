@@ -5,8 +5,9 @@ use std::rc::Rc;
 use url::Url;
 
 use crate::item::{Node, Sequence, SequenceTrait};
+use crate::pattern::Pattern;
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
-use crate::transform::{do_sort, Grouping, Order, Transform};
+use crate::transform::{Grouping, Order, Transform, do_sort};
 use crate::value::{Operator, Value};
 use crate::xdmerror::{Error, ErrorKind};
 
@@ -86,7 +87,7 @@ pub fn for_each<
             for i in seq {
                 let mut v = ContextBuilder::from(ctxt)
                     .context(vec![i.clone()])
-                    .previous_context(Some(i))
+                    .context_item(Some(i))
                     .build()
                     .dispatch(stctxt, body)?;
                 result.append(&mut v);
@@ -123,7 +124,7 @@ fn group_by<
         // For each one, add this item into the group for that key
         ContextBuilder::from(ctxt)
             .context(vec![i.clone()])
-            .previous_context(Some(i.clone()))
+            .context_item(Some(i.clone()))
             .build()
             .dispatch(stctxt, &t)?
             .iter()
@@ -217,7 +218,7 @@ fn group_adjacent<
         sel.iter().skip(1).try_for_each(|i| {
             let thiskey = ContextBuilder::from(ctxt)
                 .context(vec![i.clone()])
-                .previous_context(Some(i.clone()))
+                .context_item(Some(i.clone()))
                 .build()
                 .dispatch(stctxt, &t)?;
             if thiskey.len() == 1 {
@@ -297,17 +298,79 @@ fn group_starting_with<
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    _ctxt: &Context<N>,
-    _stctxt: &mut StaticContext<N, F, G, H>,
-    _pat: &Vec<Transform<N>>,
-    _s: &Transform<N>,
-    _body: &Transform<N>,
-    _o: &Vec<(Order, Transform<N>)>,
+    ctxt: &Context<N>,
+    stctxt: &mut StaticContext<N, F, G, H>,
+    pat: &Pattern<N>,
+    s: &Transform<N>,
+    body: &Transform<N>,
+    o: &Vec<(Order, Transform<N>)>,
 ) -> Result<Sequence<N>, Error> {
-    Err(Error::new(
-        ErrorKind::NotImplemented,
-        String::from("not implemented"),
-    ))
+    // The first item starts the first group.
+    // Each item selected is tested against the pattern.
+    // If it matches then start a new group, including that item.
+    // Otherwise add the item to the current group
+    let mut groups;
+
+    let population = ctxt.dispatch(stctxt, s)?;
+    let mut sit = population.iter();
+    if let Some(i) = sit.next() {
+        // First item starts the first group
+        groups = vec![vec![i.clone()]];
+    } else {
+        // There are no population items so there are no groups
+        return Ok(vec![]);
+    }
+    sit.try_for_each(|i| {
+        // If this item matches the pattern then start a new group
+        // Otherwise append to current group
+        if pat.matches(ctxt, stctxt, i) {
+            groups.push(vec![i.clone()]);
+        } else {
+            groups.last_mut().unwrap().push(i.clone());
+        }
+        Ok(())
+    })?;
+
+    if !o.is_empty() {
+        // TODO: support multiple sort keys
+        groups.sort_by_cached_key(|v| {
+            // TODO: Don't panic
+            let key_seq = ContextBuilder::from(ctxt)
+                .context(v.clone())
+                .current_group(v.clone())
+                .build()
+                .dispatch(stctxt, &o[0].1)
+                .expect("unable to determine key value");
+            // Assume string data type for now
+            // TODO: support number data type
+            // TODO: support all data types
+            key_seq.to_string()
+        });
+        if o[0].0 == Order::Descending {
+            groups.reverse();
+        }
+        // Now evaluate the body for each group
+        groups.iter().try_fold(vec![], |mut result, v| {
+            // Set current-group, but not current-grouping-key
+            let mut r = ContextBuilder::from(ctxt)
+                .current_group(v.clone())
+                .build()
+                .dispatch(stctxt, body)?;
+            result.append(&mut r);
+            Ok(result)
+        })
+    } else {
+        // Now evaluate the body for each group
+        groups.iter().try_fold(vec![], |mut result, v| {
+            // Set current-group, but not current-grouping-key
+            let mut r = ContextBuilder::from(ctxt)
+                .current_group(v.clone())
+                .build()
+                .dispatch(stctxt, body)?;
+            result.append(&mut r);
+            Ok(result)
+        })
+    }
 }
 
 /// Evaluate a combinator for each group of items.
@@ -319,7 +382,7 @@ pub fn group_ending_with<
 >(
     _ctxt: &Context<N>,
     _stctxt: &mut StaticContext<N, F, G, H>,
-    _pat: &Vec<Transform<N>>,
+    _pat: &Pattern<N>,
     _s: &Transform<N>,
     _body: &Transform<N>,
     _o: &Vec<(Order, Transform<N>)>,

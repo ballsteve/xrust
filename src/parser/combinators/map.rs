@@ -1,55 +1,74 @@
 use crate::item::Node;
-use crate::parser::{ParseError, ParseInput, ParserState};
+use crate::parser::{ParseError, ParseInput, ParserState, StaticState};
+use qualname::{NamespacePrefix, NamespaceUri};
 
-pub fn map<P, F, A, B, N: Node>(
+pub fn map<'a, P, F, A, B, N: Node, L>(
     parser: P,
     map_fn: F,
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, B), ParseError>
+) -> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, B), ParseError>
 //-> impl Fn(ParseInput<N>)-> Result<(String, usize, B), usize>
 where
-    P: Fn(ParseInput<N>) -> Result<(ParseInput<N>, A), ParseError>,
+    P: Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, A), ParseError>,
     F: Fn(A) -> B,
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
-    move |input| match parser(input) {
-        Ok((input2, result)) => Ok((input2, map_fn(result))),
-        Err(err) => Err(err),
-    }
+    move |input, ss| parser(input, ss).map(|(input2, result)| (input2, map_fn(result)))
 }
 
-pub fn map_ver<P, F, G, A, B, N: Node>(
+pub fn map_ver<'a, P, F, G, A, B, N: Node, L>(
     parser: P,
     map_fn10: F,
     map_fn11: G,
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, B), ParseError>
+) -> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, B), ParseError>
 //-> impl Fn(ParseInput<N>)-> Result<(String, usize, B), usize>
 where
-    P: Fn(ParseInput<N>) -> Result<(ParseInput<N>, A), ParseError>,
+    P: Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, A), ParseError>,
     F: Fn(A) -> B,
     G: Fn(A) -> B,
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
-    move |input| match parser(input) {
-        Ok(((input2, state2), result)) => {
+    move |input, ss| {
+        parser(input, ss).map(|((input2, state2), result)| {
             if state2.xmlversion == "1.1" {
-                Ok(((input2, state2), map_fn11(result)))
+                ((input2, state2), map_fn11(result))
             } else {
-                Ok(((input2, state2), map_fn10(result)))
+                ((input2, state2), map_fn10(result))
             }
-        }
+        })
+    }
+}
+
+pub fn map_with_state<'a, P, F, A, B, N: Node, L>(
+    parser: P,
+    map_fn: F,
+) -> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, B), ParseError>
+//-> impl Fn(ParseInput<N>)-> Result<(String, usize, B), usize>
+where
+    P: Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, A), ParseError>,
+    F: Fn(A, ParserState<N>, &mut StaticState<L>) -> B,
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
+    move |input, ss| match parser(input, ss) {
+        Ok((input2, result)) => Ok(((input2.0, input2.1.clone()), map_fn(result, input2.1, ss))),
         Err(err) => Err(err),
     }
 }
 
-pub fn map_with_state<P, F, A, B, N: Node>(
+pub fn map_with_state_and_result<'a, P, F, A, B, N: Node, L>(
     parser: P,
     map_fn: F,
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, B), ParseError>
+) -> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, B), ParseError>
 //-> impl Fn(ParseInput<N>)-> Result<(String, usize, B), usize>
 where
-    P: Fn(ParseInput<N>) -> Result<(ParseInput<N>, A), ParseError>,
-    F: Fn(A, ParserState<N>) -> B,
+    P: Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, A), ParseError>,
+    F: Fn(A, ParserState<N>, &mut StaticState<L>) -> Result<B, ParseError>,
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
-    move |input| match parser(input) {
-        Ok((input2, result)) => Ok((input2.clone(), map_fn(result, input2.1))),
+    move |input, ss| match parser(input, ss) {
+        Ok((input2, result)) => match map_fn(result, input2.1.clone(), ss) {
+            Ok(b) => Ok(((input2.0, input2.1.clone()), b)),
+            Err(err) => Err(err),
+        },
         Err(err) => Err(err),
     }
 }

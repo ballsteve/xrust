@@ -14,13 +14,18 @@ use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::support::none_of;
 use crate::parser::combinators::tag::anychar;
 use crate::parser::combinators::tuple::{tuple2, tuple6};
-use crate::parser::{ParseError, ParseInput, ParserState};
+use crate::parser::{ParseError, ParseInput, ParserState, StaticState, StaticStateBuilder};
 use crate::xdmerror::*;
+use qualname::{NamespacePrefix, NamespaceUri};
 
 // This implementation translates an XPath picture string to a strftime format
 
 #[allow(dead_code)]
-fn picture<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+fn picture<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, String), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
     map(
         many0(alt4(open_escape(), close_escape(), literal(), marker())),
         |v| v.iter().cloned().collect::<String>(),
@@ -28,12 +33,20 @@ fn picture<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String
 }
 
 #[allow(dead_code)]
-fn literal<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+fn literal<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, String), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
     map(none_of("[]"), String::from)
 }
 
 #[allow(dead_code)]
-fn marker<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+fn marker<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, String), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
     map(
         tuple6(
             anychar('['),
@@ -45,23 +58,23 @@ fn marker<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String)
         ),
         |(_, c, _p1, _p2, _w, _)| {
             match c {
-                'Y' => String::from("%Y"),
-                'M' => String::from("%m"),
-                'D' => String::from("%d"),
-                'd' => String::from("%j"),
-                'F' => String::from("%A"),
-                'W' => String::from("%U"),
-                'w' => String::from(""), // not supported
-                'H' => String::from("%H"),
-                'h' => String::from("%I"),
-                'P' => String::from("%P"),
-                'm' => String::from("%M"),
-                's' => String::from("%S"),
-                'f' => String::from("%f"),
-                'Z' => String::from("%Z"),
-                'z' => String::from("%:z"), // partial support
-                'C' => String::from(""),    // not supported
-                'E' => String::from(""),    // not supported
+                "Y" => String::from("%Y"),
+                "M" => String::from("%m"),
+                "D" => String::from("%d"),
+                "d" => String::from("%j"),
+                "F" => String::from("%A"),
+                "W" => String::from("%U"),
+                "w" => String::from(""), // not supported
+                "H" => String::from("%H"),
+                "h" => String::from("%I"),
+                "P" => String::from("%P"),
+                "m" => String::from("%M"),
+                "s" => String::from("%S"),
+                "f" => String::from("%f"),
+                "Z" => String::from("%Z"),
+                "z" => String::from("%:z"), // partial support
+                "C" => String::from(""),    // not supported
+                "E" => String::from(""),    // not supported
                 _ => String::from(""),      // error
             }
         },
@@ -69,18 +82,30 @@ fn marker<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String)
 }
 
 #[allow(dead_code)]
-fn open_escape<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+fn open_escape<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, String), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
     map(tuple2(anychar('['), anychar('[')), |_| String::from("["))
 }
 #[allow(dead_code)]
-fn close_escape<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError>
+fn close_escape<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, String), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
     map(tuple2(anychar(']'), anychar(']')), |_| String::from("]"))
 }
 
 pub fn parse<N: Node>(e: &str) -> Result<String, Error> {
-    let state: ParserState<N> = ParserState::new(None, None, None);
-    match picture()((e, state)) {
+    let state: ParserState<N> = ParserState::new();
+    let mut static_state = StaticStateBuilder::new()
+        .namespace(|_| {
+            NamespaceUri::try_from("urn:xrust").map_err(|_| ParseError::MissingNameSpace)
+        })
+        .build();
+    match picture()((e, state), &mut static_state) {
         Ok(((rem, _), value)) => {
             if rem.is_empty() {
                 Ok(value)

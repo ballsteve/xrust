@@ -14,9 +14,9 @@ use crate::item::{Node, Sequence};
 use crate::output::OutputDefinition;
 #[allow(unused_imports)]
 use crate::pattern::Pattern;
-use crate::qname::QualifiedName;
+use crate::transform::Transform;
 use crate::transform::booleans::*;
-use crate::transform::callable::{invoke, Callable};
+use crate::transform::callable::{Callable, invoke};
 use crate::transform::construct::*;
 use crate::transform::controlflow::*;
 use crate::transform::datetime::*;
@@ -28,17 +28,15 @@ use crate::transform::misc::*;
 use crate::transform::navigate::*;
 use crate::transform::numbers::*;
 use crate::transform::strings::*;
-use crate::transform::template::{apply_imports, apply_templates, next_match, Template};
+use crate::transform::template::{Template, apply_imports, apply_templates, next_match};
 use crate::transform::variables::{declare_variable, reference_variable};
-use crate::transform::Transform;
 use crate::xdmerror::Error;
 use crate::{ErrorKind, Item, SequenceTrait, Value};
+use qualname::{NamespaceMap, QName};
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::rc::Rc;
 use url::Url;
-
-//pub type Message = FnMut(&str) -> Result<(), Error>;
 
 /// The transformation context. This is the dynamic context.
 /// The static parts of the context are in a separate structure.
@@ -46,17 +44,19 @@ use url::Url;
 /// Although it is optional, it would be very unusual not to set a result document in a context since nodes cannot be created in the result without one.
 #[derive(Clone, Debug)]
 pub struct Context<N: Node> {
-    pub(crate) cur: Sequence<N>,                  // The current context
-    pub(crate) i: usize, // The index to the item that is the current context item
-    pub(crate) previous_context: Option<Item<N>>, // The "current" XPath item, which is really the context item for the invoking context. See XSLT 20.4.1.
-    pub(crate) depth: usize,                      // Depth of evaluation
-    pub(crate) rd: Option<N>,                     // Result document
+    pub(crate) context: Sequence<N>,          // The (outer) context
+    pub(crate) i: usize,                      // The index to the item that is the context item
+    pub(crate) context_item: Option<Item<N>>, // The context item, which is usually context[i]. Sometimes the inner focus is different to the context, e.g. when evaluating predicates
+    pub(crate) current: Sequence<N>,
+    pub(crate) current_item: Option<Item<N>>, // The "current" XPath item, which is really the context item for the invoking context. See XSLT 20.4.1.
+    pub(crate) depth: usize,                  // Depth of evaluation
+    pub(crate) rd: Option<N>,                 // Result document
     // There is no distinction between built-in and user-defined templates
     // Built-in templates have no priority and no document order
     pub(crate) templates: Vec<Rc<Template<N>>>,
     pub(crate) current_templates: Vec<Rc<Template<N>>>,
     // Named templates and functions
-    pub(crate) callables: HashMap<QualifiedName, Callable<N>>,
+    pub(crate) callables: HashMap<QName, Callable<N>>,
     // Variables, with scoping
     pub(crate) vars: HashMap<String, Vec<Sequence<N>>>,
     // Stylesheet variables, to be evaluated before template processing.
@@ -75,16 +75,24 @@ pub struct Context<N: Node> {
     pub(crate) od: OutputDefinition,
     pub(crate) base_url: Option<Url>,
     // Namespace resolution. If any transforms contain a QName that needs to be resolved to an EQName,
-    // then these prefix -> URI mappings are used. These are usually derived from the stylesheet document.
-    //pub(crate) namespaces: Vec<HashMap<Option<String>, String>>,
+    // then these URI -> prefix mappings may be used. These are usually derived from the stylesheet document.
+    // The search order is: Namespace declarations in the source document; namespace declarations in the result document; this NamespaceMap.
+    pub(crate) namespaces: Option<Rc<NamespaceMap>>,
+}
+impl<N: Node> Default for Context<N> {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl<N: Node> Context<N> {
     pub fn new() -> Self {
         Context {
-            cur: Sequence::new(),
+            context: Sequence::new(),
+            current: Sequence::new(),
             i: 0,
-            previous_context: None,
+            context_item: None,
+            current_item: None,
             depth: 0,
             rd: None,
             templates: vec![],
@@ -98,16 +106,26 @@ impl<N: Node> Context<N> {
             key_values: HashMap::new(),
             od: OutputDefinition::new(),
             base_url: None,
+            namespaces: None,
         }
     }
-    /// Sets the context item.
+    /// Sets the outer context and the context item.
     pub fn context(&mut self, s: Sequence<N>, i: usize) {
-        self.cur = s;
+        self.context_item = Some(s[i].clone());
+        self.context = s;
         self.i = i;
     }
+    /// Sets the context item (which must be a member of the context) without changing the outer context.
+    pub fn context_item(&mut self, i: Option<Item<N>>) {
+        self.context_item = i;
+    }
     /// Sets the "current" item.
-    pub fn previous_context(&mut self, i: Item<N>) {
-        self.previous_context = Some(i);
+    pub fn current_item(&mut self, i: Item<N>) {
+        self.current_item = Some(i);
+    }
+    /// Sets the current context
+    pub fn current(&mut self, s: Sequence<N>) {
+        self.current = s;
     }
     /// Sets the result document. Any nodes created by the transformation are owned by this document.
     pub fn result_document(&mut self, rd: N) {
@@ -147,7 +165,7 @@ impl<N: Node> Context<N> {
         })
     }
     /// Add a named attribute set. This replaces any previously declared attribute set with the same name
-    pub fn attribute_set(&mut self, _name: QualifiedName, _body: Vec<Transform<N>>) {}
+    pub fn attribute_set(&mut self, _name: QName, _body: Vec<Transform<N>>) {}
     /// Set the value of a variable. If the variable already exists, then this creates a new inner scope.
     pub fn var_push(&mut self, name: String, value: Sequence<N>) {
         match self.vars.get_mut(name.as_str()) {
@@ -179,8 +197,12 @@ impl<N: Node> Context<N> {
     }
 
     /// Callable components: named templates and user-defined functions
-    pub fn callable_push(&mut self, qn: QualifiedName, c: Callable<N>) {
+    pub fn callable_push(&mut self, qn: QName, c: Callable<N>) {
         self.callables.insert(qn, c);
+    }
+    /// Find the callable component with the given QName
+    pub fn callable_get(&self, qn: &QName) -> Option<Callable<N>> {
+        self.callables.get(qn).cloned()
     }
 
     /// Returns the Base URL.
@@ -204,14 +226,14 @@ impl<N: Node> Context<N> {
         &self,
         stctxt: &mut StaticContext<N, F, G, H>,
     ) -> Result<Sequence<N>, Error> {
-        if self.cur.is_empty() {
+        if self.context.is_empty() {
             Ok(Sequence::new())
         } else {
-            self.cur.get(self.i).map_or_else(
+            self.context_item.as_ref().map_or_else(
                 || {
                     Err(Error::new(
                         ErrorKind::DynamicAbsent,
-                        String::from("bad index into current sequence"),
+                        String::from("no context item"),
                     ))
                 },
                 |i| {
@@ -263,13 +285,15 @@ impl<N: Node> Context<N> {
     /// use xrust::transform::Transform;
     /// use xrust::transform::context::{Context, StaticContext, StaticContextBuilder};
     /// use xrust::trees::smite::RNode;
+    /// use xrust::parser::ParseError;
     /// use xrust::parser::xml::parse;
     /// use xrust::xslt::from_document;
     ///
     /// // A little helper function to parse a string to a Document Node
     /// fn make_from_str(s: &str) -> RNode {
     ///   let mut d = RNode::new_document();
-    ///   parse(d.clone(), s, None)
+    ///   parse(d.clone(), s,
+    ///     Some(|_: &_| Err(ParseError::MissingNameSpace)))
     ///     .expect("failed to parse XML");
     ///   d
     /// }
@@ -299,32 +323,66 @@ impl<N: Node> Context<N> {
         stctxt: &mut StaticContext<N, F, G, H>,
     ) -> Result<Sequence<N>, Error> {
         // Define initial (stylesheet) variables by evaluating their transformation with the root node as the context
-        if self.cur.is_empty() {
+        if self.context.is_empty() {
             // There is no context item
-            return Ok(Sequence::new());
+            Ok(Sequence::new())
         } else {
             let mut ctxt = self.clone();
             // If the context item is a node then set the new context to the root node
             // otherwise there is no context
             ctxt.context(
-                self.cur.get(self.i).map_or_else(
-                    || vec![],
-                    |i| {
-                        if let Item::Node(n) = i {
-                            vec![Item::Node(n.owner_document())]
-                        } else {
-                            vec![]
-                        }
-                    },
-                ),
+                self.context.get(self.i).map_or_else(Vec::new, |i| {
+                    if let Item::Node(n) = i {
+                        vec![Item::Node(n.owner_document())]
+                    } else {
+                        vec![]
+                    }
+                }),
                 0,
             );
             // Populate the context with stylesheet-level variables.
             // Each variable creates a new context for the evaluation of subsequent variables.
             for (name, x) in &self.pre_vars {
-                ctxt.var_push(name.clone(), ctxt.dispatch(stctxt, &x)?);
+                ctxt.var_push(name.clone(), ctxt.dispatch(stctxt, x)?);
             }
-            ctxt.evaluate_internal(stctxt)
+            let result = ctxt.evaluate_internal(stctxt)?;
+            // If any of the result items are nodes then add them as children of the result document
+            if let Some(mut rd) = ctxt.rd {
+                Ok(result
+                    .into_iter()
+                    .map(|i| {
+                        if let Item::Node(ref n) = i {
+                            if n.owner_document().is_same(&rd) {
+                                if n.is_unattached() {
+                                    // Attach it and leave it in the result
+                                    rd.push(n.clone())
+                                        .expect("unable to attach to result document");
+                                    //Some(i)
+                                    i
+                                } else {
+                                    // leave it where it is in the result document
+                                    //Some(i)
+                                    i
+                                }
+                            } else {
+                                // This is a node from the source document.
+                                // Copy it to the result document
+                                // and replace the node in the result with the copy
+                                let cp = n.deep_copy().expect("unable to copy node");
+                                rd.push(cp.clone())
+                                    .expect("unable to attach to result document");
+                                //Some(Item::Node(cp))
+                                Item::Node(cp)
+                            }
+                        } else {
+                            //Some(i)
+                            i
+                        }
+                    })
+                    .collect())
+            } else {
+                Ok(result)
+            }
         }
     }
 
@@ -337,7 +395,7 @@ impl<N: Node> Context<N> {
         &self,
         stctxt: &mut StaticContext<N, F, G, H>,
         i: &Item<N>,
-        m: &Option<Rc<QualifiedName>>,
+        m: &Option<QName>,
     ) -> Result<Vec<Rc<Template<N>>>, Error> {
         let mut candidates =
             self.templates
@@ -372,12 +430,13 @@ impl<N: Node> Context<N> {
     /// use xrust::transform::{Transform, NodeMatch, NodeTest, KindTest,  Axis};
     /// use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticContextBuilder};
     /// use xrust::trees::smite::RNode;
+    /// use xrust::parser::ParseError;
     /// use xrust::parser::xml::parse;
     ///
     /// // A little helper function to parse a string to a Document Node
     /// fn make_from_str(s: &str) -> RNode {
     ///   let mut d = RNode::new_document();
-    ///   parse(d.clone(), s, None)
+    ///   parse(d.clone(), s, Some(|_: &_| Err(ParseError::MissingNameSpace)))
     ///     .expect("failed to parse XML");
     ///   d
     /// }
@@ -394,12 +453,13 @@ impl<N: Node> Context<N> {
     ///   .context(vec![sd])
     ///   .build();
     /// let sequence = context.dispatch(&mut stctxt, &t).expect("evaluation failed");
-    /// assert_eq!(sequence.to_xml(), "<Example></Example>")
+    /// assert_eq!(sequence.to_xml(), "<Example/>")
     /// ```
     pub fn dispatch<
         F: FnMut(&str) -> Result<(), Error>,
         G: FnMut(&str) -> Result<N, Error>,
         H: FnMut(&Url) -> Result<String, Error>,
+        //L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
     >(
         &self,
         stctxt: &mut StaticContext<N, F, G, H>,
@@ -421,6 +481,9 @@ impl<N: Node> Context<N> {
             Transform::LiteralComment(t) => literal_comment(self, stctxt, t),
             Transform::LiteralProcessingInstruction(n, t) => {
                 literal_processing_instruction(self, stctxt, n, t)
+            }
+            Transform::NamespaceDeclaration(p, u, s) => {
+                namespace_declaration(self, stctxt, p, u, s)
             }
             Transform::SetAttribute(qn, v) => set_attribute(self, stctxt, qn, v),
             Transform::SequenceItems(v) => make_sequence(self, stctxt, v),
@@ -504,10 +567,17 @@ impl<N: Node> Context<N> {
 
 impl<N: Node> From<Sequence<N>> for Context<N> {
     fn from(value: Sequence<N>) -> Self {
+        let ci = if value.is_empty() {
+            None
+        } else {
+            Some(value[0].clone())
+        };
         Context {
-            cur: value,
+            context_item: ci,
+            context: value,
             i: 0,
-            previous_context: None,
+            current_item: None,
+            current: Sequence::new(),
             depth: 0,
             rd: None,
             templates: vec![],
@@ -521,6 +591,7 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
             current_group: Sequence::new(),
             od: OutputDefinition::new(),
             base_url: None,
+            namespaces: None,
         }
     }
 }
@@ -528,20 +599,43 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
 /// Builder for a [Context]
 pub struct ContextBuilder<N: Node>(Context<N>);
 
+impl<N: Node> Default for ContextBuilder<N> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<N: Node> ContextBuilder<N> {
     pub fn new() -> Self {
         ContextBuilder(Context::new())
     }
+    /// Set the context sequence. The first item is the context item.
     pub fn context(mut self, s: Sequence<N>) -> Self {
-        self.0.cur = s;
+        if !s.is_empty() {
+            self.0.context_item = Some(s[0].clone());
+        }
+        self.0.context = s;
+        self.0.i = 0;
         self
     }
+    /// Set which item is the context item.
+    /// Does not check for validity.
+    /// Does not set the context item (see context_item()).
     pub fn index(mut self, i: usize) -> Self {
         self.0.i = i;
         self
     }
-    pub fn previous_context(mut self, i: Option<Item<N>>) -> Self {
-        self.0.previous_context = i;
+    /// Sets the context item. This is usually context[index], but not always so this is not checked.
+    pub fn context_item(mut self, c: Option<Item<N>>) -> Self {
+        self.0.context_item = c;
+        self
+    }
+    pub fn current_item(mut self, i: Option<Item<N>>) -> Self {
+        self.0.current_item = i;
+        self
+    }
+    pub fn current(mut self, s: Sequence<N>) -> Self {
+        self.0.current = s;
         self
     }
     pub fn depth(mut self, d: usize) -> Self {
@@ -590,8 +684,12 @@ impl<N: Node> ContextBuilder<N> {
         self.0.base_url = Some(b);
         self
     }
-    pub fn callable(mut self, qn: QualifiedName, c: Callable<N>) -> Self {
+    pub fn callable(mut self, qn: QName, c: Callable<N>) -> Self {
         self.0.callables.insert(qn, c);
+        self
+    }
+    pub fn namespaces(mut self, nm: NamespaceMap) -> Self {
+        self.0.namespaces = Some(Rc::new(nm));
         self
     }
     pub fn build(self) -> Context<N> {
@@ -599,14 +697,17 @@ impl<N: Node> ContextBuilder<N> {
     }
 }
 
-/// Derive a new [Context] from an old [Context]. The context item in the old context becomes the "current" item in the new context.
+/// Derive a new [Context] from an old [Context]. The context sequence and item in the old context becomes the "current" sequence and item in the new context.
 impl<N: Node> From<&Context<N>> for ContextBuilder<N> {
     fn from(c: &Context<N>) -> Self {
-        if c.cur.len() > c.i {
-            ContextBuilder(c.clone()).previous_context(Some(c.cur[c.i].clone()))
-        } else {
-            ContextBuilder(c.clone()).previous_context(None)
-        }
+        c.context_item.as_ref().map_or_else(
+            || ContextBuilder(c.clone()).current(vec![]).current_item(None),
+            |i| {
+                ContextBuilder(c.clone())
+                    .current(c.context.clone())
+                    .current_item(Some(i.clone()))
+            },
+        )
     }
 }
 
@@ -622,6 +723,16 @@ where
     pub(crate) message: Option<F>,
     pub(crate) parser: Option<G>,
     pub(crate) fetcher: Option<H>,
+}
+impl<N: Node, F, G, H> Default for StaticContext<N, F, G, H>
+where
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+{
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl<N: Node, F, G, H> StaticContext<N, F, G, H>
@@ -643,8 +754,8 @@ where
 /// The main feature of the static context is the ability to set up a callback for messages.
 /// ```rust
 /// use std::rc::Rc;
+/// use qualname::{QName, NcName};
 /// use xrust::{Error, ErrorKind};
-/// use xrust::qname::QualifiedName;
 /// use xrust::value::Value;
 /// use xrust::item::{Item, Sequence, SequenceTrait, Node, NodeType};
 /// use xrust::trees::smite::RNode;
@@ -653,7 +764,7 @@ where
 ///
 /// let mut message = String::from("no message received");
 /// let xform = Transform::LiteralElement(
-///   Rc::new(QualifiedName::new(None, None, String::from("Example"))),
+///   QName::from_local_name(NcName::try_from("Example").unwrap()),
 ///   Box::new(Transform::SequenceItems(vec![
 ///    Transform::Message(
 ///        Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("a message from the transformation"))))),
@@ -683,6 +794,17 @@ pub struct StaticContextBuilder<
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(StaticContext<N, F, G, H>);
+
+impl<N: Node, F, G, H> Default for StaticContextBuilder<N, F, G, H>
+where
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+{
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl<N: Node, F, G, H> StaticContextBuilder<N, F, G, H>
 where

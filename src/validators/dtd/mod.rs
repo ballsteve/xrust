@@ -1,9 +1,9 @@
 mod derive;
 
-use crate::item::NodeType;
-use crate::validators::dtd::derive::{child_deriv, is_nullable};
-use crate::validators::ValidationError;
 use crate::Node;
+use crate::item::NodeType;
+use crate::validators::ValidationError;
+use crate::validators::dtd::derive::{child_deriv, is_nullable};
 
 pub(crate) fn validate_dtd(doc: impl Node) -> Result<(), ValidationError> {
     match doc.node_type() {
@@ -30,13 +30,12 @@ pub(crate) fn validate_dtd(doc: impl Node) -> Result<(), ValidationError> {
                                     match is_nullable(child_deriv(
                                         pat.clone(),
                                         doc.child_iter()
-                                            .filter(|node| {
+                                            .find(|node| {
                                                 node.node_type() != NodeType::ProcessingInstruction
                                                     && node.node_type() != NodeType::Comment
                                                     && !(node.node_type() == NodeType::Text
                                                         && node.value().to_string() == *"")
                                             })
-                                            .next()
                                             .unwrap(),
                                         dtd,
                                     )) {

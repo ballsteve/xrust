@@ -57,8 +57,8 @@ pub(crate) mod variables;
 #[allow(unused_imports)]
 use crate::item::Sequence;
 use crate::item::{Item, Node, NodeType, SequenceTrait};
-use crate::namespace::NamespaceMap;
-use crate::qname::QualifiedName;
+use crate::output::OutputSpec;
+use crate::pattern::Pattern;
 use crate::transform::callable::ActualParameters;
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::numbers::Numbering;
@@ -66,6 +66,7 @@ use crate::value::Operator;
 #[allow(unused_imports)]
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
+use qualname::{NamespaceDeclaration, NamespaceMap, NamespacePrefix, NamespaceUri, NcName, QName};
 use std::convert::TryFrom;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
@@ -99,18 +100,24 @@ pub enum Transform<N: Node> {
     /// A literal, atomic value.
     Literal(Item<N>),
     /// A literal element. Consists of the element name and content.
-    LiteralElement(Rc<QualifiedName>, Box<Transform<N>>),
+    LiteralElement(QName, Box<Transform<N>>),
     /// A constructed element. Consists of the name and content.
     Element(Box<Transform<N>>, Box<Transform<N>>),
-    /// A literal text node. Consists of the value of the node. Second argument gives whether to disable output escaping.
-    LiteralText(Box<Transform<N>>, bool),
+    /// A literal text node. Consists of the value of the node. Second argument gives an output hint.
+    LiteralText(Box<Transform<N>>, OutputSpec),
     /// A literal attribute. Consists of the attribute name and value.
     /// NB. The value may be produced by an Attribute Value Template, so must be dynamic.
-    LiteralAttribute(Rc<QualifiedName>, Box<Transform<N>>),
+    LiteralAttribute(QName, Box<Transform<N>>),
     /// A literal comment. Consists of the value.
     LiteralComment(Box<Transform<N>>),
     /// A literal processing instruction. Consists of the name and value.
     LiteralProcessingInstruction(Box<Transform<N>>, Box<Transform<N>>),
+    /// Create an XML Namespace declaration. Consists of a prefix, a namespace URI, and if the declaration is in scope.
+    NamespaceDeclaration(
+        Option<Box<Transform<N>>>,
+        Box<Transform<N>>,
+        Box<Transform<N>>,
+    ),
     /// Produce a [Sequence]. Each element in the vector becomes one, or more, item in the sequence.
     SequenceItems(Vec<Transform<N>>),
 
@@ -154,11 +161,7 @@ pub enum Transform<N: Node> {
     ),
     /// Find a template that matches an item and evaluate its body with the item as the context.
     /// Consists of the selector for items to be matched, the mode, and sort keys.
-    ApplyTemplates(
-        Box<Transform<N>>,
-        Option<Rc<QualifiedName>>,
-        Vec<(Order, Transform<N>)>,
-    ),
+    ApplyTemplates(Box<Transform<N>>, Option<QName>, Vec<(Order, Transform<N>)>),
     /// Find templates at the next import level and evaluate its body.
     ApplyImports,
     NextMatch,
@@ -184,7 +187,7 @@ pub enum Transform<N: Node> {
 
     /// Set the value of an attribute. The context item must be an element-type node.
     /// Consists of the name of the attribute and its value. The [Sequence] produced will be cast to a [Value].
-    SetAttribute(Rc<QualifiedName>, Box<Transform<N>>),
+    SetAttribute(QName, Box<Transform<N>>),
 
     /// XPath functions
     Position,
@@ -278,7 +281,7 @@ pub enum Transform<N: Node> {
     Document(Box<Transform<N>>, Option<Box<Transform<N>>>),
 
     /// Invoke a callable component. Consists of a name, an actual argument list, and in-scope namespace declarations.
-    Invoke(Rc<QualifiedName>, ActualParameters<N>, Rc<NamespaceMap>),
+    Invoke(QName, ActualParameters<N>, Rc<NamespaceMap>),
 
     /// Emit a message. Consists of a select expression, a terminate attribute, an error-code, and a body.
     Message(
@@ -317,12 +320,13 @@ impl<N: Node> Debug for Transform<N> {
             Transform::Literal(_) => write!(f, "literal value"),
             Transform::LiteralElement(qn, _) => write!(f, "literal element named \"{}\"", qn),
             Transform::Element(_, _) => write!(f, "constructed element"),
-            Transform::LiteralText(_, b) => write!(f, "literal text (disable escaping {})", b),
+            Transform::LiteralText(_, b) => write!(f, "literal text (disable escaping {:?})", b),
             Transform::LiteralAttribute(qn, _) => write!(f, "literal attribute named \"{}\"", qn),
             Transform::LiteralComment(_) => write!(f, "literal comment"),
             Transform::LiteralProcessingInstruction(_, _) => {
                 write!(f, "literal processing-instruction")
             }
+            Transform::NamespaceDeclaration(_, _, _) => write!(f, "namespace declaration"),
             Transform::Copy(_, _) => write!(f, "shallow copy"),
             Transform::DeepCopy(_) => write!(f, "deep copy"),
             Transform::GeneralComparison(o, v, u) => {
@@ -339,7 +343,13 @@ impl<N: Node> Debug for Transform<N> {
             Transform::Loop(_, _) => write!(f, "loop"),
             Transform::Switch(c, _) => write!(f, "switch {} clauses", c.len()),
             Transform::ForEach(_g, _, _, o) => write!(f, "for-each ({} sort keys)", o.len()),
-            Transform::Union(v) => write!(f, "union of {} operands", v.len()),
+            Transform::Union(v) => {
+                write!(f, "union of {} operands", v.len()).ok();
+                v.iter().for_each(|o| {
+                    write!(f, "\noperand: {:?}", o).ok();
+                });
+                Ok(())
+            }
             Transform::ApplyTemplates(_, m, o) => {
                 write!(f, "Apply templates (mode {:?}, {} sort keys)", m, o.len())
             }
@@ -405,7 +415,17 @@ impl<N: Node> Debug for Transform<N> {
 pub fn in_scope_namespaces<N: Node>(n: Option<N>) -> Rc<NamespaceMap> {
     if let Some(nn) = n {
         Rc::new(nn.namespace_iter().fold(NamespaceMap::new(), |mut hm, ns| {
-            hm.insert(Some(ns.name().localname()), ns.value());
+            hm.push(
+                NamespaceDeclaration::new(
+                    // TODO: It's annoying to have to re-parse the prefix as a NamespacePrefix
+                    ns.name().map(|nsprefix| {
+                        NamespacePrefix::try_from(nsprefix.local_name().to_string().as_str())
+                            .unwrap()
+                    }),
+                    NamespaceUri::try_from(ns.value().to_string().as_str()).unwrap(),
+                )
+                .unwrap(),
+            );
             hm
         }))
     } else {
@@ -460,8 +480,8 @@ pub(crate) fn do_sort<
 #[derive(Clone, Debug)]
 pub enum Grouping<N: Node> {
     By(Vec<Transform<N>>),
-    StartingWith(Vec<Transform<N>>),
-    EndingWith(Vec<Transform<N>>),
+    StartingWith(Box<Pattern<N>>),
+    EndingWith(Box<Pattern<N>>),
     Adjacent(Vec<Transform<N>>),
 }
 
@@ -499,38 +519,7 @@ impl NodeMatch {
         }
     }
     pub fn matches<N: Node>(&self, n: &N) -> bool {
-        match &self.nodetest {
-            NodeTest::Name(t) => {
-                match n.node_type() {
-                    NodeType::Element | NodeType::Attribute => {
-                        // TODO: namespaces
-                        match &t.name {
-                            Some(a) => match a {
-                                WildcardOrName::Wildcard => true,
-                                WildcardOrName::Name(s) => *s == n.name().localname(),
-                            },
-                            None => false,
-                        }
-                    }
-                    _ => false,
-                }
-            }
-            NodeTest::Kind(k) => {
-                match k {
-                    KindTest::Document => matches!(n.node_type(), NodeType::Document),
-                    KindTest::Element => matches!(n.node_type(), NodeType::Element),
-                    KindTest::PI => matches!(n.node_type(), NodeType::ProcessingInstruction),
-                    KindTest::Comment => matches!(n.node_type(), NodeType::Comment),
-                    KindTest::Text => matches!(n.node_type(), NodeType::Text),
-                    //Note: This one is matching not NodeType::Document
-                    KindTest::Any => !matches!(n.node_type(), NodeType::Document),
-                    KindTest::Attribute
-                    | KindTest::SchemaElement
-                    | KindTest::SchemaAttribute
-                    | KindTest::Namespace => false, // TODO: not yet implemented
-                }
-            }
-        }
+        self.nodetest.matches(n)
     }
 }
 
@@ -547,13 +536,16 @@ pub enum NodeTest {
 }
 
 impl NodeTest {
-    pub fn matches<N: Node>(&self, i: &Item<N>) -> bool {
+    pub fn matches_item<N: Node>(&self, i: &Item<N>) -> bool {
         match i {
-            Item::Node(_) => match self {
-                NodeTest::Kind(k) => k.matches(i),
-                NodeTest::Name(nm) => nm.matches(i),
-            },
+            Item::Node(n) => self.matches(n),
             _ => false,
+        }
+    }
+    pub fn matches<N: Node>(&self, n: &N) -> bool {
+        match self {
+            NodeTest::Kind(k) => k.matches(n),
+            NodeTest::Name(nm) => nm.matches(n),
         }
     }
 }
@@ -577,47 +569,53 @@ impl TryFrom<&str> for NodeTest {
             1 => {
                 // unprefixed
                 if tok[0] == "*" {
-                    Ok(NodeTest::Name(NameTest {
-                        name: Some(WildcardOrName::Wildcard),
-                        ns: None,
-                        prefix: None,
-                    }))
+                    Ok(NodeTest::Name(NameTest::Wildcard(
+                        WildcardOrNamespaceUri::Wildcard,
+                        WildcardOrName::Wildcard,
+                    )))
                 } else {
-                    Ok(NodeTest::Name(NameTest {
-                        name: Some(WildcardOrName::Name(Rc::new(Value::from(tok[0])))),
-                        ns: None,
-                        prefix: None,
-                    }))
+                    Ok(NodeTest::Name(NameTest::Name(QName::from_local_name(
+                        NcName::try_from(tok[0])
+                            .map_err(|_| Error::new(ErrorKind::ParseError, "not a NcName"))?,
+                    ))))
                 }
             }
             2 => {
                 // prefixed
                 if tok[0] == "*" {
                     if tok[1] == "*" {
-                        Ok(NodeTest::Name(NameTest {
-                            name: Some(WildcardOrName::Wildcard),
-                            ns: Some(WildcardOrName::Wildcard),
-                            prefix: None,
-                        }))
+                        Ok(NodeTest::Name(NameTest::Wildcard(
+                            WildcardOrNamespaceUri::Wildcard,
+                            WildcardOrName::Wildcard,
+                        )))
                     } else {
-                        Ok(NodeTest::Name(NameTest {
-                            name: Some(WildcardOrName::Name(Rc::new(Value::from(tok[1])))),
-                            ns: Some(WildcardOrName::Wildcard),
-                            prefix: None,
-                        }))
+                        Ok(NodeTest::Name(NameTest::Wildcard(
+                            WildcardOrNamespaceUri::Wildcard,
+                            WildcardOrName::Name(QName::from_local_name(
+                                NcName::try_from(tok[1]).map_err(|_| {
+                                    Error::new(ErrorKind::ParseError, "not a NcName")
+                                })?,
+                            )),
+                        )))
                     }
                 } else if tok[1] == "*" {
-                    Ok(NodeTest::Name(NameTest {
-                        name: Some(WildcardOrName::Wildcard),
-                        ns: None,
-                        prefix: Some(Rc::new(Value::from(tok[0]))),
-                    }))
+                    Ok(NodeTest::Name(NameTest::Wildcard(
+                        WildcardOrNamespaceUri::NamespaceUri(
+                            NamespaceUri::try_from(tok[0]).map_err(|_| {
+                                Error::new(ErrorKind::ParseError, "not a namespace URI")
+                            })?,
+                        ),
+                        WildcardOrName::Wildcard,
+                    )))
                 } else {
-                    Ok(NodeTest::Name(NameTest {
-                        name: Some(WildcardOrName::Name(Rc::new(Value::from(tok[1])))),
-                        ns: None,
-                        prefix: Some(Rc::new(Value::from(tok[0]))),
-                    }))
+                    Ok(NodeTest::Name(NameTest::Name(QName::new_from_parts(
+                        NcName::try_from(tok[1])
+                            .map_err(|_| Error::new(ErrorKind::ParseError, "not a NcName"))?,
+                        Some(
+                            NamespaceUri::try_from(tok[1])
+                                .map_err(|_| Error::new(ErrorKind::ParseError, "not a NcName"))?,
+                        ),
+                    ))))
                 }
             }
             _ => Result::Err(Error::new(
@@ -661,29 +659,30 @@ impl fmt::Display for KindTest {
 
 impl KindTest {
     /// Does an item match the Kind Test?
-    pub fn matches<N: Node>(&self, i: &Item<N>) -> bool {
+    pub fn matches_item<N: Node>(&self, i: &Item<N>) -> bool {
         match i {
-            Item::Node(n) => {
-                match (self, n.node_type()) {
-                    (KindTest::Document, NodeType::Document) => true,
-                    (KindTest::Document, _) => false,
-                    (KindTest::Element, NodeType::Element) => true,
-                    (KindTest::Element, _) => false,
-                    (KindTest::Attribute, NodeType::Attribute) => true,
-                    (KindTest::Attribute, _) => false,
-                    (KindTest::SchemaElement, _) => false, // not supported
-                    (KindTest::SchemaAttribute, _) => false, // not supported
-                    (KindTest::PI, NodeType::ProcessingInstruction) => true,
-                    (KindTest::PI, _) => false,
-                    (KindTest::Comment, NodeType::Comment) => true,
-                    (KindTest::Comment, _) => false,
-                    (KindTest::Text, NodeType::Text) => true,
-                    (KindTest::Text, _) => false,
-                    (KindTest::Namespace, _) => false, // not yet implemented
-                    (KindTest::Any, _) => true,
-                }
-            }
+            Item::Node(n) => self.matches(n),
             _ => false,
+        }
+    }
+    pub fn matches<N: Node>(&self, n: &N) -> bool {
+        match (self, n.node_type()) {
+            (KindTest::Document, NodeType::Document) => true,
+            (KindTest::Document, _) => false,
+            (KindTest::Element, NodeType::Element) => true,
+            (KindTest::Element, _) => false,
+            (KindTest::Attribute, NodeType::Attribute) => true,
+            (KindTest::Attribute, _) => false,
+            (KindTest::SchemaElement, _) => false, // not supported
+            (KindTest::SchemaAttribute, _) => false, // not supported
+            (KindTest::PI, NodeType::ProcessingInstruction) => true,
+            (KindTest::PI, _) => false,
+            (KindTest::Comment, NodeType::Comment) => true,
+            (KindTest::Comment, _) => false,
+            (KindTest::Text, NodeType::Text) => true,
+            (KindTest::Text, _) => false,
+            (KindTest::Namespace, _) => false, // not yet implemented
+            (KindTest::Any, _) => true,
         }
     }
     pub fn to_string(&self) -> &'static str {
@@ -703,98 +702,130 @@ impl KindTest {
 }
 
 #[derive(Clone, Debug)]
-pub struct NameTest {
-    pub ns: Option<WildcardOrName>,
-    pub prefix: Option<Rc<Value>>,
-    pub name: Option<WildcardOrName>,
+pub enum NameTest {
+    Name(QName),
+    Wildcard(WildcardOrNamespaceUri, WildcardOrName),
 }
+/*pub struct NameTest {
+    pub ns: Option<WildcardOrNamespaceUri>,
+    //pub prefix: Option<Rc<Value>>,
+    pub name: Option<WildcardOrName>,
+}*/
 
 impl NameTest {
-    pub fn new(
-        ns: Option<WildcardOrName>,
-        prefix: Option<Rc<Value>>,
+    /*pub fn new(
+        ns: Option<WildcardOrNamespaceUri>,
+        //prefix: Option<Rc<Value>>,
         name: Option<WildcardOrName>,
     ) -> Self {
-        NameTest { ns, prefix, name }
-    }
+        NameTest { ns, name }
+    }*/
     /// Does an Item match this name test? To match, the item must be a node, have a name,
     /// have the namespace URI and local name be equal or a wildcard
-    pub fn matches<N: Node>(&self, i: &Item<N>) -> bool {
+    pub fn matches_item<N: Node>(&self, i: &Item<N>) -> bool {
         match i {
-            Item::Node(n) => {
-                match n.node_type() {
-                    NodeType::Element | NodeType::ProcessingInstruction | NodeType::Attribute => {
-                        // TODO: avoid converting the values into strings just for comparison
-                        // Value interning should fix this
-                        match (
-                            self.ns.as_ref(),
-                            self.name.as_ref(),
-                            n.name().namespace_uri(),
-                            n.name().localname_to_string().as_str(),
-                        ) {
-                            (None, None, _, _) => false,
-                            (None, Some(WildcardOrName::Wildcard), None, _) => true,
-                            (None, Some(WildcardOrName::Wildcard), Some(_), _) => false,
-                            (None, Some(WildcardOrName::Name(_)), None, "") => false,
-                            (None, Some(WildcardOrName::Name(wn)), None, qn) => {
-                                wn.to_string() == qn
-                            }
-                            (None, Some(WildcardOrName::Name(_)), Some(_), _) => false,
-                            (Some(_), None, _, _) => false, // A namespace URI without a local name doesn't make sense
-                            (
-                                Some(WildcardOrName::Wildcard),
-                                Some(WildcardOrName::Wildcard),
-                                _,
-                                _,
-                            ) => true,
-                            (
-                                Some(WildcardOrName::Wildcard),
-                                Some(WildcardOrName::Name(_)),
-                                _,
-                                "",
-                            ) => false,
-                            (
-                                Some(WildcardOrName::Wildcard),
-                                Some(WildcardOrName::Name(wn)),
-                                _,
-                                qn,
-                            ) => wn.to_string() == qn,
-                            (Some(WildcardOrName::Name(_)), Some(_), None, _) => false,
-                            (
-                                Some(WildcardOrName::Name(wnsuri)),
-                                Some(WildcardOrName::Name(wn)),
-                                Some(qnsuri),
-                                qn,
-                            ) => wnsuri.clone() == qnsuri && wn.to_string() == qn,
-                            _ => false, // maybe should panic?
+            Item::Node(n) => self.matches(n),
+            _ => false, // other item types don't have names
+        }
+    }
+    pub fn matches<N: Node>(&self, n: &N) -> bool {
+        if let Some(nm) = n.name() {
+            // Must be a type of node that has a name
+            match self {
+                NameTest::Name(qn) => *qn == nm,
+                NameTest::Wildcard(nsw, nmw) => {
+                    let nsb = match nsw {
+                        WildcardOrNamespaceUri::Wildcard => true,
+                        WildcardOrNamespaceUri::NamespaceUri(nsuri) => {
+                            nm.namespace_uri().is_some_and(|ns| *nsuri == ns)
                         }
-                    }
-                    _ => false, // all other node types don't have names
+                    };
+                    let nmb = match nmw {
+                        WildcardOrName::Wildcard => true,
+                        WildcardOrName::Name(nmwn) => nmwn.local_name() == nm.local_name(),
+                    };
+                    nsb && nmb
                 }
             }
-            _ => false, // other item types don't have names
+            /*match (self.name.as_ref(), self.ns.as_ref()) {
+                (None, None) => false,
+                (Some(WildcardOrName::Name(nt)), None) => nm == *nt,
+                (
+                    Some(WildcardOrName::Name(nt)),
+                    Some(WildcardOrNamespaceUri::NamespaceUri(nst)),
+                ) => {
+                    nm.local_name() == nt.local_name()
+                        && nm.namespace_uri().is_some_and(|nmuri| nmuri == *nst)
+                }
+                (Some(WildcardOrName::Wildcard), None) => true,
+                (None, Some(WildcardOrNamespaceUri::Wildcard)) => {
+                    nm.namespace_uri().is_none()
+                }
+                (None, Some(_)) => false,
+                (
+                    Some(WildcardOrName::Wildcard),
+                    Some(WildcardOrNamespaceUri::Wildcard),
+                ) => true,
+                _ => false,
+            }*/
+        } else {
+            false
         }
     }
 }
 
 impl fmt::Display for NameTest {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        let result = if self.name.is_some() {
-            match self.name.as_ref().unwrap() {
-                WildcardOrName::Wildcard => "*".to_string(),
-                WildcardOrName::Name(n) => n.to_string(),
+        match self {
+            NameTest::Name(nm) => f.write_str(nm.to_string().as_str()),
+            NameTest::Wildcard(nsw, nmw) => {
+                let _ = f.write_str("{");
+                let _ = match nsw {
+                    WildcardOrNamespaceUri::NamespaceUri(nsuri) => {
+                        f.write_str(nsuri.to_string().as_str())
+                    }
+                    WildcardOrNamespaceUri::Wildcard => f.write_str("*"),
+                };
+                let _ = f.write_str("}");
+                match nmw {
+                    WildcardOrName::Wildcard => f.write_str("*"),
+                    WildcardOrName::Name(n) => f.write_str(n.to_string().as_str()),
+                }
             }
-        } else {
-            "--no name--".to_string()
-        };
-        f.write_str(result.as_str())
+        }
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
+pub enum WildcardOrNamespaceUri {
+    Wildcard,
+    NamespaceUri(NamespaceUri),
+}
+
+impl Debug for WildcardOrNamespaceUri {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            WildcardOrNamespaceUri::Wildcard => f.write_str("WildcardOrNamespaceUri::Wildcard"),
+            WildcardOrNamespaceUri::NamespaceUri(ns) => f.write_str(
+                format!("WildcardOrNamespaceUri::NamespaceUri({})", ns.to_string()).as_str(),
+            ),
+        }
+    }
+}
+
+#[derive(Clone)]
 pub enum WildcardOrName {
     Wildcard,
-    Name(Rc<Value>),
+    Name(QName), // only local-part is used
+}
+
+impl Debug for WildcardOrName {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            WildcardOrName::Wildcard => f.write_str("WildcardOrNamespaceUri::Wildcard"),
+            WildcardOrName::Name(n) => f.write_str(format!("WildcardOrName::Name({})", n).as_str()),
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]

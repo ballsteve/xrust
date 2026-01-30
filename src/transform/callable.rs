@@ -6,17 +6,17 @@
 // TODO: tunneling parameters
 
 use crate::item::Node;
-use crate::qname::QualifiedName;
 use crate::transform::context::StaticContext;
 use crate::transform::{NamespaceMap, Transform};
 use crate::{Context, Error, ErrorKind, Sequence};
+use qualname::QName;
 use std::collections::HashMap;
 use url::Url;
 
 #[derive(Clone, Debug)]
 pub struct Callable<N: Node> {
-    pub(crate) body: Transform<N>,
-    pub(crate) parameters: FormalParameters<N>,
+    pub body: Transform<N>,
+    pub parameters: FormalParameters<N>,
     // TODO: return type
 }
 
@@ -29,12 +29,12 @@ impl<N: Node> Callable<N> {
 // TODO: parameter type ("as" attribute)
 #[derive(Clone, Debug)]
 pub enum FormalParameters<N: Node> {
-    Named(Vec<(QualifiedName, Option<Transform<N>>)>), // parameter name, default value
-    Positional(Vec<QualifiedName>),
+    Named(Vec<(QName, Option<Transform<N>>)>), // parameter name, default value
+    Positional(Vec<QName>),
 }
 #[derive(Clone, Debug)]
 pub enum ActualParameters<N: Node> {
-    Named(Vec<(QualifiedName, Transform<N>)>), // parameter name, value
+    Named(Vec<(QName, Transform<N>)>), // parameter name, value
     Positional(Vec<Transform<N>>),
 }
 
@@ -47,11 +47,11 @@ pub(crate) fn invoke<
 >(
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    qn: &QualifiedName,
+    qn: &QName,
     a: &ActualParameters<N>,
-    ns: &NamespaceMap,
+    _ns: &NamespaceMap,
 ) -> Result<Sequence<N>, Error> {
-    let mut qnr = qn.clone();
+    /*let mut qnr = qn.clone();
     qnr.resolve(|p| {
         ns.get(&p).map_or(
             Err(Error::new(
@@ -60,8 +60,8 @@ pub(crate) fn invoke<
             )),
             |r| Ok(r.clone()),
         )
-    })?;
-    match ctxt.callables.get(&qnr) {
+    })?;*/
+    match ctxt.callables.get(qn) {
         Some(t) => {
             match &t.parameters {
                 FormalParameters::Named(v) => {

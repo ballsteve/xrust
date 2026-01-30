@@ -8,18 +8,22 @@ use crate::parser::combinators::tuple::{tuple2, tuple3, tuple5, tuple6, tuple8};
 use crate::parser::combinators::wellformed::wellformed;
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::xml::strings::delimited_string;
-use crate::parser::{ParseError, ParseInput};
+use crate::parser::{ParseError, ParseInput, StaticState};
 use crate::xmldecl::XMLDecl;
+use qualname::{NamespacePrefix, NamespaceUri};
 
-fn xmldeclversion<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError>
+fn xmldeclversion<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, String), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
-    move |input| match tuple5(
+    move |input, ss| match tuple5(
         tag("version"),
         whitespace0(),
         tag("="),
         whitespace0(),
         delimited_string(),
-    )(input)
+    )(input, ss)
     {
         Ok((input1, (_, _, _, _, v))) => {
             if v.parse::<f64>().is_ok() {
@@ -31,16 +35,22 @@ fn xmldeclversion<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>,
                     Err(ParseError::Notimplemented)
                 }
             } else {
-                Err(ParseError::NotWellFormed(v))
+                Err(ParseError::NotWellFormed(format!(
+                    "invalid XML version \"{}\"",
+                    v
+                )))
             }
         }
         Err(err) => Err(err),
     }
 }
 
-fn xmldeclstandalone<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
-    move |(input, state)| match map(
+fn xmldeclstandalone<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, String), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
+    move |(input, state), ss| match map(
         wellformed(
             tuple6(
                 whitespace1(),
@@ -51,9 +61,10 @@ fn xmldeclstandalone<N: Node>(
                 delimited_string(),
             ),
             |(_, _, _, _, _, s)| ["yes".to_string(), "no".to_string()].contains(s),
+            "invalid standalone value",
         ),
         |(_, _, _, _, _, s)| s,
-    )((input, state))
+    )((input, state), ss)
     {
         Err(e) => Err(e),
         Ok(((input2, mut state2), sta)) => {
@@ -65,8 +76,11 @@ fn xmldeclstandalone<N: Node>(
     }
 }
 
-pub(crate) fn encodingdecl<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn encodingdecl<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, String), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
     map(
         tuple6(
             whitespace1(),
@@ -80,7 +94,11 @@ pub(crate) fn encodingdecl<N: Node>(
                     tag("'"),
                     map(
                         tuple2(
-                            wellformed(take_one(), |c| is_encname_startchar(*c)),
+                            wellformed(
+                                take_one(),
+                                |c| is_encname_startchar(*c),
+                                "invalid character in XML encoding",
+                            ),
                             take_while(is_encname_char),
                         ),
                         |(s, r)| [s.to_string(), r].concat(),
@@ -91,7 +109,11 @@ pub(crate) fn encodingdecl<N: Node>(
                     tag("\""),
                     map(
                         tuple2(
-                            wellformed(take_one(), |c| is_encname_startchar(*c)),
+                            wellformed(
+                                take_one(),
+                                |c| is_encname_startchar(*c),
+                                "invalid character in XML encoding",
+                            ),
                             take_while(is_encname_char),
                         ),
                         |(s, r)| [s.to_string(), r].concat(),
@@ -104,9 +126,12 @@ pub(crate) fn encodingdecl<N: Node>(
     )
 }
 
-pub(crate) fn xmldecl<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, XMLDecl), ParseError> {
-    move |(input, state)| match tuple8(
+pub(crate) fn xmldecl<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, XMLDecl), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
+    move |(input, state), ss| match tuple8(
         tag("<?xml"),
         whitespace1(),
         xmldeclversion(),
@@ -115,9 +140,16 @@ pub(crate) fn xmldecl<N: Node>(
         whitespace0(),
         tag("?>"),
         whitespace0(),
-    )((input, state))
+    )((input, state), ss)
     {
         Ok(((input1, mut state1), (_, _, ver, enc, sta, _, _, _))) => {
+            // XML 1.0 (fifth edition): an external entity must include the encoding in its text declaration
+            if state1.currentlyexternal && enc.is_none() {
+                return Err(ParseError::NotWellFormed(String::from(
+                    "missing encoding - external entity",
+                )));
+            }
+
             state1.xmlversion.clone_from(&ver);
             let res = XMLDecl {
                 version: ver,

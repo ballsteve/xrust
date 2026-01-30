@@ -1,12 +1,13 @@
 //! These functions construct nodes, possibly destined for the result document.
 
-use crate::item::{Node, NodeType, Sequence, SequenceTrait};
-use crate::qname::QualifiedName;
-use crate::transform::context::{Context, StaticContext};
-use crate::transform::Transform;
-use crate::value::Value;
-use crate::xdmerror::{Error, ErrorKind};
 use crate::Item;
+use crate::item::{Node, NodeType, Sequence, SequenceTrait};
+use crate::output::OutputSpec;
+use crate::transform::Transform;
+use crate::transform::context::{Context, StaticContext};
+use crate::value::{Value, ValueBuilder, ValueData};
+use crate::xdmerror::{Error, ErrorKind};
+use qualname::{NamespacePrefix, NamespaceUri, QName};
 use std::rc::Rc;
 use url::Url;
 
@@ -31,7 +32,7 @@ pub(crate) fn literal_element<
 >(
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    qn: &Rc<QualifiedName>,
+    qn: &QName,
     c: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     if ctxt.rd.is_none() {
@@ -44,13 +45,10 @@ pub(crate) fn literal_element<
 
     let mut e = r.new_element(qn.clone())?;
 
-    // If the element is in a namespace, check if the namespace is in scope.
-    // If not, create and add a Namespace node for that namespace.
+    // If the element is in a namespace, the namespace declaration must be in the content.
     // Issue: the tree is being created from the bottom up, so we can't know if an ancestor will declare the namespace.
     // This will result in lots of redundant Namespace nodes.
-    if let Some(ns) = qn.namespace_uri() {
-        e.add_namespace(r.new_namespace(ns, qn.prefix())?)?;
-    }
+    // TODO: have a fixup process that eliminates the redundant declarations.
 
     // Create the content of the new element
     ctxt.dispatch(stctxt, c)?.iter().try_for_each(|i| {
@@ -58,8 +56,18 @@ pub(crate) fn literal_element<
         match i {
             Item::Node(t) => {
                 match t.node_type() {
-                    NodeType::Attribute => e.add_attribute(t.clone()), // TODO: Also check namespace of attribute
-                    NodeType::Namespace => e.add_namespace(t.clone()),
+                    NodeType::Attribute => {
+                        let new_att = r.new_attribute(t.name().unwrap(), t.value())?;
+                        e.add_attribute(new_att)
+                    } // TODO: Also check namespace of attribute
+                    NodeType::Namespace => {
+                        let new_ns = r.new_namespace(
+                            t.as_namespace_uri()?.clone(),
+                            t.as_namespace_prefix()?.cloned(),
+                            t.is_in_scope(),
+                        )?;
+                        e.add_namespace(new_ns)
+                    }
                     _ => e.push(t.deep_copy()?),
                 }
             }
@@ -98,8 +106,9 @@ pub(crate) fn element<
     }
     let r = ctxt.rd.clone().unwrap();
 
-    let qnavt = QualifiedName::try_from(ctxt.dispatch(stctxt, qn)?.to_string().as_str())?;
-    let mut e = r.new_element(Rc::new(qnavt))?;
+    let qnavt = QName::try_from(ctxt.dispatch(stctxt, qn)?.to_string().as_str())
+        .map_err(|_| Error::new(ErrorKind::ParseError, "invalid QName"))?;
+    let mut e = r.new_element(qnavt)?;
     ctxt.dispatch(stctxt, c)?.iter().try_for_each(|i| {
         // Item could be a Node or text
         match i {
@@ -119,7 +128,7 @@ pub(crate) fn element<
 
 /// Creates a new text node.
 /// The transform is evaluated to create the value of the text node.
-/// Special characters are escaped, unless disabled.
+/// Special characters are escaped, unless disabled as per output specification.
 pub(crate) fn literal_text<
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
@@ -129,7 +138,7 @@ pub(crate) fn literal_text<
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<N, F, G, H>,
     t: &Transform<N>,
-    b: &bool,
+    o: &OutputSpec,
 ) -> Result<Sequence<N>, Error> {
     if ctxt.rd.is_none() {
         return Err(Error::new(
@@ -139,21 +148,14 @@ pub(crate) fn literal_text<
     }
 
     let v = ctxt.dispatch(stctxt, t)?.to_string();
-    if *b {
-        Ok(vec![Item::Node(
-            ctxt.rd.clone().unwrap().new_text(Rc::new(Value::from(v)))?,
-        )])
-    } else {
-        Ok(vec![Item::Node(
-            ctxt.rd.clone().unwrap().new_text(Rc::new(Value::from(
-                v.replace('&', "&amp;")
-                    .replace('>', "&gt;")
-                    .replace('<', "&lt;")
-                    .replace('\'', "&apos;")
-                    .replace('\"', "&quot;"),
-            )))?,
-        )])
-    }
+    Ok(vec![Item::Node(
+        ctxt.rd.clone().unwrap().new_text(Rc::new(
+            ValueBuilder::new()
+                .value(ValueData::String(v))
+                .output(o.clone())
+                .build(),
+        ))?,
+    )])
 }
 
 /// Creates a singleton sequence with a new attribute node.
@@ -167,7 +169,7 @@ pub(crate) fn literal_attribute<
 >(
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    qn: &Rc<QualifiedName>,
+    qn: &QName,
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     if ctxt.rd.is_none() {
@@ -234,14 +236,49 @@ pub(crate) fn literal_processing_instruction<
     }
 
     let pi = ctxt.rd.clone().unwrap().new_processing_instruction(
-        Rc::new(QualifiedName::new(
-            None,
-            None,
-            ctxt.dispatch(stctxt, name)?.to_string(),
-        )),
+        Rc::new(Value::from(ctxt.dispatch(stctxt, name)?.to_string())),
         Rc::new(Value::from(ctxt.dispatch(stctxt, t)?.to_string())),
     )?;
     Ok(vec![Item::Node(pi)])
+}
+
+/// Creates a XML Namespace declaration.
+pub(crate) fn namespace_declaration<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
+    ctxt: &Context<N>,
+    stctxt: &mut StaticContext<N, F, G, H>,
+    p: &Option<Box<Transform<N>>>, // prefix
+    u: &Transform<N>,              // namespace URI
+    in_scope: &Transform<N>,       // in scope
+) -> Result<Sequence<N>, Error> {
+    if ctxt.rd.is_none() {
+        return Err(Error::new(
+            ErrorKind::Unknown,
+            String::from("context has no result document"),
+        ));
+    }
+
+    let np = if let Some(pp) = p {
+        Some(
+            NamespacePrefix::try_from(ctxt.dispatch(stctxt, pp)?.to_string().as_str())
+                .map_err(|_| Error::new(ErrorKind::ParseError, "invalid namespapce prefix"))?,
+        )
+    } else {
+        None
+    };
+
+    Ok(vec![Item::Node(
+        ctxt.rd.as_ref().unwrap().new_namespace(
+            NamespaceUri::try_from(ctxt.dispatch(stctxt, u)?.to_string().as_str())
+                .map_err(|_| Error::new(ErrorKind::ParseError, "invalid namespapce URI"))?,
+            np,
+            ctxt.dispatch(stctxt, in_scope)?.to_bool(),
+        )?,
+    )])
 }
 
 /// Set an attribute on the context item, which must be an element-type node.
@@ -257,7 +294,7 @@ pub(crate) fn set_attribute<
 >(
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    atname: &Rc<QualifiedName>,
+    atname: &QName,
     v: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     if ctxt.rd.is_none() {
@@ -266,7 +303,10 @@ pub(crate) fn set_attribute<
             String::from("context has no result document"),
         ));
     }
-    match &ctxt.cur[ctxt.i] {
+    if ctxt.context_item.is_none() {
+        return Err(Error::new(ErrorKind::DynamicAbsent, "no context item"));
+    }
+    match &ctxt.context_item.as_ref().unwrap() {
         Item::Node(n) => match n.node_type() {
             NodeType::Element => {
                 let od = n.owner_document();
@@ -294,14 +334,14 @@ pub(crate) fn set_attribute<
                 return Err(Error::new(
                     ErrorKind::Unknown,
                     String::from("context item is not an element-type node"),
-                ))
+                ));
             }
         },
         _ => {
             return Err(Error::new(
                 ErrorKind::Unknown,
                 String::from("context item is not a node"),
-            ))
+            ));
         }
     }
     Ok(vec![])
@@ -343,25 +383,22 @@ pub(crate) fn copy<
     for k in sel {
         let cp = k.shallow_copy()?;
         result.push(cp.clone());
-        match cp {
-            Item::Node(mut im) => {
-                for j in ctxt.dispatch(stctxt, c)? {
-                    match &j {
-                        Item::Value(v) => im.push(im.new_text(v.clone())?)?,
-                        Item::Node(n) => match n.node_type() {
-                            NodeType::Attribute => im.add_attribute(n.clone())?,
-                            _ => im.push(n.clone())?,
-                        },
-                        _ => {
-                            return Err(Error::new(
-                                ErrorKind::NotImplemented,
-                                String::from("not yet implemented"),
-                            ))
-                        }
+        if let Item::Node(mut im) = cp {
+            for j in ctxt.dispatch(stctxt, c)? {
+                match &j {
+                    Item::Value(v) => im.push(im.new_text(v.clone())?)?,
+                    Item::Node(n) => match n.node_type() {
+                        NodeType::Attribute => im.add_attribute(n.clone())?,
+                        _ => im.push(n.clone())?,
+                    },
+                    _ => {
+                        return Err(Error::new(
+                            ErrorKind::NotImplemented,
+                            String::from("not yet implemented"),
+                        ));
                     }
                 }
             }
-            _ => {}
         }
     }
     Ok(result)

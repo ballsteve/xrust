@@ -7,17 +7,24 @@ use crate::parser::combinators::tuple::{tuple4, tuple6};
 use crate::parser::combinators::whitespace::whitespace0;
 use crate::parser::xml::dtd::misc::nmtoken;
 use crate::parser::xml::dtd::notation::notationtype;
-use crate::parser::{ParseError, ParseInput};
+use crate::parser::{ParseError, ParseInput, StaticState};
 use crate::xmldecl::AttType;
+use qualname::{NamespacePrefix, NamespaceUri};
 
 //EnumeratedType ::= NotationType | Enumeration
-pub(crate) fn enumeratedtype<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, AttType), ParseError> {
+pub(crate) fn enumeratedtype<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, AttType), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
     alt2(notationtype(), enumeration())
 }
 
 //Enumeration ::= '(' S? Nmtoken (S? '|' S? Nmtoken)* S? ')'
-fn enumeration<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, AttType), ParseError>
+fn enumeration<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, AttType), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
     map(
         tuple6(
@@ -25,7 +32,13 @@ fn enumeration<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, At
             whitespace0(),
             nmtoken(),
             many0(map(
-                tuple4(whitespace0(), tag("|"), whitespace0(), nmtoken()),
+                tuple4(
+                    whitespace0(),
+                    tag("|"),
+                    whitespace0(),
+                    nmtoken(),
+                    "dtd enumeration",
+                ),
                 |(_, _, _, nmt)| nmt,
             )),
             whitespace0(),

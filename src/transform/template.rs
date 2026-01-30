@@ -5,11 +5,11 @@ use std::fmt::{Debug, Formatter};
 use std::rc::Rc;
 use url::Url;
 
-use crate::qname::QualifiedName;
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
-use crate::transform::{do_sort, Order, Transform};
+use crate::transform::{Order, Transform, do_sort};
 use crate::xdmerror::Error;
 use crate::{Node, Pattern, Sequence};
+use qualname::QName;
 
 #[derive(Clone)]
 pub struct Template<N: Node> {
@@ -18,7 +18,8 @@ pub struct Template<N: Node> {
     pub(crate) priority: Option<f64>,
     pub(crate) import: Vec<usize>,
     pub(crate) document_order: Option<usize>,
-    pub(crate) mode: Option<Rc<QualifiedName>>,
+    pub(crate) mode: Option<QName>,
+    pub(crate) mtch: String, // used for debugging
 }
 
 impl<N: Node> Template<N> {
@@ -28,7 +29,8 @@ impl<N: Node> Template<N> {
         priority: Option<f64>,
         import: Vec<usize>,
         document_order: Option<usize>,
-        mode: Option<Rc<QualifiedName>>,
+        mode: Option<QName>,
+        mtch: String,
     ) -> Self {
         Template {
             pattern,
@@ -37,6 +39,7 @@ impl<N: Node> Template<N> {
             import,
             document_order,
             mode,
+            mtch,
         }
     }
 }
@@ -82,8 +85,8 @@ impl<N: Node> Debug for Template<N> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "template match \"{:?}\" priority {:?} mode {:?}",
-            self.pattern, self.priority, self.mode
+            "template match \"{:?}\" ({:?}) priority {:?} mode {:?}",
+            self.mtch, self.pattern, self.priority, self.mode
         )
     }
 }
@@ -98,7 +101,7 @@ pub(crate) fn apply_templates<
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<N, F, G, H>,
     s: &Transform<N>,
-    m: &Option<Rc<QualifiedName>>,
+    m: &Option<QName>,
     o: &Vec<(Order, Transform<N>)>, // sort keys
 ) -> Result<Sequence<N>, Error> {
     // s is the select expression. Evaluate it, and then iterate over its items.
@@ -135,7 +138,7 @@ pub(crate) fn apply_templates<
         // Create a new context using the current templates, then evaluate the highest priority and highest import precedence
         let mut u = ContextBuilder::from(ctxt)
             .context(vec![i.clone()])
-            .previous_context(Some(i.clone()))
+            .context_item(Some(i.clone()))
             .current_templates(templates)
             .build()
             .dispatch(stctxt, &matching.body)?;
@@ -156,6 +159,10 @@ pub(crate) fn apply_imports<
 ) -> Result<Sequence<N>, Error> {
     // Find the template with the next highest level within the same import tree
     // current_templates[0] is the currently matching template
+    if ctxt.current_templates.is_empty() {
+        // TODO: select built-in templates instead
+        return Ok(vec![]);
+    }
     let cur = &(ctxt.current_templates[0]);
     let next: Vec<Rc<Template<N>>> = ctxt
         .current_templates

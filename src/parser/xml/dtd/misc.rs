@@ -9,20 +9,26 @@ use crate::parser::combinators::tuple::{tuple2, tuple3, tuple4, tuple5, tuple6};
 use crate::parser::combinators::value::value;
 use crate::parser::combinators::whitespace::whitespace0;
 use crate::parser::common::is_namechar;
-use crate::parser::xml::dtd::pereference::petextreference;
 use crate::parser::xml::dtd::Occurances;
+use crate::parser::xml::dtd::pereference::petextreference;
 use crate::parser::xml::qname::name;
-use crate::parser::{ParseError, ParseInput};
-use crate::qname::QualifiedName;
+use crate::parser::{ParseError, ParseInput, StaticState};
 use crate::xmldecl::DTDPattern;
+use qualname::{NamespacePrefix, NamespaceUri};
 
-pub(crate) fn nmtoken<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn nmtoken<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, String), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
     map(many1(take_while(|c| is_namechar(&c))), |x| x.join(""))
 }
 
-pub(crate) fn contentspec<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, DTDPattern), ParseError> {
+pub(crate) fn contentspec<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, DTDPattern), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
     alt4(
         value(tag("EMPTY"), DTDPattern::Empty),
         value(tag("ANY"), DTDPattern::Any),
@@ -32,8 +38,11 @@ pub(crate) fn contentspec<N: Node>(
 }
 
 //Mixed	   ::=   	'(' S? '#PCDATA' (S? '|' S? Name)* S? ')*' | '(' S? '#PCDATA' S? ')'
-pub(crate) fn mixed<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, DTDPattern), ParseError> {
+pub(crate) fn mixed<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, DTDPattern), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
     alt2(
         map(
             tuple6(
@@ -45,6 +54,7 @@ pub(crate) fn mixed<N: Node>(
                     tag("|"),
                     whitespace0(),
                     alt2(petextreference(), name()),
+                    "mixed",
                 )),
                 whitespace0(),
                 tag(")*"),
@@ -52,15 +62,14 @@ pub(crate) fn mixed<N: Node>(
             |(_, _, _, vn, _, _)| {
                 let mut r = DTDPattern::Text;
                 for (_, _, _, name) in vn {
-                    let q: QualifiedName = if name.contains(':') {
+                    let q: (Option<String>, String) = if name.contains(':') {
                         let mut nameparts = name.split(':');
-                        QualifiedName::new(
-                            None,
+                        (
                             Some(nameparts.next().unwrap().parse().unwrap()),
-                            nameparts.next().unwrap(),
+                            nameparts.next().unwrap().to_string(),
                         )
                     } else {
-                        QualifiedName::new(None, None, name)
+                        (None, name)
                     };
                     r = DTDPattern::Choice(Box::new(DTDPattern::Ref(q)), Box::new(r))
                 }
@@ -85,19 +94,22 @@ pub(crate) fn mixed<N: Node>(
 }
 
 // children	   ::=   	(choice | seq) ('?' | '*' | '+')?
-pub(crate) fn children<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, DTDPattern), ParseError> {
-    move |(input, state)| {
+pub(crate) fn children<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, DTDPattern), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
+    move |(input, state), ss| {
         map(
             tuple2(
                 alt3(
-                    |(input1, state1)| match petextreference()((input1, state1)) {
+                    |(input1, state1), ss| match petextreference()((input1, state1), ss) {
                         Err(e) => Err(e),
                         Ok(((input2, state2), s)) => {
-                            match tuple3(whitespace0(), alt2(choice(), seq()), whitespace0())((
-                                s.as_str(),
-                                state2,
-                            )) {
+                            match tuple3(whitespace0(), alt2(choice(), seq()), whitespace0())(
+                                (s.as_str(), state2),
+                                ss,
+                            ) {
                                 Err(e) => Err(e),
                                 Ok(((_input3, state3), (_, d, _))) => Ok(((input2, state3), d)),
                             }
@@ -126,17 +138,21 @@ pub(crate) fn children<N: Node>(
                     }
                 },
             },
-        )((input, state))
+        )((input, state), ss)
     }
 }
 
 // cp	   ::=   	(Name | choice | seq) ('?' | '*' | '+')?
-fn cp<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, DTDPattern), ParseError> {
-    move |(input1, state1)| {
+fn cp<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, DTDPattern), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
+    move |(input1, state1), ss| {
         map(
             tuple2(
                 alt4(
-                    |(input1, state1)| match petextreference()((input1, state1)) {
+                    |(input1, state1), ss| match petextreference()((input1, state1), ss) {
                         Err(e) => Err(e),
                         Ok(((input2, state2), s)) => {
                             match tuple3(
@@ -145,20 +161,19 @@ fn cp<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, DTDPattern)
                                     map(name(), |n| {
                                         if n.contains(':') {
                                             let mut nameparts = n.split(':');
-                                            DTDPattern::Ref(QualifiedName::new(
-                                                None,
+                                            DTDPattern::Ref((
                                                 Some(nameparts.next().unwrap().to_string()),
-                                                nameparts.next().unwrap(),
+                                                nameparts.next().unwrap().to_string(),
                                             ))
                                         } else {
-                                            DTDPattern::Ref(QualifiedName::new(None, None, n))
+                                            DTDPattern::Ref((None, n))
                                         }
                                     }),
                                     choice(),
                                     seq(),
                                 ),
                                 whitespace0(),
-                            )((s.as_str(), state2))
+                            )((s.as_str(), state2), ss)
                             {
                                 Err(e) => Err(e),
                                 Ok(((_input3, state3), (_, d, _))) => Ok(((input2, state3), d)),
@@ -168,13 +183,12 @@ fn cp<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, DTDPattern)
                     map(name(), |n| {
                         if n.contains(':') {
                             let mut nameparts = n.split(':');
-                            DTDPattern::Ref(QualifiedName::new(
-                                None,
+                            DTDPattern::Ref((
                                 Some(nameparts.next().unwrap().to_string()),
-                                nameparts.next().unwrap(),
+                                nameparts.next().unwrap().to_string(),
                             ))
                         } else {
-                            DTDPattern::Ref(QualifiedName::new(None, None, n))
+                            DTDPattern::Ref((None, n))
                         }
                     }),
                     choice(),
@@ -203,22 +217,29 @@ fn cp<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, DTDPattern)
                     DTDPattern::Choice(Box::new(cs), Box::new(DTDPattern::Empty))
                 }
             },
-        )((input1, state1))
+        )((input1, state1), ss)
     }
 }
 //choice	   ::=   	'(' S? cp ( S? '|' S? cp )+ S? ')'
-fn choice<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, DTDPattern), ParseError> {
-    move |(input, state)| {
+fn choice<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, DTDPattern), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
+    move |(input, state), ss| {
         map(
             tuple6(
                 tag("("),
                 whitespace0(),
                 cp(),
                 many0(alt2(
-                    |(input1, state1)| match petextreference()((input1, state1)) {
+                    |(input1, state1), ss| match petextreference()((input1, state1), ss) {
                         Err(e) => Err(e),
                         Ok(((input2, state2), s)) => {
-                            match tuple3(whitespace0(), cp(), whitespace0())((s.as_str(), state2)) {
+                            match tuple3(whitespace0(), cp(), whitespace0())(
+                                (s.as_str(), state2),
+                                ss,
+                            ) {
                                 Err(e) => Err(e),
                                 Ok(((_input3, state3), (_, d, _))) => {
                                     Ok(((input2, state3), ((), (), (), d)))
@@ -226,7 +247,7 @@ fn choice<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, DTDPatt
                             }
                         }
                     },
-                    tuple4(whitespace0(), tag("|"), whitespace0(), cp()),
+                    tuple4(whitespace0(), tag("|"), whitespace0(), cp(), "choice"),
                 )),
                 whitespace0(),
                 tag(")"),
@@ -238,18 +259,22 @@ fn choice<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, DTDPatt
                 }
                 res
             },
-        )((input, state))
+        )((input, state), ss)
     }
 }
 
 //seq	   ::=   	'(' S? cp ( S? ',' S? cp )* S? ')'
-fn seq<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, DTDPattern), ParseError> {
+fn seq<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, DTDPattern), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
     map(
         tuple6(
             tag("("),
             whitespace0(),
             cp(),
-            many0(tuple4(whitespace0(), tag(","), whitespace0(), cp())),
+            many0(tuple4(whitespace0(), tag(","), whitespace0(), cp(), "seq")),
             whitespace0(),
             tag(")"),
         ),

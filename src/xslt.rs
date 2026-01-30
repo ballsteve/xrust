@@ -9,18 +9,19 @@ NB. This module, by default, does not resolve include or import statements. See 
 ```rust
 use std::rc::Rc;
 use xrust::xdmerror::{Error, ErrorKind};
-use xrust::qname::QualifiedName;
 use xrust::item::{Item, Node, NodeType, Sequence, SequenceTrait};
 use xrust::transform::Transform;
 use xrust::transform::context::{StaticContext, StaticContextBuilder};
 use xrust::trees::smite::RNode;
+use xrust::parser::ParseError;
 use xrust::parser::xml::parse;
 use xrust::xslt::from_document;
 
 // A little helper function to parse an XML document
 fn make_from_str(s: &str) -> Result<RNode, Error> {
     let doc = RNode::new_document();
-    let e = parse(doc.clone(), s, None)?;
+    let e = parse(doc.clone(), s,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)))?;
     Ok(doc)
 }
 
@@ -71,25 +72,171 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::item::{Item, Node, NodeType, Sequence};
-use crate::output::*;
+use crate::output::{OutputDefinition, OutputSpec};
 use crate::parser::avt::parse as parse_avt;
 use crate::parser::xpath::parse;
 use crate::pattern::{Branch, Pattern};
-use crate::qname::*;
 use crate::transform::callable::{ActualParameters, Callable, FormalParameters};
 use crate::transform::context::{Context, ContextBuilder};
 use crate::transform::numbers::{Level, Numbering};
 use crate::transform::template::Template;
 use crate::transform::{
-    in_scope_namespaces, Axis, Grouping, KindTest, NameTest, NodeMatch, NodeTest, Order, Transform,
-    WildcardOrName,
+    Axis, Grouping, KindTest, NameTest, NodeMatch, NodeTest, Order, Transform, WildcardOrName,
+    WildcardOrNamespaceUri, in_scope_namespaces,
 };
-use crate::value::*;
+use crate::value::Value;
 use crate::xdmerror::*;
+use qualname::{NamespaceUri, NcName, QName};
 use std::convert::TryFrom;
+use std::sync::LazyLock;
 use url::Url;
 
-const XSLTNS: &str = "http://www.w3.org/1999/XSL/Transform";
+// Define constant QNames for faster comparison
+static XSLTNS: LazyLock<Option<NamespaceUri>> =
+    LazyLock::new(|| Some(NamespaceUri::try_from("http://www.w3.org/1999/XSL/Transform").unwrap()));
+static XRUSTNS: LazyLock<Option<NamespaceUri>> =
+    LazyLock::new(|| Some(NamespaceUri::try_from("http://github.com/ballsteve/xrust").unwrap()));
+static XSLSTYLESHEET: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(NcName::try_from("stylesheet").unwrap(), XSLTNS.clone())
+});
+static XSLTRANSFORM: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("transform").unwrap(), XSLTNS.clone()));
+static XSLOUTPUT: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("output").unwrap(), XSLTNS.clone()));
+static XSLINCLUDE: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("include").unwrap(), XSLTNS.clone()));
+static XRUSTIMPORT: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("import").unwrap(), XRUSTNS.clone()));
+static XSLIMPORT: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("import").unwrap(), XSLTNS.clone()));
+static XSLATTRIBUTESET: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(NcName::try_from("attribute-set").unwrap(), XSLTNS.clone())
+});
+static XSLATTRIBUTE: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("attribute").unwrap(), XSLTNS.clone()));
+static XSLTEMPLATE: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("template").unwrap(), XSLTNS.clone()));
+static XSLKEY: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("key").unwrap(), XSLTNS.clone()));
+static XSLPARAM: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("param").unwrap(), XSLTNS.clone()));
+static XSLFUNCTION: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("function").unwrap(), XSLTNS.clone()));
+static XSLVARIABLE: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("variable").unwrap(), XSLTNS.clone()));
+static XSLVALUEOF: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("value-of").unwrap(), XSLTNS.clone()));
+static XSLTEXT: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("text").unwrap(), XSLTNS.clone()));
+static XSLAPPLYTEMPLATES: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(NcName::try_from("apply-templates").unwrap(), XSLTNS.clone())
+});
+static XSLAPPLYIMPORTS: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(NcName::try_from("apply-imports").unwrap(), XSLTNS.clone())
+});
+static XSLSEQUENCE: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("sequence").unwrap(), XSLTNS.clone()));
+static XSLIF: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("if").unwrap(), XSLTNS.clone()));
+static XSLCHOOSE: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("choose").unwrap(), XSLTNS.clone()));
+static XSLWHEN: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("when").unwrap(), XSLTNS.clone()));
+static XSLOTHERWISE: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("otherwise").unwrap(), XSLTNS.clone()));
+static XSLFOREACH: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("for-each").unwrap(), XSLTNS.clone()));
+static XSLFOREACHGROUP: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(NcName::try_from("for-each-group").unwrap(), XSLTNS.clone())
+});
+static XSLCOPY: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("copy").unwrap(), XSLTNS.clone()));
+static XSLCOPYOF: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("copy-of").unwrap(), XSLTNS.clone()));
+static XSLCALLTEMPLATE: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(NcName::try_from("call-template").unwrap(), XSLTNS.clone())
+});
+static XSLWITHPARAM: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(NcName::try_from("with-param").unwrap(), XSLTNS.clone())
+});
+static XSLELEMENT: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("element").unwrap(), XSLTNS.clone()));
+static XSLCOMMENT: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("comment").unwrap(), XSLTNS.clone()));
+static XSLPROCESSINGINSTRUCTION: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(
+        NcName::try_from("processing-instruction").unwrap(),
+        XSLTNS.clone(),
+    )
+});
+static XSLMESSAGE: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("message").unwrap(), XSLTNS.clone()));
+static XSLNUMBER: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("number").unwrap(), XSLTNS.clone()));
+static XSLDECIMALFORMAT: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(NcName::try_from("decimal-format").unwrap(), XSLTNS.clone())
+});
+static XSLSORT: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("sort").unwrap(), XSLTNS.clone()));
+static XSLSTRIPSPACE: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(NcName::try_from("strip-space").unwrap(), XSLTNS.clone())
+});
+static XSLPRESERVESPACE: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(NcName::try_from("preserve-space").unwrap(), XSLTNS.clone())
+});
+static ATTRINDENT: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("indent").unwrap(), None));
+static ATTRHREF: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("href").unwrap(), None));
+static ATTRNAME: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("name").unwrap(), None));
+static ATTRMATCH: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("match").unwrap(), None));
+static ATTRMODE: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("mode").unwrap(), None));
+static ATTRPRIORITY: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("priority").unwrap(), None));
+static ATTRUSE: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("use").unwrap(), None));
+static ATTRSELECT: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("select").unwrap(), None));
+static ATTRDOE: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(NcName::try_from("disable-output-escaping").unwrap(), None)
+});
+static ATTRTEST: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("test").unwrap(), None));
+static ATTRGROUPBY: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("group-by").unwrap(), None));
+static ATTRGROUPADJACENT: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("group-adjacent").unwrap(), None));
+static ATTRGROUPSTARTINGWITH: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("group-starting-with").unwrap(), None));
+static ATTRGROUPENDINGWITH: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("group-ending-with").unwrap(), None));
+//static ATTRUSEATTRIBUTESETS: LazyLock<QName> =
+//    LazyLock::new(|| QName::new_from_parts(NcName::try_from("use-attribute-sets").unwrap(), None));
+static XSLATTRUSEATTRIBUTESETS: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(
+        NcName::try_from("use-attribute-sets").unwrap(),
+        XSLTNS.clone(),
+    )
+});
+static ATTRTERMINATE: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("terminate").unwrap(), None));
+static ATTRVALUE: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("value").unwrap(), None));
+static ATTRLEVEL: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("level").unwrap(), None));
+static ATTRCOUNT: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("count").unwrap(), None));
+static ATTRFROM: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("from").unwrap(), None));
+static ATTRFORMAT: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("format").unwrap(), None));
+static ATTRORDER: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("order").unwrap(), None));
+static ATTRELEMENTS: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("elements").unwrap(), None));
 
 /// The XSLT trait allows an object to use an XSL Stylesheet to transform a document into a [Sequence].
 pub trait XSLT: Node {
@@ -136,9 +283,9 @@ where
     let stylenode = match rnit.next() {
         Some(root) => {
             // TODO: intern strings so that comparison is fast
-            if !(root.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
-                && (root.name().localname_to_string() == "stylesheet"
-                    || root.name().localname_to_string() == "transform"))
+            if !(root
+                .name()
+                .is_some_and(|rn| rn == *XSLSTYLESHEET || rn == *XSLTRANSFORM))
             {
                 return Result::Err(Error::new(
                     ErrorKind::TypeError,
@@ -152,7 +299,7 @@ where
             return Result::Err(Error::new(
                 ErrorKind::TypeError,
                 String::from("document does not have document element"),
-            ))
+            ));
         }
     };
     if rnit.next().is_some() {
@@ -168,29 +315,21 @@ where
     strip_whitespace(
         styledoc.clone(),
         true,
-        &vec![NodeTest::Name(NameTest {
-            ns: None,
-            prefix: None,
-            name: Some(WildcardOrName::Wildcard),
-        })],
-        &vec![NodeTest::Name(NameTest {
-            ns: Some(WildcardOrName::Name(Rc::new(Value::from(XSLTNS)))),
-            prefix: Some(Rc::new(Value::from("xsl"))),
-            name: Some(WildcardOrName::Name(Rc::new(Value::from("text")))),
-        })],
+        &vec![NodeTest::Name(NameTest::Wildcard(
+            WildcardOrNamespaceUri::Wildcard,
+            WildcardOrName::Wildcard,
+        ))],
+        &vec![NodeTest::Name(NameTest::Name(XSLTEXT.clone()))],
     )?;
 
     // Setup the serialization of the primary result document
     let mut od = OutputDefinition::new();
-    if let Some(c) = stylenode.child_iter().find(|c| {
-        !(c.is_element()
-            && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
-            && c.name().localname_to_string() == "output")
-    }) {
+    if let Some(c) = stylenode
+        .child_iter()
+        .find(|c| !(c.is_element() && c.name().is_some_and(|cn| cn == *XSLOUTPUT)))
+    {
         let b: bool = matches!(
-            c.get_attribute(&QualifiedName::new(None, None, "indent"))
-                .to_string()
-                .as_str(),
+            c.get_attribute(&ATTRINDENT).to_string().as_str(),
             "yes" | "true" | "1"
         );
 
@@ -204,13 +343,9 @@ where
     // * replace xsl:include element with content
     stylenode
         .child_iter()
-        .filter(|c| {
-            c.is_element()
-                && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
-                && c.name().localname_to_string().as_str() == "include"
-        })
+        .filter(|c| c.is_element() && c.name().is_some_and(|cn| cn == *XSLINCLUDE))
         .try_for_each(|mut c| {
-            let h = c.get_attribute(&QualifiedName::new(None, None, "href"));
+            let h = c.get_attribute(&ATTRHREF);
             let url = match base.clone().map_or_else(
                 || Url::parse(h.to_string().as_str()),
                 |full| full.join(h.to_string().as_str()),
@@ -250,13 +385,9 @@ where
     // * replace xsl:import element with content
     stylenode
         .child_iter()
-        .filter(|c| {
-            c.is_element()
-                && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
-                && c.name().localname_to_string().as_str() == "import"
-        })
+        .filter(|c| c.is_element() && c.name().is_some_and(|cn| cn == *XSLIMPORT))
         .try_for_each(|mut c| {
-            let h = c.get_attribute(&QualifiedName::new(None, None, "href"));
+            let h = c.get_attribute(&ATTRHREF);
             let url = match base.clone().map_or_else(
                 || Url::parse(h.to_string().as_str()),
                 |full| full.join(h.to_string().as_str()),
@@ -285,14 +416,8 @@ where
                 if mc.node_type() == NodeType::Element {
                     // Add the import precedence attribute
                     let newnode = mc.deep_copy()?;
-                    let newat = styledoc.new_attribute(
-                        Rc::new(QualifiedName::new(
-                            Some(String::from("http://github.com/ballsteve/xrust")),
-                            None,
-                            String::from("import"),
-                        )),
-                        Rc::new(Value::from(1)),
-                    )?;
+                    let newat =
+                        styledoc.new_attribute(XRUSTIMPORT.clone(), Rc::new(Value::from(1)))?;
                     newnode.add_attribute(newat)?;
                     c.insert_before(newnode)?;
                 } else {
@@ -309,18 +434,14 @@ where
     // Find named attribute sets
 
     // Store for named attribute sets
-    let mut attr_sets: HashMap<QualifiedName, Vec<Transform<N>>> = HashMap::new();
+    let mut attr_sets: HashMap<QName, Vec<Transform<N>>> = HashMap::new();
 
     stylenode
         .child_iter()
-        .filter(|c| {
-            c.is_element()
-                && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
-                && c.name().localname_to_string() == "attribute-set"
-        })
+        .filter(|c| c.is_element() && c.name().is_some_and(|cn| cn == *XSLATTRIBUTESET))
         .try_for_each(|c| {
-            let name = c.get_attribute(&QualifiedName::new(None, None, "name"));
-            let eqname = QualifiedName::try_from((name.to_string().as_str(), c.clone()))?;
+            let name = c.get_attribute(&ATTRNAME);
+            let eqname = c.to_qname(name.to_string())?;
             if eqname.to_string().is_empty() {
                 return Err(Error::new(
                     ErrorKind::DynamicAbsent,
@@ -331,11 +452,7 @@ where
             // TODO: check that there are no other children
             let mut attrs = vec![];
             c.child_iter()
-                .filter(|c| {
-                    c.is_element()
-                        && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
-                        && c.name().localname_to_string().as_str() == "attribute"
-                })
+                .filter(|c| c.is_element() && c.name().is_some_and(|cn| cn == *XSLATTRIBUTE))
                 .try_for_each(|a| {
                     attrs.push(to_transform(a, &attr_sets)?);
                     Ok(())
@@ -351,19 +468,11 @@ where
     let mut templates: Vec<Template<N>> = vec![];
     stylenode
         .child_iter()
-        .filter(|c| {
-            c.is_element()
-                && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
-                && c.name().localname_to_string() == "template"
-        })
-        .filter(|c| {
-            !c.get_attribute(&QualifiedName::new(None, None, "match"))
-                .to_string()
-                .is_empty()
-        })
+        .filter(|c| c.is_element() && c.name().is_some_and(|cn| cn == *XSLTEMPLATE))
+        .filter(|c| c.get_attribute_node(&ATTRMATCH).is_some())
         .try_for_each(|c| {
-            let m = c.get_attribute(&QualifiedName::new(None, None, "match"));
-            let pat = Pattern::try_from(m.to_string()).map_err(|e| {
+            let m = c.get_attribute(&ATTRMATCH);
+            let pat = Pattern::try_from((m.to_string(), c.clone())).map_err(|e| {
                 Error::new(
                     e.kind,
                     format!(
@@ -380,7 +489,7 @@ where
                 return Err(e.clone());
             }
             let mut body = vec![];
-            let mode = c.get_attribute_node(&QualifiedName::new(None, None, "mode"));
+            let mode = c.get_attribute_node(&ATTRMODE);
             c.child_iter().try_for_each(|d| {
                 body.push(to_transform(d, &attr_sets)?);
                 Ok::<(), Error>(())
@@ -388,7 +497,7 @@ where
             //sc.static_analysis(&mut pat);
             //sc.static_analysis(&mut body);
             // Determine the priority of the template
-            let pr = c.get_attribute(&QualifiedName::new(None, None, "priority".to_string()));
+            let pr = c.get_attribute(&ATTRPRIORITY);
             let prio: f64 = match pr.to_string().as_str() {
                 "" => {
                     // Calculate the default priority
@@ -410,10 +519,9 @@ where
                                 (Axis::SelfAxis, Axis::Parent)
                                 | (Axis::SelfAxis, Axis::Ancestor)
                                 | (Axis::SelfAxis, Axis::AncestorOrSelf) => match q {
-                                    NodeTest::Name(nm) => match nm.name {
-                                        Some(WildcardOrName::Wildcard) => -0.5,
-                                        Some(_) => 0.0,
-                                        _ => -0.5,
+                                    NodeTest::Name(nm) => match nm {
+                                        NameTest::Wildcard(_, _) => -0.5,
+                                        _ => 0.0,
                                     },
                                     NodeTest::Kind(_kt) => -0.5,
                                 },
@@ -427,13 +535,13 @@ where
             };
             // Set the import precedence
             let mut import: usize = 0;
-            let im = c.get_attribute(&QualifiedName::new(
-                Some(String::from("http://github.com/ballsteve/xrust")),
-                None,
-                String::from("import"),
-            ));
+            let im = c.get_attribute(&XRUSTIMPORT);
             if im.to_string() != "" {
                 import = im.to_int()? as usize
+            }
+            let mut qmode = None;
+            if let Some(modenode) = mode {
+                qmode = Some(modenode.to_qname(modenode.to_string())?)
             }
             templates.push(Template::new(
                 pat,
@@ -441,12 +549,8 @@ where
                 Some(prio),
                 vec![import],
                 None,
-                mode.map(|n| {
-                    Rc::new(
-                        QualifiedName::try_from((n.to_string().as_str(), n))
-                            .expect("unable to resolve qualified name"),
-                    )
-                }), // TODO: don't panic
+                qmode,
+                m.to_string(),
             ));
             Ok::<(), Error>(())
         })?;
@@ -456,17 +560,17 @@ where
     let mut keys = vec![];
     stylenode
         .child_iter()
-        .filter(|c| {
-            c.is_element()
-                && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
-                && c.name().localname_to_string() == "key"
-        })
+        .filter(|c| c.is_element() && c.name().is_some_and(|cn| cn == *XSLKEY))
         .try_for_each(|c| {
-            let name = c.get_attribute(&QualifiedName::new(None, None, "name"));
-            let m = c.get_attribute(&QualifiedName::new(None, None, "match"));
+            let name = c.get_attribute(&ATTRNAME);
+            let m = c.get_attribute(&ATTRMATCH);
             let pat = Pattern::try_from(m.to_string())?;
-            let u = c.get_attribute(&QualifiedName::new(None, None, "use"));
-            keys.push((name, pat, parse::<N>(&u.to_string(), Some(c.clone()))?));
+            let u = c.get_attribute(&ATTRUSE);
+            keys.push((
+                name,
+                pat,
+                parse::<N>(&u.to_string(), Some(c.clone()), None)?,
+            ));
             Ok(())
         })?;
 
@@ -489,6 +593,7 @@ where
             vec![0],
             None,
             None,
+            String::from("/"),
         ))
         // This matches "*" and applies templates to all children
         .template(Template::new(
@@ -505,6 +610,7 @@ where
             vec![0],
             None,
             None,
+            String::from("child::*"),
         ))
         // This matches "text()" and copies content
         .template(Template::new(
@@ -514,47 +620,37 @@ where
             vec![0],
             None,
             None,
+            String::from("child::text()"),
         ))
         .template_all(templates)
         .output_definition(od)
         .build();
+
     keys.iter()
         .for_each(|(name, m, u)| newctxt.declare_key(name.to_string(), m.clone(), u.clone()));
 
     // Add named templates
     stylenode
         .child_iter()
-        .filter(|c| {
-            c.is_element()
-                && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
-                && c.name().localname_to_string() == "template"
-        })
-        .filter(|c| {
-            !c.get_attribute(&QualifiedName::new(None, None, "name"))
-                .to_string()
-                .is_empty()
-        })
+        .filter(|c| c.is_element() && c.name().is_some_and(|cn| cn == *XSLTEMPLATE))
+        .filter(|c| !c.get_attribute(&ATTRNAME).to_string().is_empty())
         .try_for_each(|c| {
-            let name = c.get_attribute(&QualifiedName::new(None, None, "name"));
+            let name = c.get_attribute(&ATTRNAME);
             // xsl:param for formal parameters
             // TODO: validate that xsl:param elements come first in the child list
             // TODO: validate that xsl:param elements have unique name attributes
-            let mut params: Vec<(QualifiedName, Option<Transform<N>>)> = Vec::new();
+            let mut params: Vec<(QName, Option<Transform<N>>)> = Vec::new();
             c.child_iter()
-                .filter(|c| {
-                    c.is_element()
-                        && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
-                        && c.name().localname_to_string() == "param"
-                })
+                .filter(|c| c.is_element() && c.name().is_some_and(|cn| cn == *XSLPARAM))
                 .try_for_each(|c| {
-                    let p_name = c.get_attribute(&QualifiedName::new(None, None, "name"));
+                    let p_name = c.get_attribute(&ATTRNAME);
                     if p_name.to_string().is_empty() {
                         Err(Error::new(
                             ErrorKind::StaticAbsent,
                             "name attribute is missing",
                         ))
                     } else {
-                        let sel = c.get_attribute(&QualifiedName::new(None, None, "select"));
+                        let sel = c.get_attribute(&ATTRSELECT);
                         if sel.to_string().is_empty() {
                             // xsl:param content is the sequence constructor
                             let mut body = vec![];
@@ -563,15 +659,23 @@ where
                                 Ok(())
                             })?;
                             params.push((
-                                QualifiedName::new(None, None, p_name.to_string()),
+                                QName::from_local_name(
+                                    NcName::try_from(p_name.to_string().as_str()).map_err(
+                                        |_| Error::new(ErrorKind::ParseError, "not a QName"),
+                                    )?,
+                                ),
                                 Some(Transform::SequenceItems(body)),
                             ));
                             Ok(())
                         } else {
                             // select attribute value is an expression
                             params.push((
-                                QualifiedName::new(None, None, p_name.to_string()),
-                                Some(parse::<N>(&sel.to_string(), Some(c.clone()))?),
+                                QName::from_local_name(
+                                    NcName::try_from(p_name.to_string().as_str()).map_err(
+                                        |_| Error::new(ErrorKind::ParseError, "not a QName"),
+                                    )?,
+                                ),
+                                Some(parse::<N>(&sel.to_string(), Some(c.clone()), None)?),
                             ));
                             Ok(())
                         }
@@ -580,17 +684,16 @@ where
             // Content is the template body
             let mut body = vec![];
             c.child_iter()
-                .filter(|c| {
-                    !(c.is_element()
-                        && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
-                        && c.name().localname_to_string() == "param")
-                })
+                .filter(|c| !(c.is_element() && c.name().is_some_and(|cn| cn == *XSLPARAM)))
                 .try_for_each(|d| {
                     body.push(to_transform(d, &attr_sets)?);
                     Ok::<(), Error>(())
                 })?;
             newctxt.callable_push(
-                QualifiedName::new(None, None, name.to_string()),
+                QName::from_local_name(
+                    NcName::try_from(name.to_string().as_str())
+                        .map_err(|_| Error::new(ErrorKind::ParseError, "not a QName"))?,
+                ),
                 Callable::new(
                     Transform::SequenceItems(body),
                     FormalParameters::Named(params),
@@ -602,34 +705,28 @@ where
     // Add functions
     stylenode
         .child_iter()
-        .filter(|c| {
-            c.is_element()
-                && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
-                && c.name().localname_to_string() == "function"
-        })
+        .filter(|c| c.is_element() && c.name().is_some_and(|cn| cn == *XSLFUNCTION))
         .try_for_each(|c| {
-            let name = c.get_attribute(&QualifiedName::new(None, None, "name"));
+            let name = c.get_attribute(&ATTRNAME);
             // Name must have a namespace. See XSLT 10.3.1.
-            let eqname = QualifiedName::try_from((name.to_string().as_str(), c.clone()))?;
+            let eqname = c.to_qname(name.to_string())?;
             if eqname.namespace_uri().is_none() {
                 return Err(Error::new_with_code(
                     ErrorKind::StaticAbsent,
                     "function name must have a namespace",
-                    Some(QualifiedName::new(None, None, "XTSE0740")),
+                    Some(QName::from_local_name(
+                        NcName::try_from("XTSE0740").unwrap(),
+                    )),
                 ));
             }
             // xsl:param for formal parameters
             // TODO: validate that xsl:param elements come first in the child list
             // TODO: validate that xsl:param elements have unique name attributes
-            let mut params: Vec<QualifiedName> = Vec::new();
+            let mut params: Vec<QName> = Vec::new();
             c.child_iter()
-                .filter(|c| {
-                    c.is_element()
-                        && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
-                        && c.name().localname_to_string() == "param"
-                })
+                .filter(|c| c.is_element() && c.name().is_some_and(|cn| cn == *XSLPARAM))
                 .try_for_each(|c| {
-                    let p_name = c.get_attribute(&QualifiedName::new(None, None, "name"));
+                    let p_name = c.get_attribute(&ATTRNAME);
                     if p_name.to_string().is_empty() {
                         Err(Error::new(
                             ErrorKind::StaticAbsent,
@@ -637,18 +734,18 @@ where
                         ))
                     } else {
                         // TODO: validate that xsl:param elements do not specify a default value. See XSLT 10.3.2.
-                        params.push(QualifiedName::new(None, None, p_name.to_string()));
+                        params.push(QName::from_local_name(
+                            NcName::try_from(p_name.to_string().as_str()).map_err(|_| {
+                                Error::new(ErrorKind::ParseError, "not a valid QName")
+                            })?,
+                        ));
                         Ok(())
                     }
                 })?;
             // Content is the function body
             let mut body = vec![];
             c.child_iter()
-                .filter(|c| {
-                    !(c.is_element()
-                        && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
-                        && c.name().localname_to_string() == "param")
-                })
+                .filter(|c| !(c.is_element() && c.name().is_some_and(|cn| cn == *XSLPARAM)))
                 .try_for_each(|d| {
                     body.push(to_transform(d, &attr_sets)?);
                     Ok::<(), Error>(())
@@ -666,24 +763,16 @@ where
     // TODO: stylesheet parameters
     stylenode
         .child_iter()
-        .filter(|c| {
-            c.is_element()
-                && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
-                && c.name().localname_to_string() == "variable"
-        })
+        .filter(|c| c.is_element() && c.name().is_some_and(|cn| cn == *XSLVARIABLE))
         .try_for_each(|c| {
-            let name = c
-                .get_attribute(&QualifiedName::new(None, None, "name"))
-                .to_string();
+            let name = c.get_attribute(&ATTRNAME).to_string();
             if name.is_empty() {
                 return Err(Error::new(
                     ErrorKind::StaticAbsent,
                     "variable must have a name",
                 ));
             }
-            let sel = c
-                .get_attribute(&QualifiedName::new(None, None, "select"))
-                .to_string();
+            let sel = c.get_attribute(&ATTRSELECT).to_string();
             if sel.is_empty() {
                 // Use element content
                 newctxt.pre_var_push(
@@ -696,7 +785,7 @@ where
                 Ok(())
             } else {
                 // Parse XPath
-                newctxt.pre_var_push(name, parse::<N>(&sel.to_string(), Some(c.clone()))?);
+                newctxt.pre_var_push(name, parse::<N>(&sel.to_string(), Some(c.clone()), None)?);
                 Ok(())
             }
         })?;
@@ -707,238 +796,255 @@ where
 /// Compile a node in a template to a sequence [Combinator]
 fn to_transform<N: Node>(
     n: N,
-    attr_sets: &HashMap<QualifiedName, Vec<Transform<N>>>,
+    attr_sets: &HashMap<QName, Vec<Transform<N>>>,
 ) -> Result<Transform<N>, Error> {
     // Define the in-scope namespaces once so they can be shared
-    let ns = in_scope_namespaces(Some(n.clone()));
+    //let ns = in_scope_namespaces(Some(n.clone()));
 
     match n.node_type() {
-        NodeType::Text => Ok(Transform::Literal(Item::Value(Rc::new(Value::String(
+        NodeType::Text => Ok(Transform::Literal(Item::Value(Rc::new(Value::from(
             n.to_string(),
         ))))),
         NodeType::Element => {
-            match (
-                n.name().namespace_uri_to_string().as_deref(),
-                n.name().localname_to_string().as_str(),
-            ) {
-                (Some(XSLTNS), "text") => {
-                    let doe = n.get_attribute(&QualifiedName::new(
-                        None,
-                        None,
-                        "disable-output-escaping".to_string(),
-                    ));
-                    if !doe.to_string().is_empty() {
-                        match &doe.to_string()[..] {
-                            "yes" => Ok(Transform::Literal(Item::Value(Rc::new(Value::String(
-                                n.to_string(),
-                            ))))),
-                            "no" => {
-                                let text = n
-                                    .to_string()
-                                    .replace('&', "&amp;")
-                                    .replace('>', "&gt;")
-                                    .replace('<', "&lt;")
-                                    .replace('\'', "&apos;")
-                                    .replace('\"', "&quot;");
-                                Ok(Transform::Literal(Item::Value(Rc::new(Value::from(text)))))
-                            }
-                            _ => Err(Error::new(
-                                ErrorKind::TypeError,
-                                "disable-output-escaping only accepts values yes or no."
-                                    .to_string(),
-                            )),
+            let qn = n.name().unwrap();
+            if qn == *XSLTEXT {
+                let doe = n.get_attribute(&ATTRDOE);
+                if !doe.to_string().is_empty() {
+                    match &doe.to_string()[..] {
+                        "yes" => Ok(Transform::Literal(Item::Value(Rc::new(Value::from(
+                            n.to_string(),
+                        ))))),
+                        "no" => {
+                            let text = n
+                                .to_string()
+                                .replace('&', "&amp;")
+                                .replace('>', "&gt;")
+                                .replace('<', "&lt;")
+                                .replace('\'', "&apos;")
+                                .replace('\"', "&quot;");
+                            Ok(Transform::Literal(Item::Value(Rc::new(Value::from(text)))))
                         }
-                    } else {
-                        let text = n
-                            .to_string()
-                            .replace('&', "&amp;")
-                            .replace('>', "&gt;")
-                            .replace('<', "&lt;")
-                            .replace('\'', "&apos;")
-                            .replace('\"', "&quot;");
-                        Ok(Transform::Literal(Item::Value(Rc::new(Value::from(text)))))
-                    }
-                }
-                (Some(XSLTNS), "value-of") => {
-                    let sel =
-                        n.get_attribute(&QualifiedName::new(None, None, "select".to_string()));
-                    let doe = n.get_attribute(&QualifiedName::new(
-                        None,
-                        None,
-                        "disable-output-escaping".to_string(),
-                    ));
-                    if !doe.to_string().is_empty() {
-                        match &doe.to_string()[..] {
-                            "yes" => Ok(Transform::LiteralText(
-                                Box::new(parse::<N>(&sel.to_string(), Some(n.clone()))?),
-                                true,
-                            )),
-                            "no" => Ok(Transform::LiteralText(
-                                Box::new(parse::<N>(&sel.to_string(), Some(n.clone()))?),
-                                false,
-                            )),
-                            _ => Err(Error::new(
-                                ErrorKind::TypeError,
-                                "disable-output-escaping only accepts values yes or no."
-                                    .to_string(),
-                            )),
-                        }
-                    } else {
-                        Ok(Transform::LiteralText(
-                            Box::new(parse::<N>(&sel.to_string(), Some(n.clone()))?),
-                            false,
-                        ))
-                    }
-                }
-                (Some(XSLTNS), "apply-templates") => {
-                    let sel = n.get_attribute(&QualifiedName::new(None, None, "select"));
-                    let m = n.get_attribute_node(&QualifiedName::new(None, None, "mode"));
-                    let sort_keys = get_sort_keys(&n)?;
-                    if !sel.to_string().is_empty() {
-                        Ok(Transform::ApplyTemplates(
-                            Box::new(parse::<N>(&sel.to_string(), Some(n.clone()))?),
-                            m.map(|s| {
-                                Rc::new(
-                                    QualifiedName::try_from((s.to_string().as_str(), n))
-                                        .expect("unable to resolve qualified name"),
-                                )
-                            }),
-                            sort_keys,
-                        )) // TODO: don't panic
-                    } else {
-                        // If there is no select attribute, then default is "child::node()"
-                        Ok(Transform::ApplyTemplates(
-                            Box::new(Transform::Step(NodeMatch::new(
-                                Axis::Child,
-                                NodeTest::Kind(KindTest::Any),
-                            ))),
-                            m.map(|s| {
-                                Rc::new(
-                                    QualifiedName::try_from((s.to_string().as_str(), n))
-                                        .expect("unable to resolve qualified name"),
-                                )
-                            }),
-                            sort_keys,
-                        )) // TODO: don't panic
-                    }
-                }
-                (Some(XSLTNS), "apply-imports") => Ok(Transform::ApplyImports),
-                (Some(XSLTNS), "sequence") => {
-                    let s = n.get_attribute(&QualifiedName::new(None, None, "select".to_string()));
-                    if !s.to_string().is_empty() {
-                        Ok(parse::<N>(&s.to_string(), Some(n.clone()))?)
-                    } else {
-                        Result::Err(Error::new(
+                        _ => Err(Error::new(
                             ErrorKind::TypeError,
-                            "missing select attribute".to_string(),
-                        ))
-                    }
-                }
-                (Some(XSLTNS), "if") => {
-                    let t = n.get_attribute(&QualifiedName::new(None, None, "test"));
-                    if !t.to_string().is_empty() {
-                        Ok(Transform::Switch(
-                            vec![(
-                                parse::<N>(&t.to_string(), Some(n.clone()))?,
-                                Transform::SequenceItems(n.child_iter().try_fold(
-                                    vec![],
-                                    |mut body, e| {
-                                        body.push(to_transform(e, attr_sets)?);
-                                        Ok(body)
-                                    },
-                                )?),
-                            )],
-                            Box::new(Transform::Empty),
-                        ))
-                    } else {
-                        Result::Err(Error::new(
-                            ErrorKind::TypeError,
-                            "missing test attribute".to_string(),
-                        ))
-                    }
-                }
-                (Some(XSLTNS), "choose") => {
-                    let mut clauses: Vec<(Transform<N>, Transform<N>)> = Vec::new();
-                    let mut otherwise: Option<Transform<N>> = None;
-                    let mut status: Option<Error> = None;
-                    n.child_iter()
-                        .try_for_each(|m| {
-                            // look for when elements
-                            // then find an otherwise
-                            // fail on anything else (apart from whitespace, comments, PIs)
-                            match m.node_type() {
-                                NodeType::Element => {
-                                    match (m.name().namespace_uri_to_string().as_deref(), m.name().localname_to_string().as_str()) {
-                                        (Some(XSLTNS), "when") => {
-                                            if otherwise.is_none() {
-                                                let t = m.get_attribute(&QualifiedName::new(None, None, "test"));
-                                                if !t.to_string().is_empty() {
-                                                    clauses.push((
-                                                        parse::<N>(&t.to_string(), Some(n.clone()))?,
-                                                        Transform::SequenceItems(
-                                                            m.child_iter()
-                                                                .try_fold(
-                                                                    vec![],
-                                                                    |mut body, e| {
-                                                                        body.push(to_transform(e, attr_sets)?);
-                                                                        Ok(body)
-                                                                    },
-                                                                )?
-                                                        )
-                                                    ));
-                                                } else {
-                                                    status.replace(Error::new(ErrorKind::TypeError, "missing test attribute".to_string()));
-                                                }
-                                            } else {
-                                                status.replace(Error::new(ErrorKind::TypeError, "invalid content in choose element: when follows otherwise".to_string()));
-                                            }
-                                        }
-                                        (Some(XSLTNS), "otherwise") => {
-                                            if !clauses.is_empty() {
-                                                otherwise = Some(Transform::SequenceItems(m.child_iter()
-                                                    .try_fold(
-                                                        vec![],
-                                                        |mut o, e| {
-                                                            o.push(to_transform(e, attr_sets)?);
-                                                            Ok(o)
-                                                        },
-                                                    )?));
-                                            } else {
-                                                status.replace(Error::new(ErrorKind::TypeError, "invalid content in choose element: no when elements".to_string()));
-                                            }
-                                        }
-                                        _ => {
-                                            status.replace(Error::new(ErrorKind::TypeError, "invalid element content in choose element".to_string()));
-                                        }
-                                    }
-                                }
-                                NodeType::Text => {
-                                    if !n.to_string().trim().is_empty() {
-                                        status.replace(Error::new(ErrorKind::TypeError, "invalid text content in choose element".to_string()));
-                                    }
-                                }
-                                NodeType::Comment |
-                                NodeType::ProcessingInstruction => {}
-                                _ => {
-                                    status.replace(Error::new(ErrorKind::TypeError, "invalid content in choose element".to_string()));
-                                }
-                            }
-                            Ok::<(), Error>(())
-                        })?;
-                    match status {
-                        Some(e) => Result::Err(e),
-                        None => Ok(Transform::Switch(
-                            clauses,
-                            otherwise.map_or(Box::new(Transform::Empty), Box::new),
+                            "disable-output-escaping only accepts values yes or no.".to_string(),
                         )),
                     }
+                } else {
+                    let text = n
+                        .to_string()
+                        .replace('&', "&amp;")
+                        .replace('>', "&gt;")
+                        .replace('<', "&lt;")
+                        .replace('\'', "&apos;")
+                        .replace('\"', "&quot;");
+                    Ok(Transform::Literal(Item::Value(Rc::new(Value::from(text)))))
                 }
-                (Some(XSLTNS), "for-each") => {
-                    let s = n.get_attribute(&QualifiedName::new(None, None, "select".to_string()));
-                    if !s.to_string().is_empty() {
-                        Ok(Transform::ForEach(
-                            None,
-                            Box::new(parse::<N>(&s.to_string(), Some(n.clone()))?),
+            } else if qn == *XSLVALUEOF {
+                let sel = n.get_attribute(&ATTRSELECT);
+                let doe = n.get_attribute(&ATTRDOE);
+                if !doe.to_string().is_empty() {
+                    match &doe.to_string()[..] {
+                        "yes" => Ok(Transform::LiteralText(
+                            Box::new(parse::<N>(&sel.to_string(), Some(n.clone()), None)?),
+                            OutputSpec::NoEscape,
+                        )),
+                        "no" => Ok(Transform::LiteralText(
+                            Box::new(parse::<N>(&sel.to_string(), Some(n.clone()), None)?),
+                            OutputSpec::Normal,
+                        )),
+                        _ => Err(Error::new(
+                            ErrorKind::TypeError,
+                            "disable-output-escaping only accepts values yes or no.".to_string(),
+                        )),
+                    }
+                } else {
+                    Ok(Transform::LiteralText(
+                        Box::new(parse::<N>(&sel.to_string(), Some(n.clone()), None)?),
+                        OutputSpec::Normal,
+                    ))
+                }
+            } else if qn == *XSLAPPLYTEMPLATES {
+                let sel = n.get_attribute(&ATTRSELECT);
+                let m = n.get_attribute_node(&ATTRMODE);
+
+                // If a mode is specified then convert it to a QName.
+                // This may fail, so allow for an error result.
+                let mut qm = None;
+                if let Some(s) = m {
+                    qm = Some(n.to_qname(s.value().to_string())?)
+                }
+
+                let sort_keys = get_sort_keys(&n)?;
+                if !sel.to_string().is_empty() {
+                    Ok(Transform::ApplyTemplates(
+                        Box::new(parse::<N>(&sel.to_string(), Some(n.clone()), None)?),
+                        qm,
+                        sort_keys,
+                    )) // TODO: don't panic
+                } else {
+                    // If there is no select attribute, then default is "child::node()"
+                    Ok(Transform::ApplyTemplates(
+                        Box::new(Transform::Step(NodeMatch::new(
+                            Axis::Child,
+                            NodeTest::Kind(KindTest::Any),
+                        ))),
+                        qm,
+                        sort_keys,
+                    )) // TODO: don't panic
+                }
+            } else if qn == *XSLAPPLYIMPORTS {
+                Ok(Transform::ApplyImports)
+            } else if qn == *XSLSEQUENCE {
+                let s = n.get_attribute(&ATTRSELECT);
+                if !s.to_string().is_empty() {
+                    Ok(parse::<N>(&s.to_string(), Some(n.clone()), None)?)
+                } else {
+                    Result::Err(Error::new(
+                        ErrorKind::TypeError,
+                        "missing select attribute".to_string(),
+                    ))
+                }
+            } else if qn == *XSLIF {
+                let t = n.get_attribute(&ATTRTEST);
+                if !t.to_string().is_empty() {
+                    Ok(Transform::Switch(
+                        vec![(
+                            parse::<N>(&t.to_string(), Some(n.clone()), None)?,
+                            Transform::SequenceItems(n.child_iter().try_fold(
+                                vec![],
+                                |mut body, e| {
+                                    body.push(to_transform(e, attr_sets)?);
+                                    Ok(body)
+                                },
+                            )?),
+                        )],
+                        Box::new(Transform::Empty),
+                    ))
+                } else {
+                    Result::Err(Error::new(
+                        ErrorKind::TypeError,
+                        "missing test attribute".to_string(),
+                    ))
+                }
+            } else if qn == *XSLCHOOSE {
+                let mut clauses: Vec<(Transform<N>, Transform<N>)> = Vec::new();
+                let mut otherwise: Option<Transform<N>> = None;
+                let mut status: Option<Error> = None;
+                n.child_iter().try_for_each(|m| {
+                    // look for when elements
+                    // then find an otherwise
+                    // fail on anything else (apart from whitespace, comments, PIs)
+                    match m.node_type() {
+                        NodeType::Element => {
+                            let mn = m.name().unwrap();
+                            if mn == *XSLWHEN {
+                                if otherwise.is_none() {
+                                    let t = m.get_attribute(&ATTRTEST);
+                                    if !t.to_string().is_empty() {
+                                        clauses.push((
+                                            parse::<N>(&t.to_string(), Some(n.clone()), None)?,
+                                            Transform::SequenceItems(m.child_iter().try_fold(
+                                                vec![],
+                                                |mut body, e| {
+                                                    body.push(to_transform(e, attr_sets)?);
+                                                    Ok(body)
+                                                },
+                                            )?),
+                                        ));
+                                    } else {
+                                        status.replace(Error::new(
+                                            ErrorKind::TypeError,
+                                            "missing test attribute".to_string(),
+                                        ));
+                                    }
+                                } else {
+                                    status.replace(Error::new(
+                                        ErrorKind::TypeError,
+                                        "invalid content in choose element: when follows otherwise"
+                                            .to_string(),
+                                    ));
+                                }
+                            } else if mn == *XSLOTHERWISE {
+                                if !clauses.is_empty() {
+                                    otherwise = Some(Transform::SequenceItems(
+                                        m.child_iter().try_fold(vec![], |mut o, e| {
+                                            o.push(to_transform(e, attr_sets)?);
+                                            Ok(o)
+                                        })?,
+                                    ));
+                                } else {
+                                    status.replace(Error::new(
+                                        ErrorKind::TypeError,
+                                        "invalid content in choose element: no when elements"
+                                            .to_string(),
+                                    ));
+                                }
+                            } else {
+                                status.replace(Error::new(
+                                    ErrorKind::TypeError,
+                                    "invalid element content in choose element".to_string(),
+                                ));
+                            }
+                        }
+                        NodeType::Text => {
+                            if !n.to_string().trim().is_empty() {
+                                status.replace(Error::new(
+                                    ErrorKind::TypeError,
+                                    "invalid text content in choose element".to_string(),
+                                ));
+                            }
+                        }
+                        NodeType::Comment | NodeType::ProcessingInstruction => {}
+                        _ => {
+                            status.replace(Error::new(
+                                ErrorKind::TypeError,
+                                "invalid content in choose element".to_string(),
+                            ));
+                        }
+                    }
+                    Ok::<(), Error>(())
+                })?;
+                match status {
+                    Some(e) => Result::Err(e),
+                    None => Ok(Transform::Switch(
+                        clauses,
+                        otherwise.map_or(Box::new(Transform::Empty), Box::new),
+                    )),
+                }
+            } else if qn == *XSLFOREACH {
+                let s = n.get_attribute(&ATTRSELECT);
+                if !s.to_string().is_empty() {
+                    Ok(Transform::ForEach(
+                        None,
+                        Box::new(parse::<N>(&s.to_string(), Some(n.clone()), None)?),
+                        Box::new(Transform::SequenceItems(n.child_iter().try_fold(
+                            vec![],
+                            |mut body, e| {
+                                body.push(to_transform(e, attr_sets)?);
+                                Ok(body)
+                            },
+                        )?)),
+                        get_sort_keys(&n)?,
+                    ))
+                } else {
+                    Result::Err(Error::new(
+                        ErrorKind::TypeError,
+                        "missing select attribute".to_string(),
+                    ))
+                }
+            } else if qn == *XSLFOREACHGROUP {
+                let ord = get_sort_keys(&n)?;
+                let s = n.get_attribute(&ATTRSELECT);
+                if !s.to_string().is_empty() {
+                    match (
+                        n.get_attribute(&ATTRGROUPBY).to_string().as_str(),
+                        n.get_attribute(&ATTRGROUPADJACENT).to_string().as_str(),
+                        n.get_attribute(&ATTRGROUPSTARTINGWITH).to_string().as_str(),
+                        n.get_attribute(&ATTRGROUPENDINGWITH).to_string().as_str(),
+                    ) {
+                        (by, "", "", "") => Ok(Transform::ForEach(
+                            Some(Grouping::By(vec![parse::<N>(by, Some(n.clone()), None)?])),
+                            Box::new(parse::<N>(&s.to_string(), Some(n.clone()), None)?),
                             Box::new(Transform::SequenceItems(n.child_iter().try_fold(
                                 vec![],
                                 |mut body, e| {
@@ -946,390 +1052,385 @@ fn to_transform<N: Node>(
                                     Ok(body)
                                 },
                             )?)),
-                            get_sort_keys(&n)?,
-                        ))
-                    } else {
-                        Result::Err(Error::new(
-                            ErrorKind::TypeError,
-                            "missing select attribute".to_string(),
-                        ))
+                            ord,
+                        )),
+                        ("", adj, "", "") => Ok(Transform::ForEach(
+                            Some(Grouping::Adjacent(vec![parse::<N>(
+                                adj,
+                                Some(n.clone()),
+                                None,
+                            )?])),
+                            Box::new(parse::<N>(&s.to_string(), Some(n.clone()), None)?),
+                            Box::new(Transform::SequenceItems(n.child_iter().try_fold(
+                                vec![],
+                                |mut body, e| {
+                                    body.push(to_transform(e, attr_sets)?);
+                                    Ok(body)
+                                },
+                            )?)),
+                            ord,
+                        )),
+                        ("", "", start, "") => Ok(Transform::ForEach(
+                            Some(Grouping::StartingWith(Box::new(Pattern::try_from(start)?))),
+                            Box::new(parse::<N>(&s.to_string(), Some(n.clone()), None)?),
+                            Box::new(Transform::SequenceItems(n.child_iter().try_fold(
+                                vec![],
+                                |mut body, e| {
+                                    body.push(to_transform(e, attr_sets)?);
+                                    Ok(body)
+                                },
+                            )?)),
+                            ord,
+                        )),
+                        // TODO: group-ending-with
+                        _ => Result::Err(Error::new(
+                            ErrorKind::NotImplemented,
+                            "invalid grouping attribute(s) specified".to_string(),
+                        )),
                     }
-                }
-                (Some(XSLTNS), "for-each-group") => {
-                    let ord = get_sort_keys(&n)?;
-                    let s = n.get_attribute(&QualifiedName::new(None, None, "select"));
-                    if !s.to_string().is_empty() {
-                        match (
-                            n.get_attribute(&QualifiedName::new(None, None, "group-by"))
-                                .to_string()
-                                .as_str(),
-                            n.get_attribute(&QualifiedName::new(None, None, "group-adjacent"))
-                                .to_string()
-                                .as_str(),
-                            n.get_attribute(&QualifiedName::new(None, None, "group-starting-with"))
-                                .to_string()
-                                .as_str(),
-                            n.get_attribute(&QualifiedName::new(None, None, "group-ending-with"))
-                                .to_string()
-                                .as_str(),
-                        ) {
-                            (by, "", "", "") => Ok(Transform::ForEach(
-                                Some(Grouping::By(vec![parse::<N>(by, Some(n.clone()))?])),
-                                Box::new(parse::<N>(&s.to_string(), Some(n.clone()))?),
-                                Box::new(Transform::SequenceItems(n.child_iter().try_fold(
-                                    vec![],
-                                    |mut body, e| {
-                                        body.push(to_transform(e, attr_sets)?);
-                                        Ok(body)
-                                    },
-                                )?)),
-                                ord,
-                            )),
-                            ("", adj, "", "") => Ok(Transform::ForEach(
-                                Some(Grouping::Adjacent(vec![parse::<N>(adj, Some(n.clone()))?])),
-                                Box::new(parse::<N>(&s.to_string(), Some(n.clone()))?),
-                                Box::new(Transform::SequenceItems(n.child_iter().try_fold(
-                                    vec![],
-                                    |mut body, e| {
-                                        body.push(to_transform(e, attr_sets)?);
-                                        Ok(body)
-                                    },
-                                )?)),
-                                ord,
-                            )),
-                            // TODO: group-starting-with and group-ending-with
-                            _ => Result::Err(Error::new(
-                                ErrorKind::NotImplemented,
-                                "invalid grouping attribute(s) specified".to_string(),
-                            )),
-                        }
-                    } else {
-                        Result::Err(Error::new(
-                            ErrorKind::TypeError,
-                            "missing select attribute".to_string(),
-                        ))
-                    }
-                }
-                (Some(XSLTNS), "copy") => {
-                    // TODO: handle select attribute
-                    let mut content: Vec<Transform<N>> =
-                        n.child_iter().try_fold(vec![], |mut body, e| {
-                            body.push(to_transform(e, attr_sets)?);
-                            Ok(body)
-                        })?;
-                    // Process @xsl:use-attribute-sets
-                    let use_atts = n.get_attribute(&QualifiedName::new(
-                        Some(XSLTNS.to_string()),
-                        None,
-                        "use-attribute-sets",
-                    ));
-                    let mut attrs = vec![];
-                    use_atts.to_string().split_whitespace().try_for_each(|a| {
-                        let eqa = QualifiedName::try_from((a, n.clone()))?;
-                        attr_sets
-                            .get(&eqa)
-                            .iter()
-                            .cloned()
-                            .for_each(|a| attrs.append(&mut a.clone()));
-                        Ok(())
-                    })?;
-                    Ok(Transform::Copy(
-                        Box::new(Transform::ContextItem), // TODO: this is where the select attribute would go
-                        // The content of this element is a template for the content of the new item
-                        Box::new(if content.is_empty() && attrs.is_empty() {
-                            Transform::Empty
-                        } else {
-                            // Attributes always come first
-                            attrs.append(&mut content);
-                            Transform::SequenceItems(attrs)
-                        }),
+                } else {
+                    Result::Err(Error::new(
+                        ErrorKind::TypeError,
+                        "missing select attribute".to_string(),
                     ))
                 }
-                (Some(XSLTNS), "copy-of") => {
-                    let s = n.get_attribute(&QualifiedName::new(None, None, "select"));
-                    if !s.to_string().is_empty() {
-                        Ok(Transform::DeepCopy(Box::new(parse::<N>(
-                            &s.to_string(),
-                            Some(n.clone()),
-                        )?)))
-                    } else {
-                        Ok(Transform::DeepCopy(Box::new(Transform::ContextItem)))
-                    }
-                }
-                (Some(XSLTNS), "call-template") => {
-                    let name = n.get_attribute(&QualifiedName::new(None, None, "name"));
-                    if !name.to_string().is_empty() {
-                        // Iterate over the xsl:with-param elements to get the actual parameters
-                        // TODO: validate that the children are only xsl:with-param elements
-                        let mut ap = vec![];
-                        n.child_iter()
-                            .filter(|c| {
-                                c.is_element()
-                                    && c.name().namespace_uri_to_string()
-                                        == Some(XSLTNS.to_string())
-                                    && c.name().localname_to_string() == "with-param"
-                            })
-                            .try_for_each(|c| {
-                                let wp_name =
-                                    c.get_attribute(&QualifiedName::new(None, None, "name"));
-                                if !wp_name.to_string().is_empty() {
-                                    let sel =
-                                        c.get_attribute(&QualifiedName::new(None, None, "select"));
-                                    if sel.to_string().is_empty() {
-                                        // xsl:with-param content is the sequence constructor
-                                        let mut body = vec![];
-                                        c.child_iter().try_for_each(|d| {
-                                            body.push(to_transform(d, attr_sets)?);
-                                            Ok(())
-                                        })?;
-                                        ap.push((
-                                            QualifiedName::new_from_values(None, None, wp_name),
-                                            Transform::SequenceItems(body),
-                                        ));
-                                        Ok(())
-                                    } else {
-                                        // select attribute value is an expression
-                                        ap.push((
-                                            QualifiedName::new_from_values(None, None, wp_name),
-                                            parse::<N>(&sel.to_string(), Some(n.clone()))?,
-                                        ));
-                                        Ok(())
-                                    }
-                                } else {
-                                    Err(Error::new(
-                                        ErrorKind::StaticAbsent,
-                                        "missing name attribute",
-                                    ))
-                                }
-                            })?;
-                        Ok(Transform::Invoke(
-                            Rc::new(QualifiedName::new_from_values(None, None, name)),
-                            ActualParameters::Named(ap),
-                            in_scope_namespaces(Some(n)),
-                        ))
-                    } else {
-                        Err(Error::new(
-                            ErrorKind::StaticAbsent,
-                            "name attribute missing",
-                        ))
-                    }
-                }
-                (Some(XSLTNS), "element") => {
-                    let m = n.get_attribute(&QualifiedName::new(None, None, "name"));
-                    if m.to_string().is_empty() {
-                        return Err(Error::new(ErrorKind::TypeError, "missing name attribute"));
-                    }
-                    let mut content = n.child_iter().try_fold(vec![], |mut body, e| {
+            } else if qn == *XSLCOPY {
+                // TODO: handle select attribute
+                let mut content: Vec<Transform<N>> =
+                    n.child_iter().try_fold(vec![], |mut body, e| {
                         body.push(to_transform(e, attr_sets)?);
                         Ok(body)
                     })?;
-                    // Process @xsl:use-attribute-sets
-                    let use_atts = n.get_attribute(&QualifiedName::new(
-                        Some(XSLTNS.to_string()),
+                // Process @xsl:use-attribute-sets
+                let use_atts = n.get_attribute(&XSLATTRUSEATTRIBUTESETS);
+                let mut attrs = vec![];
+                use_atts.to_string().split_whitespace().try_for_each(|a| {
+                    let eqa = n.to_qname(a)?;
+                    attr_sets
+                        .get(&eqa)
+                        .iter()
+                        .cloned()
+                        .for_each(|a| attrs.append(&mut a.clone()));
+                    Ok(())
+                })?;
+                Ok(Transform::Copy(
+                    Box::new(Transform::ContextItem), // TODO: this is where the select attribute would go
+                    // The content of this element is a template for the content of the new item
+                    Box::new(if content.is_empty() && attrs.is_empty() {
+                        Transform::Empty
+                    } else {
+                        // Attributes always come first
+                        attrs.append(&mut content);
+                        Transform::SequenceItems(attrs)
+                    }),
+                ))
+            } else if qn == *XSLCOPYOF {
+                let s = n.get_attribute(&ATTRSELECT);
+                if !s.to_string().is_empty() {
+                    Ok(Transform::DeepCopy(Box::new(parse::<N>(
+                        &s.to_string(),
+                        Some(n.clone()),
                         None,
-                        "use-attribute-sets",
-                    ));
-                    let mut attrs = vec![];
-                    use_atts.to_string().split_whitespace().try_for_each(|a| {
-                        let eqa = QualifiedName::try_from((a, n.clone()))?;
-                        attr_sets
-                            .get(&eqa)
-                            .iter()
-                            .cloned()
-                            .for_each(|a| attrs.append(&mut a.clone()));
-                        Ok(())
-                    })?;
-
-                    Ok(Transform::Element(
-                        Box::new(parse_avt(m.to_string().as_str(), Some(n.clone()))?),
-                        Box::new(if content.is_empty() && attrs.is_empty() {
-                            Transform::Empty
-                        } else {
-                            // Attributes always come first
-                            attrs.append(&mut content);
-                            Transform::SequenceItems(attrs)
-                        }),
+                    )?)))
+                } else {
+                    Ok(Transform::DeepCopy(Box::new(Transform::ContextItem)))
+                }
+            } else if qn == *XSLCALLTEMPLATE {
+                let name = n.get_attribute(&ATTRNAME);
+                if !name.to_string().is_empty() {
+                    // Iterate over the xsl:with-param elements to get the actual parameters
+                    // TODO: validate that the children are only xsl:with-param elements
+                    let mut ap = vec![];
+                    n.child_iter()
+                        .filter(|c| c.is_element() && c.name().unwrap() == *XSLWITHPARAM)
+                        .try_for_each(|c| {
+                            let wp_name = c.get_attribute(&ATTRNAME);
+                            if !wp_name.to_string().is_empty() {
+                                let sel = c.get_attribute(&ATTRSELECT);
+                                if sel.to_string().is_empty() {
+                                    // xsl:with-param content is the sequence constructor
+                                    let mut body = vec![];
+                                    c.child_iter().try_for_each(|d| {
+                                        body.push(to_transform(d, attr_sets)?);
+                                        Ok(())
+                                    })?;
+                                    ap.push((
+                                        QName::from_local_name(
+                                            NcName::try_from(wp_name.to_string().as_str())
+                                                .map_err(|_| {
+                                                    Error::new(ErrorKind::ParseError, "not a QName")
+                                                })?,
+                                        ),
+                                        Transform::SequenceItems(body),
+                                    ));
+                                    Ok(())
+                                } else {
+                                    // select attribute value is an expression
+                                    ap.push((
+                                        QName::from_local_name(
+                                            NcName::try_from(wp_name.to_string().as_str())
+                                                .map_err(|_| {
+                                                    Error::new(ErrorKind::ParseError, "not a QName")
+                                                })?,
+                                        ),
+                                        parse::<N>(&sel.to_string(), Some(n.clone()), None)?,
+                                    ));
+                                    Ok(())
+                                }
+                            } else {
+                                Err(Error::new(
+                                    ErrorKind::StaticAbsent,
+                                    "missing name attribute",
+                                ))
+                            }
+                        })?;
+                    Ok(Transform::Invoke(
+                        QName::from_local_name(
+                            NcName::try_from(name.to_string().as_str())
+                                .map_err(|_| Error::new(ErrorKind::ParseError, "not a NcName"))?,
+                        ),
+                        ActualParameters::Named(ap),
+                        in_scope_namespaces(Some(n)),
+                    ))
+                } else {
+                    Err(Error::new(
+                        ErrorKind::StaticAbsent,
+                        "name attribute missing",
                     ))
                 }
-                (Some(XSLTNS), "attribute") => {
-                    let m = n.get_attribute(&QualifiedName::new(None, None, "name"));
-                    if !m.to_string().is_empty() {
-                        Ok(Transform::LiteralAttribute(
-                            Rc::new(QualifiedName::new_from_values(None, None, m)),
-                            Box::new(Transform::SequenceItems(n.child_iter().try_fold(
-                                vec![],
-                                |mut body, e| {
-                                    body.push(to_transform(e, attr_sets)?);
-                                    Ok(body)
-                                },
-                            )?)),
-                        ))
-                    } else {
-                        Err(Error::new(ErrorKind::TypeError, "missing name attribute"))
-                    }
+            } else if qn == *XSLELEMENT {
+                // TODO: insert namespace declaration if element's name is prefixed
+                let m = n.get_attribute(&ATTRNAME);
+                if m.to_string().is_empty() {
+                    return Err(Error::new(ErrorKind::TypeError, "missing name attribute"));
                 }
-                (Some(XSLTNS), "comment") => Ok(Transform::LiteralComment(Box::new(
+                let mut content = n.child_iter().try_fold(vec![], |mut body, e| {
+                    body.push(to_transform(e, attr_sets)?);
+                    Ok(body)
+                })?;
+                // Process @xsl:use-attribute-sets
+                let use_atts = n.get_attribute(&XSLATTRUSEATTRIBUTESETS);
+                let mut attrs = vec![];
+                use_atts.to_string().split_whitespace().try_for_each(|a| {
+                    let eqa = n.to_qname(a)?;
+                    attr_sets
+                        .get(&eqa)
+                        .iter()
+                        .cloned()
+                        .for_each(|a| attrs.append(&mut a.clone()));
+                    Ok(())
+                })?;
+
+                Ok(Transform::Element(
+                    Box::new(parse_avt(m.to_string().as_str(), Some(n.clone()))?),
+                    Box::new(if content.is_empty() && attrs.is_empty() {
+                        Transform::Empty
+                    } else {
+                        // Attributes always come first
+                        attrs.append(&mut content);
+                        Transform::SequenceItems(attrs)
+                    }),
+                ))
+            } else if qn == *XSLATTRIBUTE {
+                let m = n.get_attribute(&ATTRNAME);
+                if !m.to_string().is_empty() {
+                    Ok(Transform::LiteralAttribute(
+                        QName::from_local_name(
+                            NcName::try_from(m.to_string().as_str())
+                                .map_err(|_| Error::new(ErrorKind::ParseError, "not a NcName"))?,
+                        ),
+                        Box::new(Transform::SequenceItems(n.child_iter().try_fold(
+                            vec![],
+                            |mut body, e| {
+                                body.push(to_transform(e, attr_sets)?);
+                                Ok(body)
+                            },
+                        )?)),
+                    ))
+                } else {
+                    Err(Error::new(ErrorKind::TypeError, "missing name attribute"))
+                }
+            } else if qn == *XSLCOMMENT {
+                Ok(Transform::LiteralComment(Box::new(
                     Transform::SequenceItems(n.child_iter().try_fold(vec![], |mut body, e| {
                         body.push(to_transform(e, attr_sets)?);
                         Ok(body)
                     })?),
-                ))),
-                (Some(XSLTNS), "processing-instruction") => {
-                    let m = n.get_attribute(&QualifiedName::new(None, None, "name"));
-                    if m.to_string().is_empty() {
-                        return Result::Err(Error::new(
-                            ErrorKind::TypeError,
-                            "missing name attribute",
-                        ));
-                    }
-                    Ok(Transform::LiteralProcessingInstruction(
-                        Box::new(parse_avt(m.to_string().as_str(), Some(n.clone()))?),
-                        Box::new(Transform::SequenceItems(n.child_iter().try_fold(
-                            vec![],
-                            |mut body, e| {
-                                body.push(to_transform(e, attr_sets)?);
-                                Ok(body)
-                            },
-                        )?)),
-                    ))
+                )))
+            } else if qn == *XSLPROCESSINGINSTRUCTION {
+                let m = n.get_attribute(&ATTRNAME);
+                if m.to_string().is_empty() {
+                    return Result::Err(Error::new(ErrorKind::TypeError, "missing name attribute"));
                 }
-                (Some(XSLTNS), "message") => {
-                    let t = n.get_attribute(&QualifiedName::new(None, None, "terminate"));
-                    Ok(Transform::Message(
-                        Box::new(Transform::SequenceItems(n.child_iter().try_fold(
-                            vec![],
-                            |mut body, e| {
-                                body.push(to_transform(e, attr_sets)?);
-                                Ok(body)
-                            },
-                        )?)),
-                        None,
-                        Box::new(Transform::Empty),
-                        Box::new(if t.to_string().is_empty() {
-                            Transform::False
-                        } else {
-                            Transform::Literal(Item::Value(Rc::new(Value::from(t.to_string()))))
-                        }),
-                    ))
-                }
-                (Some(XSLTNS), "number") => {
-                    let value = n.get_attribute(&QualifiedName::new(None, None, "value"));
-                    let sel = n.get_attribute(&QualifiedName::new(None, None, "select"));
-                    let level = n.get_attribute(&QualifiedName::new(None, None, "level"));
-                    if level.to_string() != "" && level.to_string() != "single" {
-                        return Err(Error::new(
-                            ErrorKind::NotImplemented,
-                            "only single level numbering is supported",
-                        ));
-                    }
-                    let count = n.get_attribute(&QualifiedName::new(None, None, "count"));
-                    let from = n.get_attribute(&QualifiedName::new(None, None, "from"));
-                    let format = n.get_attribute(&QualifiedName::new(None, None, "format"));
-                    // TODO: lang, letter-value, ordinal, start-at, grouping-separator, grouping-size
-                    if value.to_string().is_empty() {
-                        // Compute place marker
-                        Ok(Transform::FormatInteger(
-                            Box::new(Transform::GenerateIntegers(
-                                Box::new(Transform::Empty), // start-at (TODO)
-                                Box::new(if sel.to_string().is_empty() {
-                                    Transform::ContextItem
-                                } else {
-                                    parse::<N>(&sel.to_string(), Some(n.clone()))?
-                                }), // select
-                                Box::new(Numbering::new(
-                                    Level::Single, // TODO: parse level attribute value
-                                    if count.to_string().is_empty() {
-                                        None
-                                    } else {
-                                        Some(Pattern::try_from(count.to_string())?)
-                                    },
-                                    if from.to_string().is_empty() {
-                                        None
-                                    } else {
-                                        Some(Pattern::try_from(from.to_string())?)
-                                    },
-                                )),
-                            )),
-                            Box::new(Transform::Literal(Item::Value(
-                                if format.to_string().is_empty() {
-                                    Rc::new(Value::from("1"))
-                                } else {
-                                    format
-                                },
-                            ))),
-                        ))
+                Ok(Transform::LiteralProcessingInstruction(
+                    Box::new(parse_avt(m.to_string().as_str(), Some(n.clone()))?),
+                    Box::new(Transform::SequenceItems(n.child_iter().try_fold(
+                        vec![],
+                        |mut body, e| {
+                            body.push(to_transform(e, attr_sets)?);
+                            Ok(body)
+                        },
+                    )?)),
+                ))
+            } else if qn == *XSLMESSAGE {
+                let t = n.get_attribute(&ATTRTERMINATE);
+                Ok(Transform::Message(
+                    Box::new(Transform::SequenceItems(n.child_iter().try_fold(
+                        vec![],
+                        |mut body, e| {
+                            body.push(to_transform(e, attr_sets)?);
+                            Ok(body)
+                        },
+                    )?)),
+                    None,
+                    Box::new(Transform::Empty),
+                    Box::new(if t.to_string().is_empty() {
+                        Transform::False
                     } else {
-                        // Place marker is supplied
-                        Ok(Transform::FormatInteger(
-                            Box::new(parse::<N>(&value.to_string(), Some(n.clone()))?),
-                            Box::new(Transform::Literal(Item::Value(
-                                if format.to_string().is_empty() {
-                                    Rc::new(Value::from("1"))
+                        Transform::Literal(Item::Value(Rc::new(Value::from(t.to_string()))))
+                    }),
+                ))
+            } else if qn == *XSLNUMBER {
+                let value = n.get_attribute(&ATTRVALUE);
+                let sel = n.get_attribute(&ATTRSELECT);
+                let level = n.get_attribute(&ATTRLEVEL);
+                if level.to_string() != "" && level.to_string() != "single" {
+                    return Err(Error::new(
+                        ErrorKind::NotImplemented,
+                        "only single level numbering is supported",
+                    ));
+                }
+                let count = n.get_attribute(&ATTRCOUNT);
+                let from = n.get_attribute(&ATTRFROM);
+                let format = n.get_attribute(&ATTRFORMAT);
+                // TODO: lang, letter-value, ordinal, start-at, grouping-separator, grouping-size
+                if value.to_string().is_empty() {
+                    // Compute place marker
+                    Ok(Transform::FormatInteger(
+                        Box::new(Transform::GenerateIntegers(
+                            Box::new(Transform::Empty), // start-at (TODO)
+                            Box::new(if sel.to_string().is_empty() {
+                                Transform::ContextItem
+                            } else {
+                                parse::<N>(&sel.to_string(), Some(n.clone()), None)?
+                            }), // select
+                            Box::new(Numbering::new(
+                                Level::Single, // TODO: parse level attribute value
+                                if count.to_string().is_empty() {
+                                    None
                                 } else {
-                                    format
+                                    Some(Pattern::try_from(count.to_string())?)
                                 },
-                            ))),
-                        ))
+                                if from.to_string().is_empty() {
+                                    None
+                                } else {
+                                    Some(Pattern::try_from(from.to_string())?)
+                                },
+                            )),
+                        )),
+                        Box::new(Transform::Literal(Item::Value(
+                            if format.to_string().is_empty() {
+                                Rc::new(Value::from("1"))
+                            } else {
+                                format
+                            },
+                        ))),
+                    ))
+                } else {
+                    // Place marker is supplied
+                    Ok(Transform::FormatInteger(
+                        Box::new(parse::<N>(&value.to_string(), Some(n.clone()), None)?),
+                        Box::new(Transform::Literal(Item::Value(
+                            if format.to_string().is_empty() {
+                                Rc::new(Value::from("1"))
+                            } else {
+                                format
+                            },
+                        ))),
+                    ))
+                }
+            } else if qn == *XSLDECIMALFORMAT {
+                Ok(Transform::NotImplemented(String::from(
+                    "unsupported XSL element \"decimal-format\"",
+                )))
+            } else if qn.namespace_uri() == *XSLTNS {
+                Ok(Transform::NotImplemented(format!(
+                    "unsupported XSL element \"{}\"",
+                    qn.local_name().to_string()
+                )))
+            } else {
+                let u = qn.namespace_uri();
+                let a = qn.local_name();
+
+                // Uh-oh! Parsing the stylesheet has thrown away all qualified name prefixes
+                // But there will be a namespace declaration, so recover it from there
+                let mut prefix = None;
+                if let Some(nsuri) = u.as_ref() {
+                    if let Some(p) = n
+                        .namespace_iter()
+                        .find(|nsd| nsd.as_namespace_uri().unwrap() == nsuri)
+                    {
+                        if let Some(pp) = p.as_namespace_prefix()? {
+                            prefix = Some(Box::new(Transform::Literal(Item::Value(Rc::new(
+                                Value::from(pp.to_string()),
+                            )))));
+                        }
                     }
                 }
-                (Some(XSLTNS), "decimal-format") => Ok(Transform::NotImplemented(String::from(
-                    "unsupported XSL element \"decimal-format\"",
-                ))),
-                (Some(XSLTNS), u) => Ok(Transform::NotImplemented(format!(
-                    "unsupported XSL element \"{}\"",
-                    u
-                ))),
-                (u, a) => {
-                    // Process @xsl:use-attribute-sets
-                    let use_atts = n.get_attribute(&QualifiedName::new(
-                        Some(XSLTNS.to_string()),
-                        None,
-                        "use-attribute-sets",
+
+                // Process @xsl:use-attribute-sets
+                let use_atts = n.get_attribute(&XSLATTRUSEATTRIBUTESETS);
+                let mut attrs = vec![];
+                use_atts.to_string().split_whitespace().try_for_each(|a| {
+                    let eqa = n.to_qname(a)?; //QName::try_from((a, ns.clone()))?;
+                    attr_sets
+                        .get(&eqa)
+                        .iter()
+                        .cloned()
+                        .for_each(|a| attrs.append(&mut a.clone()));
+                    Ok(())
+                })?;
+                let mut content = vec![];
+
+                // Setup a namespace declaration if required for the element name
+                if u.is_some() {
+                    content.push(Transform::NamespaceDeclaration(
+                        prefix,
+                        Box::new(Transform::Literal(Item::Value(Rc::new(Value::from(
+                            u.clone().unwrap(),
+                        ))))),
+                        Box::new(Transform::Literal(Item::Value(Rc::new(Value::from(true))))),
                     ));
-                    let mut attrs = vec![];
-                    use_atts.to_string().split_whitespace().try_for_each(|a| {
-                        let eqa = QualifiedName::try_from((a, ns.clone()))?;
-                        attr_sets
-                            .get(&eqa)
-                            .iter()
-                            .cloned()
-                            .for_each(|a| attrs.append(&mut a.clone()));
-                        Ok(())
-                    })?;
-                    let mut content = vec![];
-                    // Copy attributes to the result, except for XSLT directives
-                    n.attribute_iter()
-                        .filter(|e| e.name().namespace_uri_to_string() != Some(XSLTNS.to_string()))
-                        .try_for_each(|e| {
-                            content.push(to_transform(e, attr_sets)?);
-                            Ok::<(), Error>(())
-                        })?;
-                    n.child_iter().try_for_each(|e| {
+                }
+
+                // Copy attributes to the result, except for XSLT directives
+                n.attribute_iter()
+                    .filter(|e| e.name().unwrap().namespace_uri() != *XSLTNS)
+                    .try_for_each(|e| {
                         content.push(to_transform(e, attr_sets)?);
                         Ok::<(), Error>(())
                     })?;
-                    Ok(Transform::LiteralElement(
-                        Rc::new(QualifiedName::new_from_values(
-                            u.map(|v| Rc::new(Value::from(v))),
-                            n.name().prefix(),
-                            Rc::new(Value::from(a)),
-                        )),
-                        Box::new(if content.is_empty() && attrs.is_empty() {
-                            Transform::Empty
-                        } else {
-                            // Attributes always come first
-                            attrs.append(&mut content);
-                            Transform::SequenceItems(attrs)
-                        }),
-                    ))
-                }
+                n.child_iter().try_for_each(|e| {
+                    content.push(to_transform(e, attr_sets)?);
+                    Ok::<(), Error>(())
+                })?;
+                Ok(Transform::LiteralElement(
+                    QName::new_from_parts(a, u),
+                    Box::new(if content.is_empty() && attrs.is_empty() {
+                        Transform::Empty
+                    } else {
+                        // Attributes always come first
+                        attrs.append(&mut content);
+                        Transform::SequenceItems(attrs)
+                    }),
+                ))
             }
         }
         NodeType::Attribute => {
             let x = parse_avt(n.to_string().as_str(), Some(n.clone()))?;
             // Get value as a Value
             Ok(Transform::LiteralAttribute(
-                n.name(),
+                n.name().unwrap(),
                 Box::new(x),
                 //Box::new(Transform::Literal(Item::Value(Rc::new(Value::String(
                 //n.to_string(),
@@ -1353,14 +1454,17 @@ fn get_sort_keys<N: Node>(n: &N) -> Result<Vec<(Order, Transform<N>)>, Error> {
             None => break,
             Some(c) => match c.node_type() {
                 NodeType::Element => {
-                    if *c.name() == QualifiedName::new(Some(XSLTNS.to_string()), None, "sort") {
-                        let ordval = c.get_attribute(&QualifiedName::new(None, None, "order"));
+                    if c.name().is_some_and(|d| d == *XSLSORT) {
+                        let ordval = c.get_attribute(&ATTRORDER);
                         let ord = match ordval.to_string().as_str() {
                             "descending" => Order::Descending,
                             _ => Order::Ascending,
                         };
-                        let sortsel = c.get_attribute(&QualifiedName::new(None, None, "select"));
-                        result.push((ord, parse::<N>(&sortsel.to_string(), Some(n.clone()))?));
+                        let sortsel = c.get_attribute(&ATTRSELECT);
+                        result.push((
+                            ord,
+                            parse::<N>(&sortsel.to_string(), Some(n.clone()), None)?,
+                        ));
                     } else {
                         break;
                     }
@@ -1381,15 +1485,7 @@ fn get_sort_keys<N: Node>(n: &N) -> Result<Vec<(Order, Transform<N>)>, Error> {
         }
     }
     // Check that there are no more sort elements
-    if nit.any(|c| {
-        if c.node_type() == NodeType::Element
-            && *c.name() == QualifiedName::new(Some(XSLTNS.to_string()), None, "sort")
-        {
-            true
-        } else {
-            false
-        }
-    }) {
+    if nit.any(|c| c.node_type() == NodeType::Element && c.name().is_some_and(|d| d == *XSLSORT)) {
         Err(Error::new(ErrorKind::TypeError, "sort elements in body"))
     } else {
         Ok(result)
@@ -1422,40 +1518,33 @@ pub fn strip_source_document<N: Node>(src: N, style: N) -> Result<(), Error> {
     style.child_iter().try_for_each(|n| {
         // n should be the xsl:stylesheet element
         n.child_iter().try_for_each(|m| {
-            match (
-                m.node_type(),
-                m.name().namespace_uri_to_string().as_deref(),
-                m.name().localname_to_string().as_str(),
-            ) {
-                (NodeType::Element, Some(XSLTNS), "strip-space") => {
-                    let v = m.get_attribute(&QualifiedName::new(None, None, "elements"));
-                    if !v.to_string().is_empty() {
-                        v.to_string().split_whitespace().try_for_each(|t| {
-                            ss.push(NodeTest::try_from(t)?);
-                            Ok::<(), Error>(())
-                        })?
-                    } else {
-                        return Result::Err(Error::new(
-                            ErrorKind::Unknown,
-                            String::from("missing elements attribute"),
-                        ));
-                    }
+            let nm = m.name();
+            if nm.as_ref().is_some_and(|nms| *nms == *XSLSTRIPSPACE) {
+                let v = m.get_attribute(&ATTRELEMENTS);
+                if !v.to_string().is_empty() {
+                    v.to_string().split_whitespace().try_for_each(|t| {
+                        ss.push(NodeTest::try_from(t)?);
+                        Ok::<(), Error>(())
+                    })?
+                } else {
+                    return Result::Err(Error::new(
+                        ErrorKind::Unknown,
+                        String::from("missing elements attribute"),
+                    ));
                 }
-                (NodeType::Element, Some(XSLTNS), "preserve-space") => {
-                    let v = m.get_attribute(&QualifiedName::new(None, None, "elements"));
-                    if !v.to_string().is_empty() {
-                        v.to_string().split_whitespace().try_for_each(|t| {
-                            ps.push(NodeTest::try_from(t)?);
-                            Ok::<(), Error>(())
-                        })?
-                    } else {
-                        return Result::Err(Error::new(
-                            ErrorKind::Unknown,
-                            String::from("missing elements attribute"),
-                        ));
-                    }
+            } else if nm.as_ref().is_some_and(|nms| *nms == *XSLPRESERVESPACE) {
+                let v = m.get_attribute(&ATTRELEMENTS);
+                if !v.to_string().is_empty() {
+                    v.to_string().split_whitespace().try_for_each(|t| {
+                        ps.push(NodeTest::try_from(t)?);
+                        Ok::<(), Error>(())
+                    })?
+                } else {
+                    return Result::Err(Error::new(
+                        ErrorKind::Unknown,
+                        String::from("missing elements attribute"),
+                    ));
                 }
-                _ => {}
             }
             Ok::<(), Error>(())
         })?;
@@ -1466,7 +1555,6 @@ pub fn strip_source_document<N: Node>(src: N, style: N) -> Result<(), Error> {
 }
 
 // TODO: the rules for stripping/preserving are a lot more complex
-// TODO: Return Result so that errors can be propagated
 fn strip_whitespace_node<N: Node>(
     mut n: N,
     cpi: bool, // strip comments and PIs?
@@ -1489,84 +1577,41 @@ fn strip_whitespace_node<N: Node>(
             let mut ps = -1.0;
             strip.iter().for_each(|t| match t {
                 NodeTest::Kind(KindTest::Any) | NodeTest::Kind(KindTest::Element) => ss = -0.5,
-                NodeTest::Name(nt) => match (nt.ns.as_ref(), nt.name.as_ref()) {
-                    (None, Some(WildcardOrName::Wildcard)) => {
-                        ss = -0.25;
-                    }
-                    (None, Some(WildcardOrName::Name(name))) => {
-                        match (n.name().namespace_uri(), n.name().localname()) {
-                            (Some(_), _) => {}
-                            (None, ename) => {
-                                if *name == ename {
-                                    ss = 0.5;
-                                }
-                            }
+                NodeTest::Name(nt) => match nt {
+                    NameTest::Wildcard(
+                        WildcardOrNamespaceUri::Wildcard,
+                        WildcardOrName::Name(_),
+                    ) => ss = -0.25,
+                    NameTest::Wildcard(
+                        WildcardOrNamespaceUri::NamespaceUri(_),
+                        WildcardOrName::Wildcard,
+                    ) => ss = -0.25,
+                    NameTest::Wildcard(_, _) => ss = -0.5,
+                    NameTest::Name(qn) => {
+                        if *qn == n.name().unwrap() {
+                            ss = 0.5
                         }
                     }
-                    (Some(WildcardOrName::Name(ns)), Some(WildcardOrName::Name(name))) => {
-                        match (n.name().namespace_uri(), n.name().localname()) {
-                            (Some(ens), ename) => {
-                                if *ns == ens && *name == ename {
-                                    ss = 0.5;
-                                }
-                            }
-                            (None, ename) => {
-                                if *name == ename {
-                                    ss = 0.5;
-                                }
-                            }
-                        }
-                    }
-                    (Some(WildcardOrName::Wildcard), Some(WildcardOrName::Name(_))) => {
-                        ss = -0.25;
-                    }
-                    (Some(WildcardOrName::Name(_)), Some(WildcardOrName::Wildcard)) => {
-                        ss = -0.25;
-                    }
-                    (Some(WildcardOrName::Wildcard), Some(WildcardOrName::Wildcard)) => {
-                        ss = -0.5;
-                    }
-                    _ => {}
                 },
                 _ => {}
             });
             preserve.iter().for_each(|t| match t {
                 NodeTest::Kind(KindTest::Any) | NodeTest::Kind(KindTest::Element) => ps = -0.5,
-                NodeTest::Name(nt) => match (nt.ns.as_ref(), nt.name.as_ref()) {
-                    (None, Some(WildcardOrName::Name(name))) => {
-                        match (n.name().namespace_uri(), n.name().localname()) {
-                            (Some(_), _) => {}
-                            (None, ename) => {
-                                if *name == ename {
-                                    ps = 0.5;
-                                }
-                            }
+                NodeTest::Name(nt) => match nt {
+                    NameTest::Wildcard(
+                        WildcardOrNamespaceUri::Wildcard,
+                        WildcardOrName::Name(_),
+                    ) => ss = -0.25,
+                    NameTest::Wildcard(
+                        WildcardOrNamespaceUri::NamespaceUri(_),
+                        WildcardOrName::Wildcard,
+                    ) => ss = -0.25,
+                    NameTest::Wildcard(_, _) => ss = -0.5,
+                    NameTest::Name(qn) => {
+                        if *qn == n.name().unwrap() {
+                            ss = 0.5
                         }
                     }
-                    (Some(WildcardOrName::Name(ns)), Some(WildcardOrName::Name(name))) => {
-                        match (n.name().namespace_uri(), n.name().localname()) {
-                            (Some(ens), ename) => {
-                                if *ns == ens && *name == ename {
-                                    ps = 0.5;
-                                }
-                            }
-                            (None, ename) => {
-                                if *name == ename {
-                                    ps = 0.5;
-                                }
-                            }
-                        }
-                    }
-                    (Some(WildcardOrName::Wildcard), Some(WildcardOrName::Name(_))) => {
-                        ps = -0.25;
-                    }
-                    (Some(WildcardOrName::Name(_)), Some(WildcardOrName::Wildcard)) => {
-                        ps = -0.25;
-                    }
-                    (Some(WildcardOrName::Wildcard), Some(WildcardOrName::Wildcard)) => {
-                        ps = -0.5;
-                    }
-                    _ => {}
                 },
                 _ => {}
             });

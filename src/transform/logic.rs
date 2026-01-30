@@ -4,8 +4,8 @@ use std::rc::Rc;
 use url::Url;
 
 use crate::item::{Item, Node, Sequence, SequenceTrait};
-use crate::transform::context::{Context, StaticContext};
 use crate::transform::Transform;
+use crate::transform::context::{Context, StaticContext};
 use crate::value::{Operator, Value};
 use crate::xdmerror::{Error, ErrorKind};
 
@@ -23,17 +23,12 @@ pub(crate) fn tr_or<
     // Future: Evaluate every operand to check for dynamic errors
     let mut b = false;
     let mut i = 0;
-    loop {
-        match v.get(i) {
-            Some(a) => {
-                if ctxt.dispatch(stctxt, a)?.to_bool() {
-                    b = true;
-                    break;
-                }
-                i += 1;
-            }
-            None => break,
+    while let Some(a) = v.get(i) {
+        if ctxt.dispatch(stctxt, a)?.to_bool() {
+            b = true;
+            break;
         }
+        i += 1;
     }
     Ok(vec![Item::Value(Rc::new(Value::from(b)))])
 }
@@ -52,17 +47,12 @@ pub(crate) fn tr_and<
     // Future: Evaluate every operand to check for dynamic errors
     let mut b = true;
     let mut i = 0;
-    loop {
-        match v.get(i) {
-            Some(a) => {
-                if !ctxt.dispatch(stctxt, a)?.to_bool() {
-                    b = false;
-                    break;
-                }
-                i += 1;
-            }
-            None => break,
+    while let Some(a) = v.get(i) {
+        if !ctxt.dispatch(stctxt, a)?.to_bool() {
+            b = false;
+            break;
         }
+        i += 1;
     }
     Ok(vec![Item::Value(Rc::new(Value::from(b)))])
 }
@@ -86,7 +76,7 @@ pub(crate) fn general_comparison<
     let mut b = false;
     for i in left {
         for j in &right {
-            b = i.compare(j, *o).unwrap();
+            b = i.compare(j, *o)?;
             if b {
                 break;
             }

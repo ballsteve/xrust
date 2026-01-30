@@ -85,6 +85,11 @@ fn xpath_navigate_predicate_1() {
         .expect("test failed")
 }
 #[test]
+fn xpath_predicate_1() {
+    xpathgeneric::generic_predicate_1::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
+#[test]
 fn xpath_generate_id() {
     xpathgeneric::generic_generate_id::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
         .expect("test failed")
@@ -140,6 +145,11 @@ fn xpath_int() {
         .expect("test failed")
 }
 #[test]
+fn xpath_bigint() {
+    xpathgeneric::generic_bigint::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
+#[test]
 fn xpath_decimal() {
     xpathgeneric::generic_decimal::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
         .expect("test failed")
@@ -168,6 +178,22 @@ fn xpath_string_quot() {
 fn xpath_string_quot_esc() {
     xpathgeneric::generic_string_quot_esc::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
         .expect("test failed")
+}
+#[test]
+fn xpath_value_comparison_1_neg() {
+    xpathgeneric::generic_value_comparison_1_neg::<RNode, _, _>(
+        smite::make_empty_doc,
+        smite::make_sd,
+    )
+    .expect("test failed")
+}
+#[test]
+fn xpath_general_comparison_1_neg() {
+    xpathgeneric::generic_general_comparison_1_neg::<RNode, _, _>(
+        smite::make_empty_doc,
+        smite::make_sd,
+    )
+    .expect("test failed")
 }
 #[test]
 fn xpath_literal_sequence() {
@@ -511,4 +537,19 @@ fn xpath_document_1() {
         smite::make_from_str,
     )
     .expect("test failed")
+}
+#[test]
+fn xpath_issue138_1() {
+    xpathgeneric::issue138_1::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
+#[test]
+fn xpath_issue138_2() {
+    xpathgeneric::issue138_2::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
+#[test]
+fn xpath_ns_1() {
+    xpathgeneric::generic_ns_1::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
 }

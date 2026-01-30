@@ -44,7 +44,7 @@ fn xslt_literal_element() {
     xsltgeneric::generic_literal_element(
         smite::make_from_str,
         smite::make_from_str_with_ns,
-        smite::make_sd_cooked,
+        smite::make_empty_doc_cooked,
     )
     .expect("test failed")
 }
@@ -78,6 +78,15 @@ fn xslt_apply_templates_2() {
 #[test]
 fn xslt_apply_templates_mode() {
     xsltgeneric::generic_apply_templates_mode(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_sd_cooked,
+    )
+    .expect("test failed")
+}
+#[test]
+fn xslt_apply_templates_mode_bad_qname() {
+    xsltgeneric::generic_apply_templates_mode_bad_qname(
         smite::make_from_str,
         smite::make_from_str_with_ns,
         smite::make_sd_cooked,
@@ -239,6 +248,24 @@ fn xslt_attr_set_3() {
     .expect("test failed")
 }
 #[test]
+fn xslt_feg_starting_with_1() {
+    xsltgeneric::feg_starting_with_1(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_sd_cooked,
+    )
+    .expect("test failed")
+}
+#[test]
+fn xslt_feg_starting_with_2() {
+    xsltgeneric::feg_starting_with_2(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_sd_cooked,
+    )
+    .expect("test failed")
+}
+#[test]
 fn xslt_issue_96_abs() {
     xsltgeneric::issue_96_abs(
         smite::make_from_str,
@@ -286,6 +313,96 @@ fn xslt_issue_137_1() {
 #[test]
 fn xslt_issue_137_2() {
     xsltgeneric::issue_137_2(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_empty_doc_cooked,
+    )
+    .expect("test failed")
+}
+#[test]
+fn xslt_dbk_1() {
+    xsltgeneric::dbk_1(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_empty_doc_cooked,
+    )
+    .expect("test failed")
+}
+#[test]
+fn xslt_md_1() {
+    xsltgeneric::md_1(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_empty_doc_cooked,
+    )
+    .expect("test failed")
+}
+#[test]
+fn xslt_conform_1() {
+    xsltgeneric::conform_1(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_empty_doc_cooked,
+    )
+    .expect("test failed")
+}
+#[test]
+fn xslt_conform_2() {
+    xsltgeneric::conform_2(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_empty_doc_cooked,
+    )
+    .expect("test failed")
+}
+#[test]
+fn xslt_conform_3() {
+    xsltgeneric::conform_3(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_empty_doc_cooked,
+    )
+    .expect("test failed")
+}
+#[test]
+fn xslt_conform_4() {
+    xsltgeneric::conform_4(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_empty_doc_cooked,
+    )
+    .expect("test failed")
+}
+#[test]
+fn xslt_conform_5() {
+    xsltgeneric::conform_5(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_empty_doc_cooked,
+    )
+    .expect("test failed")
+}
+#[test]
+fn xslt_conform_6() {
+    xsltgeneric::conform_6(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_empty_doc_cooked,
+    )
+    .expect("test failed")
+}
+#[test]
+fn xslt_conform_7() {
+    xsltgeneric::conform_7(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_empty_doc_cooked,
+    )
+    .expect("test failed")
+}
+#[test]
+fn xslt_conform_8() {
+    xsltgeneric::conform_8(
         smite::make_from_str,
         smite::make_from_str_with_ns,
         smite::make_empty_doc_cooked,

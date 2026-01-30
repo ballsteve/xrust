@@ -3,9 +3,11 @@
 University of Edinburgh XML 1.0 4th edition errata test suite.
 
 */
+use qualname::NamespacePrefix;
 use std::fs;
 use xrust::item::{Node, NodeType};
-use xrust::parser::{xml, ParserConfig};
+use xrust::parser::xml;
+use xrust::parser::{ParseError, ParserStateBuilder, StaticStateBuilder};
 use xrust::trees::smite::RNode;
 
 #[test]
@@ -26,10 +28,12 @@ fn parser_config_namespace_nodes_1() {
                  </element5>
              </doc>"#;
 
-    let pc = ParserConfig::new();
-
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(testxml, doc, Some(pc));
+    let parseresult = xml::parse(
+        testxml,
+        doc,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+    );
 
     assert!(parseresult.is_ok());
 
@@ -50,7 +54,7 @@ fn parser_config_namespace_nodes_1() {
 
     assert_eq!(doc.namespace_iter().count(), 7);
     assert_eq!(element1.namespace_iter().count(), 7);
-    assert_eq!(element2.namespace_iter().count(), 7);
+    assert_eq!(element2.namespace_iter().count(), 8);
     assert_eq!(element3.namespace_iter().count(), 8);
     assert_eq!(element4.namespace_iter().count(), 8);
     assert_eq!(element5.namespace_iter().count(), 7);
@@ -69,14 +73,22 @@ fn parser_config_default_attrs_1() {
     ]>
     <doc/>"#;
 
-    let pc1 = ParserConfig::new();
     let testxml1 = RNode::new_document();
-    let parseresult1 = xml::parse(testxml1, doc, Some(pc1));
+    let parseresult1 = xml::parse(
+        testxml1,
+        doc,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+    );
 
-    let mut pc2 = ParserConfig::new();
-    pc2.attr_defaults = false;
     let testxml2 = RNode::new_document();
-    let parseresult2 = xml::parse(testxml2, doc, Some(pc2));
+    let pc2 = ParserStateBuilder::new()
+        .attribute_defaults(false)
+        .doc(testxml2)
+        .build();
+    let ss = StaticStateBuilder::new()
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
+    let parseresult2 = xml::parse_with_state(doc, pc2, ss);
 
     assert!(parseresult1.is_ok());
     assert!(parseresult2.is_ok());
@@ -114,7 +126,11 @@ fn parser_issue_94() {
     let data = fs::read_to_string("tests/xml/issue-94.xml").unwrap();
     let source = RNode::new_document();
 
-    let parseresult = xml::parse(source.clone(), &data, None);
+    let parseresult = xml::parse(
+        source.clone(),
+        &data,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+    );
 
     assert!(parseresult.is_ok())
 }
@@ -140,19 +156,32 @@ fn parser_config_id_1() {
 </doc>
 "#;
 
-    let pc = ParserConfig::new();
-
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(testxml, doc, Some(pc));
+    let parseresult = xml::parse(
+        testxml,
+        doc,
+        Some(|_: &_| {
+            Err(ParseError::NotWellFormed(
+                "tried to resolve namespace prefix".to_string(),
+            ))
+        }),
+    );
 
+    eprintln!("parse1result {:?}", parseresult);
     assert!(parseresult.is_err());
 
-    let mut pc2 = ParserConfig::new();
-    pc2.id_tracking = false;
-
     let testxml2 = RNode::new_document();
-    let parseresult2 = xml::parse(testxml2, doc, Some(pc2));
+    let pc2 = ParserStateBuilder::new()
+        .id_tracking(false)
+        .doc(testxml2)
+        .build();
+    let ss = StaticStateBuilder::new()
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
 
+    let parseresult2 = xml::parse_with_state(doc, pc2, ss);
+
+    eprintln!("parseresult2 result {:?}", parseresult2);
     assert!(parseresult2.is_ok());
 }
 
@@ -176,18 +205,25 @@ fn parser_config_id_2() {
 </doc>
 "#;
 
-    let pc = ParserConfig::new();
-
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(testxml, doc, Some(pc));
+    let parseresult = xml::parse(
+        testxml,
+        doc,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+    );
 
     assert!(parseresult.is_err());
 
-    let mut pc2 = ParserConfig::new();
-    pc2.id_tracking = false;
-
     let testxml2 = RNode::new_document();
-    let parseresult2 = xml::parse(testxml2, doc, Some(pc2));
+    let pc2 = ParserStateBuilder::new()
+        .id_tracking(false)
+        .doc(testxml2)
+        .build();
+    let ss = StaticStateBuilder::new()
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
+
+    let parseresult2 = xml::parse_with_state(doc, pc2, ss);
 
     assert!(parseresult2.is_ok());
 }
@@ -211,10 +247,12 @@ fn parser_config_id_3() {
 <doc id="a1"/>
 "#;
 
-    let pc = ParserConfig::new();
-
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(testxml, doc, Some(pc));
+    let parseresult = xml::parse(
+        testxml,
+        doc,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+    );
 
     assert!(parseresult.is_ok());
     assert_eq!(
@@ -229,11 +267,16 @@ fn parser_config_id_3() {
         true
     );
 
-    let mut pc2 = ParserConfig::new();
-    pc2.id_tracking = false;
-
     let testxml2 = RNode::new_document();
-    let parseresult2 = xml::parse(testxml2, doc, Some(pc2));
+    let pc2 = ParserStateBuilder::new()
+        .doc(testxml2)
+        .id_tracking(false)
+        .build();
+    let ss = StaticStateBuilder::new()
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
+
+    let parseresult2 = xml::parse_with_state(doc, pc2, ss);
 
     assert!(parseresult2.is_ok());
     assert_eq!(
@@ -273,10 +316,12 @@ fn parser_config_id_4() {
 </doc>
 "#;
 
-    let pc = ParserConfig::new();
-
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(testxml, doc, Some(pc));
+    let parseresult = xml::parse(
+        testxml,
+        doc,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+    );
 
     assert!(parseresult.is_ok());
     assert_eq!(
@@ -291,11 +336,15 @@ fn parser_config_id_4() {
         true
     );
 
-    let mut pc2 = ParserConfig::new();
-    pc2.id_tracking = false;
-
     let testxml2 = RNode::new_document();
-    let parseresult2 = xml::parse(testxml2, doc, Some(pc2));
+    let pc2 = ParserStateBuilder::new()
+        .doc(testxml2)
+        .id_tracking(false)
+        .build();
+    let ss = StaticStateBuilder::new()
+        .namespace(|_: &_| Err(ParseError::MissingNameSpace))
+        .build();
+    let parseresult2 = xml::parse_with_state(doc, pc2, ss);
 
     assert!(parseresult2.is_ok());
     assert_eq!(
@@ -419,14 +468,13 @@ fn parser_issue_132_full() {
     </xsl:stylesheet>
 "###;
 
-    let pc = ParserConfig::new();
-
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(testxml, doc, Some(pc));
+    let parseresult = xml::parse(
+        testxml,
+        doc,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+    );
 
-    if let Err(e) = &parseresult {
-        eprintln!("Parse error: {:?}", e)
-    };
     assert!(parseresult.is_ok());
 }
 
@@ -437,13 +485,17 @@ fn parser_issue_132_minimal() {
     </xsl:stylesheet>
 "###;
 
-    let pc = ParserConfig::new();
-
     let testxml = RNode::new_document();
-    let parseresult = xml::parse(testxml, doc, Some(pc));
+    let parseresult = xml::parse(
+        testxml,
+        doc,
+        Some(|p: &NamespacePrefix| {
+            Err(ParseError::NotWellFormed(format!(
+                "prefix: {}",
+                p.to_string()
+            )))
+        }),
+    );
 
-    if let Err(e) = &parseresult {
-        eprintln!("Parse error: {:?}", e)
-    };
     assert!(parseresult.is_ok());
 }
