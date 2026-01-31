@@ -1812,9 +1812,7 @@ where
     J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
-        r#"<test:Example xmlns:test="http://test.org">
-          <test:Title>XSLT in Rust<test:InnerTitle>is working ok!</test:InnerTitle></test:Title>
-        </test:Example>"#,
+        r#"<test:Example xmlns:test="http://test.org"><test:Title>XSLT in Rust<test:InnerTitle>is working ok!</test:InnerTitle></test:Title></test:Example>"#,
         r#"<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                         xmlns:test="http://test.org">
           <xsl:template match="test:Example">
