@@ -338,6 +338,24 @@ fn xslt_md_1() {
     .expect("test failed")
 }
 #[test]
+fn xslt_gl_issue_147_a() {
+    xsltgeneric::gl_issue_147_a(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_empty_doc_cooked,
+    )
+    .expect("test failed")
+}
+#[test]
+fn xslt_gl_issue_147_b() {
+    xsltgeneric::gl_issue_147_b(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_empty_doc_cooked,
+    )
+    .expect("test failed")
+}
+#[test]
 fn xslt_conform_1() {
     xsltgeneric::conform_1(
         smite::make_from_str,
