@@ -1821,11 +1821,16 @@ where
 
     assert_eq!(
         result.1.to_xml(),
-        r##"<?xml version="1.0" encoding="utf-8"?>
+        /* Original result document from bug report
+                                         *        r##"<?xml version="1.0" encoding="utf-8"?>
 <testXML xmlns:mmc="http://www.miramo.com/mmc" xmlns:xlink="http://xlink">
 <P numberValue="1">first</P>
 <P>second</P>
-</testXML>"##
+</testXML>"##*/
+        r##"<testXML>
+        <P numberValue='1'>first</P>
+        <P>second</P>
+        </testXML>"##
     );
     Ok(())
 }

@@ -438,6 +438,137 @@ where
     Ok(())
 }
 
+pub fn generic_issue_147_1<N: Node, G, H>(make_empty_doc: G, _make_doc: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    // Create a source document
+    let mut d = make_empty_doc();
+    let mut doc = d
+        .new_element(QName::from_local_name(NcName::try_from("doc").unwrap()))
+        .expect("unable to create element");
+    d.push(doc.clone()).expect("unable to add element");
+    let mut f = d
+        .new_element(QName::from_local_name(NcName::try_from("first").unwrap()))
+        .expect("unable to create element");
+    doc.push(f.clone()).expect("unable to add element");
+    let h = d
+        .new_element(QName::from_local_name(NcName::try_from("head").unwrap()))
+        .expect("unable to create element");
+    f.push(h.clone()).expect("unable to add element");
+    let l1 = d
+        .new_element(QName::from_local_name(
+            NcName::try_from("listitem").unwrap(),
+        ))
+        .expect("unable to create element");
+    doc.push(l1).expect("unable to add element");
+    let se = d
+        .new_element(QName::from_local_name(
+            NcName::try_from("something-else").unwrap(),
+        ))
+        .expect("unable to create element");
+    doc.push(se).expect("unable to add element");
+    let l2 = d
+        .new_element(QName::from_local_name(
+            NcName::try_from("listitem").unwrap(),
+        ))
+        .expect("unable to create element");
+    doc.push(l2).expect("unable to add element");
+    let mut l = d
+        .new_element(QName::from_local_name(NcName::try_from("last").unwrap()))
+        .expect("unable to create element");
+    doc.push(l.clone()).expect("unable to add element");
+    let t = d
+        .new_element(QName::from_local_name(NcName::try_from("tail").unwrap()))
+        .expect("unable to create element");
+    l.push(t.clone()).expect("unable to add element");
+
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+    let rd = make_empty_doc();
+    let result = ContextBuilder::new()
+        .context(vec![Item::Node(t)])
+        .result_document(rd)
+        .build()
+        .dispatch(
+            &mut stctxt,
+            &parse("../preceding-sibling::listitem", None, None)
+                .expect("unable to parse XPath expression"),
+        )
+        .expect("transform failed");
+    assert_eq!(result.len(), 2);
+    Ok(())
+}
+pub fn generic_issue_147_2<N: Node, G, H>(make_empty_doc: G, _make_doc: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    // Create a source document
+    let mut d = make_empty_doc();
+    let mut doc = d
+        .new_element(QName::from_local_name(NcName::try_from("doc").unwrap()))
+        .expect("unable to create element");
+    d.push(doc.clone()).expect("unable to add element");
+    let mut f = d
+        .new_element(QName::from_local_name(NcName::try_from("first").unwrap()))
+        .expect("unable to create element");
+    doc.push(f.clone()).expect("unable to add element");
+    let h = d
+        .new_element(QName::from_local_name(NcName::try_from("head").unwrap()))
+        .expect("unable to create element");
+    f.push(h.clone()).expect("unable to add element");
+    let l1 = d
+        .new_element(QName::from_local_name(
+            NcName::try_from("listitem").unwrap(),
+        ))
+        .expect("unable to create element");
+    doc.push(l1).expect("unable to add element");
+    let se = d
+        .new_element(QName::from_local_name(
+            NcName::try_from("something-else").unwrap(),
+        ))
+        .expect("unable to create element");
+    doc.push(se).expect("unable to add element");
+    let l2 = d
+        .new_element(QName::from_local_name(
+            NcName::try_from("listitem").unwrap(),
+        ))
+        .expect("unable to create element");
+    doc.push(l2).expect("unable to add element");
+    let mut l = d
+        .new_element(QName::from_local_name(NcName::try_from("last").unwrap()))
+        .expect("unable to create element");
+    doc.push(l.clone()).expect("unable to add element");
+    let t = d
+        .new_element(QName::from_local_name(NcName::try_from("tail").unwrap()))
+        .expect("unable to create element");
+    l.push(t.clone()).expect("unable to add element");
+
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+    let rd = make_empty_doc();
+    let result = ContextBuilder::new()
+        .context(vec![Item::Node(h)])
+        .result_document(rd)
+        .build()
+        .dispatch(
+            &mut stctxt,
+            &parse("../following-sibling::listitem", None, None)
+                .expect("unable to parse XPath expression"),
+        )
+        .expect("transform failed");
+    assert_eq!(result.len(), 2);
+    Ok(())
+}
+
 pub fn generic_step_parent_1<N: Node, G, H>(make_empty_doc: G, make_doc: H) -> Result<(), Error>
 where
     G: Fn() -> N,
