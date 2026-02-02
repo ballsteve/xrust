@@ -1822,7 +1822,7 @@ where
     assert_eq!(
         result.1.to_xml(),
         /* Original result document from bug report
-                                         *        r##"<?xml version="1.0" encoding="utf-8"?>
+                                                 *        r##"<?xml version="1.0" encoding="utf-8"?>
 <testXML xmlns:mmc="http://www.miramo.com/mmc" xmlns:xlink="http://xlink">
 <P numberValue="1">first</P>
 <P>second</P>
@@ -1846,8 +1846,29 @@ where
     J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
     let result = test_rig(
+        "<Example><Title>XSLT in Rust<InnerTitle>is working ok!</InnerTitle></Title></Example>",
+        r#"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+            <xsl:template match='Example'>
+                <example><xsl:apply-templates/></example>
+            </xsl:template>
+            <xsl:template match='Title'>
+                <title><xsl:apply-templates select='text()'/><xsl:apply-templates select='InnerTitle'/></title>
+            </xsl:template>
+            <xsl:template match='InnerTitle'>
+                <inner><xsl:apply-templates /></inner>
+            </xsl:template>
+        </xsl:stylesheet>
+"#,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    )?;
 
-    )
+    assert_eq!(
+        result.1.to_xml(),
+        r#"<example><title>XSLT in Rust<inner>is working ok!</inner></title></example>"#
+    );
+    Ok(())
 }
 
 pub fn gl_issue_147_b<N: Node, G, H, J>(
@@ -1860,6 +1881,36 @@ where
     H: Fn() -> Result<N, Error>,
     J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
 {
+    let result = test_rig(
+        r#"<test:Example xmlns:test="http://test.org"><test:Title>XSLT in Rust<test:InnerTitle>is working ok!</test:InnerTitle></test:Title></test:Example>"#,
+        r#"<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                        xmlns:test="http://test.org">
+          <xsl:template match="test:Example">
+            <example><xsl:apply-templates/></example>
+          </xsl:template>
+
+          <xsl:template match="test:Title">
+            <title>
+              <xsl:apply-templates select="text()"/>
+              <xsl:apply-templates select="test:InnerTitle"/>
+            </title>
+          </xsl:template>
+
+          <xsl:template match="test:InnerTitle">
+            <inner><xsl:apply-templates/></inner>
+          </xsl:template>
+        </xsl:stylesheet>
+"#,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    )?;
+
+    assert_eq!(
+        result.1.to_xml(),
+        r#"<example><title>XSLT in Rust<inner>is working ok!</inner></title></example>"#
+    );
+    Ok(())
 }
 
 pub fn conform_1<N: Node, G, H, J>(
