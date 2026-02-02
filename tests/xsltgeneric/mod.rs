@@ -1835,6 +1835,33 @@ where
     Ok(())
 }
 
+pub fn gl_issue_147_a<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
+{
+    let result = test_rig(
+
+    )
+}
+
+pub fn gl_issue_147_b<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Option<NamespaceMap>), Error>,
+{
+}
+
 pub fn conform_1<N: Node, G, H, J>(
     parse_from_str: G,
     parse_from_str_with_ns: J,
