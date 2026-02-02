@@ -356,7 +356,7 @@ fn xslt_glissue_147_a() {
     .expect("test failed")
 }
 #[test]
-fn xslt_glissue_147_b() {
+fn xslt_gl_issue_147_b() {
     xsltgeneric::gl_issue_147_b(
         smite::make_from_str,
         smite::make_from_str_with_ns,
