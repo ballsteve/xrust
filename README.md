@@ -20,11 +20,11 @@ In addition to the (rudimentary) implementation of the [XQuery and XPath Data Mo
 
 χrust is part of the [markup-rs](https://gitlab.gnome.org/World/Rust/markup-rs) family of projects providing support for the XML tech stack in Rust.
 
-The various modules in χrust are being slowly picked apart and moved into separate projects in the markup-rs group. The Qualified Name module was the first to undergo this transition, and is now the qualname crate.
+The various modules in χrust are being slowly picked apart and moved into separate projects in the markup-rs group. The [Qualified Name](https://gitlab.gnome.org/World/Rust/markup-rs/qualname) module was the first to undergo this transition, and is now the [qualname](https://crates.io/crates/qualname) crate.
 
 ## Canonical Repository
 
-Development of χrust takes place on [Gitlab](https://gitlab.gnome.org/World/Rust/markup-rs/xrust). The github repository is not mirrored (at the moment), so we try and keep the two repositories in sync.
+Development of χrust takes place on [Gitlab](https://gitlab.gnome.org/World/Rust/markup-rs/xrust). This repository is mirrored (pushed) to [Github](https://github.com/ballsteve/xrust).
 
 ## Version 2.0 Release Notes
 
@@ -55,7 +55,7 @@ This approach means that the XPath and XSLT modules are simply mappings from the
 The "Tree" is the fundamental data object for transformations.
 χrust provides a tree implementation, smite, that is both mutable and fully navigable.
 By "fully navigable" we mean that from any given node you can access its children, parent, siblings, or attributes.
-It achieves mutability by using the interior mutability pattern.
+It achieves mutability by using the interior mutability pattern ("smite" is an anagram of "tuple struct enum interior mutability").
 
 ### XML Namespaces
 
