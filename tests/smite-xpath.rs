@@ -35,6 +35,16 @@ fn xpath_step_attribute_2() {
         .expect("test failed")
 }
 #[test]
+fn xpath_issue_147_1() {
+    xpathgeneric::generic_issue_147_1::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
+#[test]
+fn xpath_issue_147_2() {
+    xpathgeneric::generic_issue_147_2::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
+#[test]
 fn xpath_step_wild_1() {
     xpathgeneric::generic_step_wild_1::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
         .expect("test failed")
