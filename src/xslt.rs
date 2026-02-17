@@ -539,16 +539,17 @@ where
             if im.to_string() != "" {
                 import = im.to_int()? as usize
             }
+            let mut qmode = None;
+            if let Some(modenode) = mode {
+                qmode = Some(modenode.to_qname(modenode.to_string())?)
+            }
             templates.push(Template::new(
                 pat,
                 Transform::SequenceItems(body),
                 Some(prio),
                 vec![import],
                 None,
-                mode.map(|n| {
-                    n.to_qname(n.to_string())
-                        .expect("unable to resolve qualified name")
-                }), // TODO: don't panic
+                qmode,
                 m.to_string(),
             ));
             Ok::<(), Error>(())
@@ -865,14 +866,19 @@ fn to_transform<N: Node>(
             } else if qn == *XSLAPPLYTEMPLATES {
                 let sel = n.get_attribute(&ATTRSELECT);
                 let m = n.get_attribute_node(&ATTRMODE);
+
+                // If a mode is specified then convert it to a QName.
+                // This may fail, so allow for an error result.
+                let mut qm = None;
+                if let Some(s) = m {
+                    qm = Some(n.to_qname(s.value().to_string())?)
+                }
+
                 let sort_keys = get_sort_keys(&n)?;
                 if !sel.to_string().is_empty() {
                     Ok(Transform::ApplyTemplates(
                         Box::new(parse::<N>(&sel.to_string(), Some(n.clone()), None)?),
-                        m.map(|s| {
-                            n.to_qname(s.value().to_string())
-                                .expect("unable to resolve qualified name")
-                        }),
+                        qm,
                         sort_keys,
                     )) // TODO: don't panic
                 } else {
@@ -882,10 +888,7 @@ fn to_transform<N: Node>(
                             Axis::Child,
                             NodeTest::Kind(KindTest::Any),
                         ))),
-                        m.map(|s| {
-                            n.to_qname(s.value().to_string())
-                                .expect("unable to resolve qualified name")
-                        }),
+                        qm,
                         sort_keys,
                     )) // TODO: don't panic
                 }
@@ -1361,18 +1364,19 @@ fn to_transform<N: Node>(
 
                 // Uh-oh! Parsing the stylesheet has thrown away all qualified name prefixes
                 // But there will be a namespace declaration, so recover it from there
-                let prefix: Option<Box<Transform<N>>> = u.as_ref().map_or(None, |nsuri| {
-                    n.namespace_iter()
+                let mut prefix = None;
+                if let Some(nsuri) = u.as_ref() {
+                    if let Some(p) = n
+                        .namespace_iter()
                         .find(|nsd| nsd.as_namespace_uri().unwrap() == nsuri)
-                        .unwrap()
-                        .as_namespace_prefix()
-                        .unwrap()
-                        .map(|p| {
-                            Box::new(Transform::Literal(Item::Value(Rc::new(Value::from(
-                                p.to_string(),
-                            )))))
-                        })
-                });
+                    {
+                        if let Some(pp) = p.as_namespace_prefix()? {
+                            prefix = Some(Box::new(Transform::Literal(Item::Value(Rc::new(
+                                Value::from(pp.to_string()),
+                            )))));
+                        }
+                    }
+                }
 
                 // Process @xsl:use-attribute-sets
                 let use_atts = n.get_attribute(&XSLATTRUSEATTRIBUTESETS);

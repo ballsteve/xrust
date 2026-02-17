@@ -105,6 +105,7 @@ Status of [standards implementation](https://gitlab.gnome.org/World/Rust/markup-
 
 | Releases      | Notes                                                                                    |
 |---------------|------------------------------------------------------------------------------------------|
+| Version 2.0.3 | Fix ambiguity in forward and reverse axis names. |
 | Version 2.0.2 | Rationalise and simplify use of QNames in NameTest. |
 | Version 2.0.1 | Bug fix for smite::namespace_iter(). |
 | Version 2.0.0 | Use qualname::QName to intern Qualified Names. Update all APIs to use QNames. Improve XML Namespace support. Improve error reporting. Upgrade benchmarks. |

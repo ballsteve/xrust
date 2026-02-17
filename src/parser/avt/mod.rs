@@ -89,7 +89,10 @@ where
         many0(alt2(
             map(many1(none_of("{")), |v| {
                 Transform::Literal(Item::Value(Rc::new(Value::from(
-                    v.iter().collect::<String>(),
+                    v.iter().fold(String::new(), |mut s, w| {
+                        s.push_str(w);
+                        s
+                    }), //.collect::<String>(),
                 ))))
             }),
             braced_expr(),

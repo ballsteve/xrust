@@ -76,7 +76,7 @@ pub(crate) fn general_comparison<
     let mut b = false;
     for i in left {
         for j in &right {
-            b = i.compare(j, *o).unwrap();
+            b = i.compare(j, *o)?;
             if b {
                 break;
             }

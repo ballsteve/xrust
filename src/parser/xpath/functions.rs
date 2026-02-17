@@ -2,6 +2,7 @@
 
 use crate::item::Node;
 use crate::parser::combinators::alt::alt2;
+//use crate::parser::combinators::debug::inspect;
 use crate::parser::combinators::list::separated_list0;
 use crate::parser::combinators::map::{map, map_with_state};
 use crate::parser::combinators::opt::opt;
@@ -9,8 +10,6 @@ use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::{tuple3, tuple6};
 use crate::parser::combinators::whitespace::xpwhitespace;
-use std::rc::Rc;
-//use crate::parser::combinators::debug::inspect;
 use crate::parser::xml::qname::qualname_to_qname;
 use crate::parser::xpath::expr_single_wrapper;
 use crate::parser::xpath::expressions::parenthesized_expr;
@@ -21,6 +20,7 @@ use crate::transform::callable::ActualParameters;
 use crate::transform::{NameTest, NodeTest, Transform, in_scope_namespaces};
 use crate::xdmerror::ErrorKind;
 use qualname::{NamespacePrefix, NamespaceUri};
+use std::rc::Rc;
 
 // ArrowExpr ::= UnaryExpr ( '=>' ArrowFunctionSpecifier ArgumentList)*
 pub(crate) fn arrow_expr<'a, N: Node + 'a, L>() -> Box<

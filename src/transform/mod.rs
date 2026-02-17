@@ -417,12 +417,11 @@ pub fn in_scope_namespaces<N: Node>(n: Option<N>) -> Rc<NamespaceMap> {
         Rc::new(nn.namespace_iter().fold(NamespaceMap::new(), |mut hm, ns| {
             hm.push(
                 NamespaceDeclaration::new(
-                    Some(
-                        NamespacePrefix::try_from(
-                            ns.name().unwrap().local_name().to_string().as_str(),
-                        )
-                        .unwrap(),
-                    ),
+                    // TODO: It's annoying to have to re-parse the prefix as a NamespacePrefix
+                    ns.name().map(|nsprefix| {
+                        NamespacePrefix::try_from(nsprefix.local_name().to_string().as_str())
+                            .unwrap()
+                    }),
                     NamespaceUri::try_from(ns.value().to_string().as_str()).unwrap(),
                 )
                 .unwrap(),

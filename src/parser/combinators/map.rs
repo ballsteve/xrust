@@ -53,3 +53,22 @@ where
         Err(err) => Err(err),
     }
 }
+
+pub fn map_with_state_and_result<'a, P, F, A, B, N: Node, L>(
+    parser: P,
+    map_fn: F,
+) -> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, B), ParseError>
+//-> impl Fn(ParseInput<N>)-> Result<(String, usize, B), usize>
+where
+    P: Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, A), ParseError>,
+    F: Fn(A, ParserState<N>, &mut StaticState<L>) -> Result<B, ParseError>,
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
+    move |input, ss| match parser(input, ss) {
+        Ok((input2, result)) => match map_fn(result, input2.1.clone(), ss) {
+            Ok(b) => Ok(((input2.0, input2.1.clone()), b)),
+            Err(err) => Err(err),
+        },
+        Err(err) => Err(err),
+    }
+}

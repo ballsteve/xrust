@@ -200,6 +200,10 @@ impl<N: Node> Context<N> {
     pub fn callable_push(&mut self, qn: QName, c: Callable<N>) {
         self.callables.insert(qn, c);
     }
+    /// Find the callable component with the given QName
+    pub fn callable_get(&self, qn: &QName) -> Option<Callable<N>> {
+        self.callables.get(qn).cloned()
+    }
 
     /// Returns the Base URL.
     #[allow(dead_code)]

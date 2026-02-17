@@ -58,23 +58,23 @@ where
         ),
         |(_, c, _p1, _p2, _w, _)| {
             match c {
-                'Y' => String::from("%Y"),
-                'M' => String::from("%m"),
-                'D' => String::from("%d"),
-                'd' => String::from("%j"),
-                'F' => String::from("%A"),
-                'W' => String::from("%U"),
-                'w' => String::from(""), // not supported
-                'H' => String::from("%H"),
-                'h' => String::from("%I"),
-                'P' => String::from("%P"),
-                'm' => String::from("%M"),
-                's' => String::from("%S"),
-                'f' => String::from("%f"),
-                'Z' => String::from("%Z"),
-                'z' => String::from("%:z"), // partial support
-                'C' => String::from(""),    // not supported
-                'E' => String::from(""),    // not supported
+                "Y" => String::from("%Y"),
+                "M" => String::from("%m"),
+                "D" => String::from("%d"),
+                "d" => String::from("%j"),
+                "F" => String::from("%A"),
+                "W" => String::from("%U"),
+                "w" => String::from(""), // not supported
+                "H" => String::from("%H"),
+                "h" => String::from("%I"),
+                "P" => String::from("%P"),
+                "m" => String::from("%M"),
+                "s" => String::from("%S"),
+                "f" => String::from("%f"),
+                "Z" => String::from("%Z"),
+                "z" => String::from("%:z"), // partial support
+                "C" => String::from(""),    // not supported
+                "E" => String::from(""),    // not supported
                 _ => String::from(""),      // error
             }
         },

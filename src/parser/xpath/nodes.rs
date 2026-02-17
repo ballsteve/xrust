@@ -321,14 +321,14 @@ where
                 alt2(
                     alt4(
                         map(tag("child"), |_| "child"),
-                        map(tag("descendant"), |_| "descendant"),
                         map(tag("descendant-or-self"), |_| "descendant-or-self"),
+                        map(tag("descendant"), |_| "descendant"),
                         map(tag("attribute"), |_| "attribute"),
                     ),
                     alt4(
                         map(tag("self"), |_| "self"),
-                        map(tag("following"), |_| "following"),
                         map(tag("following-sibling"), |_| "following-sibling"),
+                        map(tag("following"), |_| "following"),
                         map(tag("namespace"), |_| "namespace"),
                     ),
                 ),
@@ -357,10 +357,10 @@ where
             // need alt8
             alt5(
                 map(tag("parent"), |_| "parent"),
-                map(tag("ancestor"), |_| "ancestor"),
                 map(tag("ancestor-or-self"), |_| "ancestor-or-self"),
-                map(tag("preceding"), |_| "preceding"),
+                map(tag("ancestor"), |_| "ancestor"),
                 map(tag("preceding-sibling"), |_| "preceding-sibling"),
+                map(tag("preceding"), |_| "preceding"),
             ),
             tag("::"),
         ),
