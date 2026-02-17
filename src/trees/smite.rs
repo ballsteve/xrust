@@ -1202,8 +1202,8 @@ fn doc_order(n: &RNode) -> Vec<usize> {
         | NodeInner::Comment(p, _)
         | NodeInner::ProcessingInstruction(p, _, _) => match Weak::upgrade(&p.borrow()) {
             Some(q) => {
-                let idx = find_index(&q, n)
-                    .unwrap_or(0); // TODO: this may occur in a temporary tree
+                // TODO: this may occur in a temporary tree
+                let idx = find_index(&q, n).unwrap_or(0);
                 //.expect("unable to locate node in parent");
                 let mut a = doc_order(&q);
                 a.push(idx + 2);
@@ -1488,17 +1488,14 @@ impl Siblings {
     fn new(n: &RNode, dir: i32) -> Self {
         match n.parent() {
             Some(p) => {
-                find_index(&p, n).map_or_else(|_| {
-                    // Something has gone wrong, so iterator will just return None
-                    // TODO: improve handling of this situation - e.g. current node is an attribute
-                    Siblings(n.clone(), 0, -1)
-                }, |i| {
-                    Siblings(
-                    p.clone(),
-                    i,
-                    dir,
+                find_index(&p, n).map_or_else(
+                    |_| {
+                        // Something has gone wrong, so iterator will just return None
+                        // TODO: improve handling of this situation - e.g. current node is an attribute
+                        Siblings(n.clone(), 0, -1)
+                    },
+                    |i| Siblings(p.clone(), i, dir),
                 )
-                })
             }
             None => {
                 // Document nodes don't have siblings
