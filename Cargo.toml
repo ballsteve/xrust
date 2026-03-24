@@ -32,6 +32,8 @@ harness = false
 [dependencies]
 #qualname = { path = "../qualname" }
 qualname = "0.0.1"
+#xrust-sec = "0.0.1"
+#xrust-sec = { path = "../xrust-sec" }
 rust_decimal = "1.38.0"
 rust_decimal_macros = "1.38.0"
 lexers = "0.1.4"

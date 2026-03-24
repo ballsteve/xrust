@@ -14,9 +14,9 @@ use crate::item::{Node, Sequence};
 use crate::output::OutputDefinition;
 #[allow(unused_imports)]
 use crate::pattern::Pattern;
-use crate::transform::Transform;
+use crate::security::{Feature, Policy, SecurityResult};
 use crate::transform::booleans::*;
-use crate::transform::callable::{Callable, invoke};
+use crate::transform::callable::{ActualParameters, Callable, invoke};
 use crate::transform::construct::*;
 use crate::transform::controlflow::*;
 use crate::transform::datetime::*;
@@ -30,18 +30,26 @@ use crate::transform::numbers::*;
 use crate::transform::strings::*;
 use crate::transform::template::{Template, apply_imports, apply_templates, next_match};
 use crate::transform::variables::{declare_variable, reference_variable};
+use crate::transform::{MAXDEPTH, Transform};
 use crate::xdmerror::Error;
 use crate::{ErrorKind, Item, SequenceTrait, Value};
-use qualname::{NamespaceMap, QName};
+use qualname::{NamespaceMap, NamespaceUri, NcName, QName};
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::rc::Rc;
+use std::sync::LazyLock;
 use url::Url;
 
 /// The transformation context. This is the dynamic context.
 /// The static parts of the context are in a separate structure.
 /// Contexts are immutable, but frequently are cloned to provide a new context.
 /// Although it is optional, it would be very unusual not to set a result document in a context since nodes cannot be created in the result without one.
+/// ## Security
+/// Certain security features are provided, as detailed below. These may be set by a security policy, see [χrust Security](https://gitlab.gnome.org/balls/xrust-sec)
+/// ### Evaluation Depth
+/// The depth of evaluation may be limited to prevent an infinite loop.
+/// Feature: Q{http://gitlab.gnome.org/World/Rust/markup-rs/xrust/transform}maximum-depth
+/// Security Result: NotPermitted - Use default value; Permitted - no limit; Value - number is maximum evaluation depth.
 #[derive(Clone, Debug)]
 pub struct Context<N: Node> {
     pub(crate) context: Sequence<N>,          // The (outer) context
@@ -50,7 +58,8 @@ pub struct Context<N: Node> {
     pub(crate) current: Sequence<N>,
     pub(crate) current_item: Option<Item<N>>, // The "current" XPath item, which is really the context item for the invoking context. See XSLT 20.4.1.
     pub(crate) depth: usize,                  // Depth of evaluation
-    pub(crate) rd: Option<N>,                 // Result document
+    pub(crate) max_depth: Option<usize>, // Maximum allowed evaluation depth. None means no limit.
+    pub(crate) rd: Option<N>,            // Result document
     // There is no distinction between built-in and user-defined templates
     // Built-in templates have no priority and no document order
     pub(crate) templates: Vec<Rc<Template<N>>>,
@@ -78,6 +87,8 @@ pub struct Context<N: Node> {
     // then these URI -> prefix mappings may be used. These are usually derived from the stylesheet document.
     // The search order is: Namespace declarations in the source document; namespace declarations in the result document; this NamespaceMap.
     pub(crate) namespaces: Option<Rc<NamespaceMap>>,
+    // The security policy in force
+    policy: Option<Rc<Policy<N>>>,
 }
 impl<N: Node> Default for Context<N> {
     fn default() -> Self {
@@ -94,6 +105,7 @@ impl<N: Node> Context<N> {
             context_item: None,
             current_item: None,
             depth: 0,
+            max_depth: Some(MAXDEPTH),
             rd: None,
             templates: vec![],
             current_templates: vec![],
@@ -107,6 +119,7 @@ impl<N: Node> Context<N> {
             od: OutputDefinition::new(),
             base_url: None,
             namespaces: None,
+            policy: None,
         }
     }
     /// Sets the outer context and the context item.
@@ -214,6 +227,39 @@ impl<N: Node> Context<N> {
     #[allow(dead_code)]
     fn set_baseurl(&mut self, url: Url) {
         self.base_url = Some(url);
+    }
+
+    /// Set the in-force security policy.
+    /// Returns an error if calculating security feature values fail.
+    pub fn policy(&mut self, policy: Rc<Policy<N>>) -> Result<(), Error> {
+        // Re-calculate all cached security-related values
+        match policy.get(&*MAXDEPTH_QNAME, ActualParameters::Named(vec![]))? {
+            SecurityResult::NotPermitted => self.max_depth = Some(MAXDEPTH),
+            SecurityResult::Permitted(None) => self.max_depth = None,
+            SecurityResult::Permitted(Some(v)) => {
+                self.max_depth = Some(
+                    v.parse::<usize>()
+                        .map_err(|_| Error::new(ErrorKind::ParseError, "not a number"))?,
+                )
+            }
+        }
+
+        self.policy = Some(policy);
+
+        Ok(())
+    }
+    // Return the value of a security feature.
+    // This will be determined by an in-force security policy.
+    // If there is no security policy in force, then the feature is either not permitted or this library must supply a default value.
+    fn security_feature(&self, f: &QName, a: ActualParameters<N>) -> Result<SecurityResult, Error> {
+        if *f == *MAXDEPTH_QNAME {
+            self.policy
+                .as_ref()
+                .map_or_else(|| Ok(SecurityResult::NotPermitted), |p| p.get(f, a))
+        } else {
+            // Unknown feature, so default to not permitted
+            Ok(SecurityResult::NotPermitted)
+        }
     }
 
     // Does the work of evaluating the context,
@@ -579,6 +625,7 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
             current_item: None,
             current: Sequence::new(),
             depth: 0,
+            max_depth: Some(MAXDEPTH),
             rd: None,
             templates: vec![],
             current_templates: vec![],
@@ -592,6 +639,7 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
             od: OutputDefinition::new(),
             base_url: None,
             namespaces: None,
+            policy: None,
         }
     }
 }
@@ -642,6 +690,11 @@ impl<N: Node> ContextBuilder<N> {
         self.0.depth = d;
         self
     }
+    /// Set the maximum depth of evaluation. None means no limit.
+    pub fn maximum_depth(mut self, m: Option<usize>) -> Self {
+        self.0.max_depth = m;
+        self
+    }
     pub fn variable(mut self, n: String, v: Sequence<N>) -> Self {
         self.0.var_push(n, v);
         self
@@ -690,6 +743,11 @@ impl<N: Node> ContextBuilder<N> {
     }
     pub fn namespaces(mut self, nm: NamespaceMap) -> Self {
         self.0.namespaces = Some(Rc::new(nm));
+        self
+    }
+    /// Set the in-force security policy
+    pub fn policy(mut self, p: Rc<Policy<N>>) -> Self {
+        self.0.policy = Some(p);
         self
     }
     pub fn build(self) -> Context<N> {
@@ -831,3 +889,17 @@ where
         self.0
     }
 }
+
+/// Qualified Name (QName) for security features
+static TRANSFORMNS: LazyLock<Option<NamespaceUri>> = LazyLock::new(|| {
+    Some(
+        NamespaceUri::try_from("http://gitlab.gnome.org/World/Rust/markup-rs/xrust/transform")
+            .unwrap(),
+    )
+});
+static MAXDEPTH_QNAME: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(
+        NcName::try_from("maximum-depth").unwrap(),
+        TRANSFORMNS.clone(),
+    )
+});

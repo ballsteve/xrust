@@ -39,7 +39,7 @@ pub enum ActualParameters<N: Node> {
 }
 
 /// Invoke a callable component
-pub(crate) fn invoke<
+pub fn invoke<
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
