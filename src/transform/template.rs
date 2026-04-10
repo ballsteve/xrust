@@ -135,11 +135,24 @@ pub(crate) fn apply_templates<
         } else {
             templates[0].clone()
         };
+
+        // Check that the maximum depth limit will not be exceeded,
+        // if there is one set
+
+        if let Some(md) = ctxt.max_depth {
+            if md == ctxt.depth {
+                return Err(Error::new(
+                    crate::ErrorKind::LimitExceeded,
+                    format!("exceeded evaluation depth ({})", ctxt.depth),
+                ));
+            }
+        }
         // Create a new context using the current templates, then evaluate the highest priority and highest import precedence
         let mut u = ContextBuilder::from(ctxt)
             .context(vec![i.clone()])
             .context_item(Some(i.clone()))
             .current_templates(templates)
+            .depth(ctxt.depth + 1)
             .build()
             .dispatch(stctxt, &matching.body)?;
         result.append(&mut u);

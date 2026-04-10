@@ -36,6 +36,9 @@ pub enum ErrorKind {
     ParseError,
     /// SXXP0003 - attribute declared more than once
     DuplicateAttribute,
+    /// XPDY0130
+    LimitExceeded,
+    NotPermitted,
     Unknown,
 }
 impl ErrorKind {
@@ -58,6 +61,8 @@ impl ErrorKind {
             ErrorKind::Unknown => "unknown",
             ErrorKind::ParseError => "XML Parse error",
             ErrorKind::DuplicateAttribute => "XML parse error - attribute declared more than once",
+            ErrorKind::LimitExceeded => "implementation-defined limit exceeded",
+            ErrorKind::NotPermitted => "not permitted",
         }
     }
 }

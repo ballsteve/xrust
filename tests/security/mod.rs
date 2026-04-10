@@ -2,6 +2,7 @@
 
 use qualname::{NcName, QName};
 use std::rc::Rc;
+use xrust::ErrorKind;
 use xrust::item::{Item, Node};
 use xrust::pattern::Pattern;
 use xrust::transform::context::{ContextBuilder, StaticContext, StaticContextBuilder};
@@ -106,10 +107,18 @@ where
         .build();
 
     let mut src_doc = make_empty_doc();
-    let top = src_doc
+    let mut top1 = src_doc
         .new_element(QName::from_local_name(NcName::try_from("Top").unwrap()))
         .expect("unable to create element");
-    src_doc.push(top).expect("unable to add element");
+    src_doc.push(top1.clone()).expect("unable to add element");
+    let mut top2 = src_doc
+        .new_element(QName::from_local_name(NcName::try_from("Top").unwrap()))
+        .expect("unable to create element");
+    top1.push(top2.clone()).expect("unable to add element");
+    let top3 = src_doc
+        .new_element(QName::from_local_name(NcName::try_from("Top").unwrap()))
+        .expect("unable to create element");
+    top2.push(top3.clone()).expect("unable to add element");
 
     let x = Transform::ApplyTemplates(Box::new(Transform::Root), None, vec![]);
     let ctxt = ContextBuilder::new()
@@ -117,10 +126,18 @@ where
             // pattern "Top"
             Pattern::try_from("child::Top").expect("unable to create Pattern for \"child::Top\""),
             Transform::ApplyTemplates(Box::new(Transform::ContextItem), None, vec![]), // infinite loop
-            Some(0.0),                                                                 // priority
-            vec![0],                                                                   // import
-            Some(1), // document order
-            None,    // mode
+            /*Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ),*/
+            Some(0.0), // priority
+            vec![0],   // import
+            Some(1),   // document order
+            None,      // mode
             String::from("child::Test"),
         ))
         .template(Template::new(
@@ -153,5 +170,13 @@ where
         ))
         .context(vec![Item::Node(src_doc)])
         .build();
-    ctxt.dispatch(&mut stctxt, &x).map(|_| ())
+    if ctxt
+        .dispatch(&mut stctxt, &x)
+        .map(|_| ())
+        .is_err_and(|e| e.kind == ErrorKind::LimitExceeded)
+    {
+        Ok(())
+    } else {
+        panic!("failed to fail")
+    }
 }
