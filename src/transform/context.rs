@@ -233,16 +233,7 @@ impl<N: Node> Context<N> {
     /// Returns an error if calculating security feature values fail.
     pub fn policy(&mut self, policy: Rc<Policy<N>>) -> Result<(), Error> {
         // Re-calculate all cached security-related values
-        match policy.get(&*MAXDEPTH_QNAME, ActualParameters::Named(vec![]))? {
-            SecurityResult::NotPermitted => self.max_depth = Some(MAXDEPTH),
-            SecurityResult::Permitted(None) => self.max_depth = None,
-            SecurityResult::Permitted(Some(v)) => {
-                self.max_depth = Some(
-                    v.parse::<usize>()
-                        .map_err(|_| Error::new(ErrorKind::ParseError, "not a number"))?,
-                )
-            }
-        }
+        calculate_features(self, &policy)?;
 
         self.policy = Some(policy);
 
@@ -611,6 +602,20 @@ impl<N: Node> Context<N> {
     }
 }
 
+fn calculate_features<N: Node>(ctxt: &mut Context<N>, policy: &Rc<Policy<N>>) -> Result<(), Error> {
+    match policy.get(&*MAXDEPTH_QNAME, ActualParameters::Named(vec![]))? {
+        SecurityResult::NotPermitted => ctxt.max_depth = Some(MAXDEPTH),
+        SecurityResult::Permitted(None) => ctxt.max_depth = None,
+        SecurityResult::Permitted(Some(v)) => {
+            ctxt.max_depth = Some(
+                v.parse::<usize>()
+                    .map_err(|_| Error::new(ErrorKind::ParseError, "not a number"))?,
+            )
+        }
+    }
+    Ok(())
+}
+
 impl<N: Node> From<Sequence<N>> for Context<N> {
     fn from(value: Sequence<N>) -> Self {
         let ci = if value.is_empty() {
@@ -746,9 +751,10 @@ impl<N: Node> ContextBuilder<N> {
         self
     }
     /// Set the in-force security policy
-    pub fn policy(mut self, p: Rc<Policy<N>>) -> Self {
+    pub fn policy(mut self, p: Rc<Policy<N>>) -> Result<Self, Error> {
+        calculate_features(&mut self.0, &p)?;
         self.0.policy = Some(p);
-        self
+        Ok(self)
     }
     pub fn build(self) -> Context<N> {
         self.0
