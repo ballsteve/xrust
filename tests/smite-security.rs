@@ -11,3 +11,7 @@ fn security_max_depth_np_1() {
 fn security_max_depth_np_2() {
     security::max_depth_np_2(smite::make_empty_doc).expect("test failed")
 }
+#[test]
+fn security_max_depth_pol_none() {
+    security::max_depth_pol_none(smite::make_empty_doc).expect("test failed")
+}
