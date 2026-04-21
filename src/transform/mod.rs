@@ -966,4 +966,4 @@ impl From<String> for ArithmeticOperator {
 
 /// The default maximum depth of apply templates.
 /// A security policy may, indeed should, change this.
-pub(crate) const MAXDEPTH: usize = 250;
+pub(crate) const MAXDEPTH: usize = 200;

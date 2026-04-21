@@ -6,11 +6,12 @@ use xrust::ErrorKind;
 use xrust::item::{Item, Node};
 use xrust::pattern::Pattern;
 use xrust::security::{Feature, Policy};
-use xrust::transform::context::{ContextBuilder, StaticContext, StaticContextBuilder};
+use xrust::transform::context::{ContextBuilder, StaticContextBuilder};
 use xrust::transform::template::Template;
 use xrust::transform::{Axis, KindTest, NodeMatch, NodeTest, Transform};
 use xrust::value::Value;
 use xrust::xdmerror::Error;
+use xrust::xslt::from_document;
 
 // Max Depth feature not set - will use default.
 // Small number of evaluations (1), should pass.
@@ -503,6 +504,75 @@ where
         .build();
     if ctxt
         .dispatch(&mut stctxt, &x)
+        .map(|_| ())
+        .is_err_and(|e| e.kind == ErrorKind::LimitExceeded)
+    {
+        Ok(())
+    } else {
+        panic!("failed to fail")
+    }
+}
+
+// Call a named template in an inifinite recursion, should error.
+pub fn max_depth_callable_1<N: Node, G, H>(make_empty_doc: G, make_from_str: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn(&str) -> Result<N, Error>,
+{
+    let styledoc = make_from_str(
+        "<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+<xsl:template name='recurse'>
+  <xsl:param name='count' select='0'/>
+  <xsl:message>recurse called <xsl:sequence select='$count'/> times</xsl:message>
+  <xsl:choose>
+    <xsl:when test='$count lt 250'>
+      <xsl:call-template name='recurse'>
+        <xsl:with-param name='count' select='$count + 1'/>
+      </xsl:call-template>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:message>reached 250 recursions</xsl:message>
+    </xsl:otherwise>
+  </xsl:choose>
+</xsl:template>
+<xsl:template match='/'>
+  <xsl:call-template name='recurse'>
+    <xsl:with-param name='count' select='1'/>
+  </xsl:call-template>
+</xsl:template>
+</xsl:stylesheet>",
+    )
+    .map_err(|e| Error::new(e.kind, format!("error parsing stylesheet: {}", e.message)))?;
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|m| {
+            eprintln!("{}", m);
+            Ok(())
+        })
+        .fetcher(|_| {
+            Err(Error::new(
+                xrust::ErrorKind::NotImplemented,
+                "not implemented",
+            ))
+        })
+        .parser(|_| {
+            Err(Error::new(
+                xrust::ErrorKind::NotImplemented,
+                "not implemented",
+            ))
+        })
+        .build();
+
+    let mut src_doc = make_empty_doc();
+    let top = src_doc
+        .new_element(QName::from_local_name(NcName::try_from("Top").unwrap()))
+        .expect("unable to create element");
+    src_doc.push(top.clone()).expect("unable to add element");
+
+    let mut ctxt = from_document(styledoc, None, |s| make_from_str(s), |_| Ok(String::new()))?;
+    ctxt.context(vec![Item::Node(src_doc.clone())], 0);
+
+    if ctxt
+        .evaluate(&mut stctxt)
         .map(|_| ())
         .is_err_and(|e| e.kind == ErrorKind::LimitExceeded)
     {

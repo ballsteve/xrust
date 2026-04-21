@@ -51,16 +51,12 @@ pub fn invoke<
     a: &ActualParameters<N>,
     _ns: &NamespaceMap,
 ) -> Result<Sequence<N>, Error> {
-    /*let mut qnr = qn.clone();
-    qnr.resolve(|p| {
-        ns.get(&p).map_or(
-            Err(Error::new(
-                ErrorKind::DynamicAbsent,
-                "no namespace for prefix",
-            )),
-            |r| Ok(r.clone()),
-        )
-    })?;*/
+    eprintln!(
+        "calling {} at depth {} max {:?}",
+        qn.to_string(),
+        ctxt.depth,
+        ctxt.max_depth
+    );
     match ctxt.callables.get(qn) {
         Some(t) => {
             match &t.parameters {
@@ -94,6 +90,28 @@ pub fn invoke<
                             }
                         }
                     })?;
+
+                    // Check that the maximum depth limit will not be exceeded,
+                    // if there is one set
+
+                    if let Some(md) = ctxt.max_depth {
+                        eprintln!(
+                            "comparing depth {} to max {} - {}",
+                            ctxt.depth,
+                            md,
+                            md == ctxt.depth
+                        );
+                        if md == ctxt.depth {
+                            return Err(Error::new(
+                                crate::ErrorKind::LimitExceeded,
+                                format!("exceeded evaluation depth ({})", ctxt.depth),
+                            ));
+                        }
+                    } else {
+                        eprintln!("no depth limit")
+                    }
+                    newctxt.depth = ctxt.depth + 1;
+
                     newctxt.dispatch(stctxt, &t.body)
                 }
                 FormalParameters::Positional(v) => {
@@ -105,6 +123,20 @@ pub fn invoke<
                                 newctxt.var_push(qn.to_string(), ctxt.dispatch(stctxt, t)?);
                                 Ok(())
                             })?;
+
+                            // Check that the maximum depth limit will not be exceeded,
+                            // if there is one set
+
+                            if let Some(md) = ctxt.max_depth {
+                                if md == ctxt.depth {
+                                    return Err(Error::new(
+                                        crate::ErrorKind::LimitExceeded,
+                                        format!("exceeded evaluation depth ({})", ctxt.depth),
+                                    ));
+                                }
+                            }
+                            newctxt.depth = ctxt.depth + 1;
+
                             newctxt.dispatch(stctxt, &t.body)
                         } else {
                             Err(Error::new(ErrorKind::TypeError, "argument mismatch"))
