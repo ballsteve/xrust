@@ -128,18 +128,10 @@ where
             // pattern "Top"
             Pattern::try_from("child::Top").expect("unable to create Pattern for \"child::Top\""),
             Transform::ApplyTemplates(Box::new(Transform::ContextItem), None, vec![]), // infinite loop
-            /*Transform::ApplyTemplates(
-                Box::new(Transform::Step(NodeMatch {
-                    axis: Axis::Child,
-                    nodetest: NodeTest::Kind(KindTest::Any),
-                })),
-                None,
-                vec![],
-            ),*/
-            Some(0.0), // priority
-            vec![0],   // import
-            Some(1),   // document order
-            None,      // mode
+            Some(0.0),                                                                 // priority
+            vec![0],                                                                   // import
+            Some(1), // document order
+            None,    // mode
             String::from("child::Test"),
         ))
         .template(Template::new(
@@ -425,7 +417,7 @@ where
         .expect("unable to create element");
     src_doc.push(top.clone()).expect("unable to add element");
     // make iteration less than feature value
-    for _ in 0..150 {
+    for _ in 0..1150 {
         let nxt = src_doc
             .new_element(QName::from_local_name(NcName::try_from("Top").unwrap()))
             .expect("unable to create element");
@@ -447,7 +439,7 @@ where
             ),
         ),
         Feature::Permitted(Some(Transform::Literal(Item::Value(Rc::new(Value::from(
-            100,
+            1000,
         )))))),
     );
 
