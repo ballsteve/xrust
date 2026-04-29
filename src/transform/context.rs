@@ -10,6 +10,8 @@ A [Context] is used to evaluate a [Transform]. The evaluate method matches the c
 
  */
 
+use stacksafe::stacksafe;
+
 use crate::item::{Node, Sequence};
 use crate::output::OutputDefinition;
 #[allow(unused_imports)]
@@ -492,6 +494,7 @@ impl<N: Node> Context<N> {
     /// let sequence = context.dispatch(&mut stctxt, &t).expect("evaluation failed");
     /// assert_eq!(sequence.to_xml(), "<Example/>")
     /// ```
+    #[stacksafe]
     pub fn dispatch<
         F: FnMut(&str) -> Result<(), Error>,
         G: FnMut(&str) -> Result<N, Error>,
