@@ -17,11 +17,10 @@
 
 use std::collections::HashMap;
 
-use crate::item::{Item, Node, SequenceTrait};
+use crate::item::{Node, SequenceTrait};
 use crate::transform::Transform;
 use crate::transform::callable::ActualParameters;
 use crate::transform::context::{Context, StaticContextBuilder};
-use crate::value::{Value, ValueData};
 use crate::xdmerror::{Error, ErrorKind};
 use qualname::QName;
 
@@ -177,8 +176,9 @@ impl<N: Node> Feature<N> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::item::Item;
     use crate::trees::nullo::Nullo;
-    use qualname::{NamespaceUri, NcName};
+    use crate::value::Value;
     use std::rc::Rc;
 
     #[test]

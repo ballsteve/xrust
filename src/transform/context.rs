@@ -16,7 +16,7 @@ use crate::item::{Node, Sequence};
 use crate::output::OutputDefinition;
 #[allow(unused_imports)]
 use crate::pattern::Pattern;
-use crate::security::{Feature, Policy, SecurityResult};
+use crate::security::{Policy, SecurityResult};
 use crate::transform::booleans::*;
 use crate::transform::callable::{ActualParameters, Callable, invoke};
 use crate::transform::construct::*;

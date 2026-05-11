@@ -51,12 +51,6 @@ pub fn invoke<
     a: &ActualParameters<N>,
     _ns: &NamespaceMap,
 ) -> Result<Sequence<N>, Error> {
-    eprintln!(
-        "calling {} at depth {} max {:?}",
-        qn.to_string(),
-        ctxt.depth,
-        ctxt.max_depth
-    );
     match ctxt.callables.get(qn) {
         Some(t) => {
             match &t.parameters {
@@ -95,20 +89,12 @@ pub fn invoke<
                     // if there is one set
 
                     if let Some(md) = ctxt.max_depth {
-                        eprintln!(
-                            "comparing depth {} to max {} - {}",
-                            ctxt.depth,
-                            md,
-                            md == ctxt.depth
-                        );
                         if md == ctxt.depth {
                             return Err(Error::new(
                                 crate::ErrorKind::LimitExceeded,
                                 format!("exceeded evaluation depth ({})", ctxt.depth),
                             ));
                         }
-                    } else {
-                        eprintln!("no depth limit")
                     }
                     newctxt.depth = ctxt.depth + 1;
 
