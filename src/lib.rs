@@ -95,5 +95,7 @@ pub use transform::template::Template;
 
 pub mod trees;
 
+pub mod security;
+
 pub mod testutils;
 pub mod validators;
