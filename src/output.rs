@@ -55,7 +55,7 @@ impl fmt::Display for OutputDefinition {
     }
 }
 
-/// Directive for how to treat a [Value] upon serialisation.
+/// Directive for how to treat a [Value](crate::value::Value) upon serialisation.
 #[derive(Clone, Debug, PartialEq)]
 pub enum OutputSpec {
     Normal,

@@ -50,7 +50,10 @@ use url::Url;
 /// Certain security features are provided, as detailed below. These may be set by a security policy, see [χrust Security](https://gitlab.gnome.org/balls/xrust-sec)
 /// ### Evaluation Depth
 /// The depth of evaluation may be limited to prevent an infinite loop.
-/// Feature: Q{http://gitlab.gnome.org/World/Rust/markup-rs/xrust/transform}maximum-depth
+/// Feature URI:
+///```xslt
+/// Q{http://gitlab.gnome.org/World/Rust/markup-rs/xrust/transform}maximum-depth
+///```
 /// Security Result: NotPermitted - Use default value; Permitted - no limit; Value - number is maximum evaluation depth.
 #[derive(Clone, Debug)]
 pub struct Context<N: Node> {
@@ -681,7 +684,7 @@ impl<N: Node> ContextBuilder<N> {
         self.0.i = i;
         self
     }
-    /// Sets the context item. This is usually context[index], but not always so this is not checked.
+    /// Sets the context item. This is usually context\[index\], but not always so this is not checked.
     pub fn context_item(mut self, c: Option<Item<N>>) -> Self {
         self.0.context_item = c;
         self

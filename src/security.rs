@@ -1,19 +1,61 @@
 //! Support for security policies.
 //!
 //! A security policy allows a module to limit, or constrain, access to a resource.
-//! The resource is named, and the module will call into the in-force policy to retrieve the limitation set on the resource.
-//! The module may provide acctual parameters to the policy feature, refer to the module's documentation for details.
+//! The resource is named, using a [QName], and the module will call into the in-force policy to retrieve the limitation set on the resource.
 //! The limitation is returned as a [SecurityResult].
+//! The module may provide [ActualParameters] to the feature, refer to the module's documentation for details.
+//!
+//! ```rust
+//! # use std::rc::Rc;
+//! use xrust::security::{SecurityResult, Policy, Feature};
+//! use xrust::item::Item;
+//! use xrust::value::Value;
+//! use xrust::transform::Transform;
+//! use xrust::transform::callable::ActualParameters;
+//! use qualname::{QName, NcName};
+//!
+//! fn get_feature<N: Node>(policy: &Policy<N>) -> Result<Option<String>, Error> {
+//!    match policy.get(
+//!       QName::from_local_name(NcName::try_from("my_security_feature").unwrap()),
+//!       ActualParameters::Named(vec![
+//!          (QName::from_local_name(NcName::try_from("input").unwrap()),
+//!           Transform::Literal(Item::Value(Rc::new(Value::from("value")))))
+//!       ])
+//!    )? {
+//!        SecurityResult::NotPermitted => Err(Error::new(ErrorKind::NotPermitted, "access denied")),
+//!        SecurityResult::Permitted(None) => Ok(None),
+//!        SecurityResult::Permitted(Some(v)) => Some(v),
+//!    }
+//! }
+//! ```
+//!
+//! If a policy does not define a limit or constraint for a resource,
+//! then the module will define a default value. The module should set a default that has minimal security implications for the application.
+//! Most likely this will be to deny access to the resource.
 //!
 //! Security policies are named. Many named policies can be loaded into the system.
 //! The application can nominate which policy it wants to be in force ("activated").
 //!
-//! If a policy does not define a limit or constraint for a resource,
-//! then the module will define a default policy. The module should set a default that has minimal security implications for the application.
-//! Most likely this will be to deny access to the resource.
-//!
 //! Resource constraints may be specified either as an absolute value or with a template.
 //! Templates use the same syntax as XSLT templates.
+//!
+//! In this example, a security policy is created with the feature set to "permitted with no limits".
+//!
+//! ```rust
+//! use xrust::security::{Feature, Policy};
+//! use xrust::trees::smite::RNode;
+//! use qualname::{QName, NcName};
+//!
+//! let mut policy: Policy<RNode> = Policy::new(QName::from_local_name(
+//!    NcName::try_from("test_policy").unwrap(),
+//! ));
+//! policy.add(
+//!    QName::from_local_name(
+//!        NcName::try_from("my_security_feature").unwrap(),
+//!    ),
+//!    Feature::Permitted(None),
+//! );
+//! ```
 
 use std::collections::HashMap;
 
