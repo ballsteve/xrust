@@ -71,9 +71,9 @@ NamespaceNode objects are Rc-shared because they are often used but rarely chang
 
 ## Security
 
-XML documents and XSLT stylesheets are able to access external resources and so pose a security risk. χrust provides [a mechanism](https://gitlab.gnome.org/World/Rust/markup-rs/xrust/-/blob/main/src/security.rs) to be able to restrict access to certain resources. χrust is "secure by default" - resources default to the most secure restriction, which is often to not allow access at all, and the application override the default in order to permit the resource to be used.
+XML documents and XSLT stylesheets are able to access external resources and so pose a security risk. χrust provides [a mechanism](https://docs.rs/xrust/latest/xrust/security/index.html) to be able to restrict access to certain resources. χrust is "secure by default" - resources default to the most secure restriction, which is often to not allow access at all, and the application override the default in order to permit the resource to be used.
 
-χrust allows a module to define a [security feature](https://gitlab.gnome.org/World/Rust/markup-rs/xrust/-/blob/dev/src/security/enum.Feature.html). An application may create a [security policy](https://gitlab.gnome.org/World/Rust/markup-rs/xrust/-/blob/dev/src/security/struct.Policy.html) that specifies a number of features. When the module needs to access the resource, it will lookup the required feature in the current policy and evaluate it to determine whether the resource may be accessed and/or the amount that may be consumed.
+χrust allows a module to define a _security feature_. An application may create a _security policy_ that specifies a number of features. When the module needs to access the resource, it will lookup the required feature in the current policy and evaluate it to determine whether the resource may be accessed and/or the amount that may be consumed.
 
 ## Applications
 
