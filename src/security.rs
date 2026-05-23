@@ -8,6 +8,7 @@
 //! ```rust
 //! # use std::rc::Rc;
 //! use xrust::security::{SecurityResult, Policy, Feature};
+//! use xrust::{Error, ErrorKind, Node};
 //! use xrust::item::Item;
 //! use xrust::value::Value;
 //! use xrust::transform::Transform;
@@ -16,7 +17,7 @@
 //!
 //! fn get_feature<N: Node>(policy: &Policy<N>) -> Result<Option<String>, Error> {
 //!    match policy.get(
-//!       QName::from_local_name(NcName::try_from("my_security_feature").unwrap()),
+//!       &QName::from_local_name(NcName::try_from("my_security_feature").unwrap()),
 //!       ActualParameters::Named(vec![
 //!          (QName::from_local_name(NcName::try_from("input").unwrap()),
 //!           Transform::Literal(Item::Value(Rc::new(Value::from("value")))))
@@ -24,7 +25,7 @@
 //!    )? {
 //!        SecurityResult::NotPermitted => Err(Error::new(ErrorKind::NotPermitted, "access denied")),
 //!        SecurityResult::Permitted(None) => Ok(None),
-//!        SecurityResult::Permitted(Some(v)) => Some(v),
+//!        SecurityResult::Permitted(Some(v)) => Ok(Some(v)),
 //!    }
 //! }
 //! ```
