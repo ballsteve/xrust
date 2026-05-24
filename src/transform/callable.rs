@@ -39,7 +39,7 @@ pub enum ActualParameters<N: Node> {
 }
 
 /// Invoke a callable component
-pub(crate) fn invoke<
+pub fn invoke<
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
@@ -51,16 +51,6 @@ pub(crate) fn invoke<
     a: &ActualParameters<N>,
     _ns: &NamespaceMap,
 ) -> Result<Sequence<N>, Error> {
-    /*let mut qnr = qn.clone();
-    qnr.resolve(|p| {
-        ns.get(&p).map_or(
-            Err(Error::new(
-                ErrorKind::DynamicAbsent,
-                "no namespace for prefix",
-            )),
-            |r| Ok(r.clone()),
-        )
-    })?;*/
     match ctxt.callables.get(qn) {
         Some(t) => {
             match &t.parameters {
@@ -94,6 +84,20 @@ pub(crate) fn invoke<
                             }
                         }
                     })?;
+
+                    // Check that the maximum depth limit will not be exceeded,
+                    // if there is one set
+
+                    if let Some(md) = ctxt.max_depth {
+                        if md == ctxt.depth {
+                            return Err(Error::new(
+                                crate::ErrorKind::LimitExceeded,
+                                format!("exceeded evaluation depth ({})", ctxt.depth),
+                            ));
+                        }
+                    }
+                    newctxt.depth = ctxt.depth + 1;
+
                     newctxt.dispatch(stctxt, &t.body)
                 }
                 FormalParameters::Positional(v) => {
@@ -105,6 +109,20 @@ pub(crate) fn invoke<
                                 newctxt.var_push(qn.to_string(), ctxt.dispatch(stctxt, t)?);
                                 Ok(())
                             })?;
+
+                            // Check that the maximum depth limit will not be exceeded,
+                            // if there is one set
+
+                            if let Some(md) = ctxt.max_depth {
+                                if md == ctxt.depth {
+                                    return Err(Error::new(
+                                        crate::ErrorKind::LimitExceeded,
+                                        format!("exceeded evaluation depth ({})", ctxt.depth),
+                                    ));
+                                }
+                            }
+                            newctxt.depth = ctxt.depth + 1;
+
                             newctxt.dispatch(stctxt, &t.body)
                         } else {
                             Err(Error::new(ErrorKind::TypeError, "argument mismatch"))

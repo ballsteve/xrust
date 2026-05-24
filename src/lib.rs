@@ -27,6 +27,12 @@ Support for XPath involves mapping the XPath syntax to a [Transform]. The XPath 
 
 XPath [Pattern]s are also supported. These are used to match nodes, mainly when template processing.
 
+### Security
+
+The [Security](crate::security) module provides a mechanism to prevent exfiltration of data or denial-of-service attacks.
+A module may define a security [Feature](crate::security::Feature) that are then combined into a security [Policy](crate::security::Policy).
+A security policy may permit or deny access to a feature. If it is permitted then the policy may further restrict access to some limit.
+
 ### Status
 
 Most of functionality for v1.0 is present, with some v2.0 and v3.1 features.
@@ -94,6 +100,8 @@ pub use transform::context::Context;
 pub use transform::template::Template;
 
 pub mod trees;
+
+pub mod security;
 
 pub mod testutils;
 pub mod validators;

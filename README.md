@@ -16,7 +16,7 @@ However, it is not *compliant* with XPath/XSLT v1.0. This is because it implemen
 
 In addition to the (rudimentary) implementation of the [XQuery and XPath Data Model 3.1](https://www.w3.org/TR/xpath-datamodel-31/) data model, a few other features of XPath and XSLT 2.0/3.0 have been implemented, such as FLWR expressions, grouping (i.e. xsl:for-each-group), and user-defined functions.
 
-## Umbrella Group
+## Parent Group
 
 χrust is part of the [markup-rs](https://gitlab.gnome.org/World/Rust/markup-rs) family of projects providing support for the XML tech stack in Rust.
 
@@ -24,7 +24,7 @@ The various modules in χrust are being slowly picked apart and moved into separ
 
 ## Canonical Repository
 
-Development of χrust takes place on [Gitlab](https://gitlab.gnome.org/World/Rust/markup-rs/xrust). This repository is mirrored (pushed) to [Github](https://github.com/ballsteve/xrust).
+Development of χrust takes place on [Gitlab](https://gitlab.gnome.org/World/Rust/markup-rs/xrust). The Gitlab repository is mirrored with [Github](https://github.com/ballsteve/xrust).
 
 ## Version 2.0 Release Notes
 
@@ -69,6 +69,12 @@ There is a convenience routine that builds the flat mapping, i.e. a NamespaceMap
 
 NamespaceNode objects are Rc-shared because they are often used but rarely change.
 
+## Security
+
+XML documents and XSLT stylesheets are able to access external resources and so pose a security risk. χrust provides [a mechanism](https://docs.rs/xrust/latest/xrust/security/index.html) to be able to restrict access to certain resources. χrust is "secure by default" - resources default to the most secure restriction, which is often to not allow access at all, and the application override the default in order to permit the resource to be used.
+
+χrust allows a module to define a _security feature_. An application may create a _security policy_ that specifies a number of features. When the module needs to access the resource, it will lookup the required feature in the current policy and evaluate it to determine whether the resource may be accessed and/or the amount that may be consumed.
+
 ## Applications
 
 There are two applications for using χrust:
@@ -105,6 +111,7 @@ Status of [standards implementation](https://gitlab.gnome.org/World/Rust/markup-
 
 | Releases      | Notes                                                                                    |
 |---------------|------------------------------------------------------------------------------------------|
+| Version 2.1.0 | Introduce security mechanism. |
 | Version 2.0.3 | Fix ambiguity in forward and reverse axis names. |
 | Version 2.0.2 | Rationalise and simplify use of QNames in NameTest. |
 | Version 2.0.1 | Bug fix for smite::namespace_iter(). |
