@@ -6,6 +6,7 @@ use xrust::ErrorKind;
 use xrust::item::{Item, Node};
 use xrust::pattern::Pattern;
 use xrust::security::{Feature, Policy};
+use xrust::transform::callable::ActualParameters;
 use xrust::transform::context::{ContextBuilder, StaticContextBuilder};
 use xrust::transform::template::Template;
 use xrust::transform::{Axis, KindTest, NodeMatch, NodeTest, Transform};
@@ -572,4 +573,105 @@ where
     } else {
         panic!("failed to fail")
     }
+}
+
+/// Test security_feature method
+pub fn sec_feature<N: Node, G>(make_empty_doc: G) -> Result<(), Error>
+where
+    G: Fn() -> N,
+{
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+    let mut src_doc = make_empty_doc();
+    let top = src_doc
+        .new_element(QName::from_local_name(NcName::try_from("Top").unwrap()))
+        .expect("unable to create element");
+    src_doc.push(top.clone()).expect("unable to add element");
+
+    let mut policy: Policy<N> = Policy::new(QName::from_local_name(
+        NcName::try_from("test_policy").unwrap(),
+    ));
+    policy.add(
+        QName::new_from_parts(
+            NcName::try_from("maximum-depth").unwrap(),
+            Some(
+                NamespaceUri::try_from(
+                    "http://gitlab.gnome.org/World/Rust/markup-rs/xrust/transform",
+                )
+                .unwrap(),
+            ),
+        ),
+        Feature::Permitted(Some(Transform::Literal(Item::Value(Rc::new(Value::from(
+            1000,
+        )))))),
+    );
+
+    let x: Transform<N> = Transform::ApplyTemplates(Box::new(Transform::Root), None, vec![]);
+    let ctxt = ContextBuilder::new()
+        .policy(Rc::new(policy))
+        .expect("unable to set security policy")
+        .template(Template::new(
+            // pattern "Top"
+            Pattern::try_from("child::Top").expect("unable to create Pattern for \"child::Top\""),
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ),
+            Some(0.0), // priority
+            vec![0],   // import
+            Some(1),   // document order
+            None,      // mode
+            String::from("child::Test"),
+        ))
+        .template(Template::new(
+            // pattern "/",
+            Pattern::try_from("/").expect("unable to create Pattern for \"/\""),
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ), // body "apply-templates select=node()",
+            None,    // priority
+            vec![0], // import
+            None,    // document order
+            None,    // mode
+            String::from("/"),
+        ))
+        .template(Template::new(
+            // pattern child::text()
+            Pattern::try_from("child::text()")
+                .expect("unable to create Pattern for \"child::text()\""),
+            Transform::ContextItem, // body value-of select='.'
+            None,                   // priority
+            vec![0],                // import
+            None,                   // document order
+            None,                   // mode
+            String::from("child::text()"),
+        ))
+        .context(vec![Item::Node(src_doc)])
+        .build();
+    let _ = ctxt.security_feature(
+        &QName::new_from_parts(
+            NcName::try_from("maximum-depth").unwrap(),
+            Some(
+                NamespaceUri::try_from(
+                    "http://gitlab.gnome.org/World/Rust/markup-rs/xrust/transform",
+                )
+                .unwrap(),
+            ),
+        ),
+        ActualParameters::Named(vec![]),
+    )?;
+
+    ctxt.dispatch(&mut stctxt, &x).map(|_| ())
 }
