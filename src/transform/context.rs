@@ -247,7 +247,11 @@ impl<N: Node> Context<N> {
     // Return the value of a security feature.
     // This will be determined by an in-force security policy.
     // If there is no security policy in force, then the feature is either not permitted or this library must supply a default value.
-    fn security_feature(&self, f: &QName, a: ActualParameters<N>) -> Result<SecurityResult, Error> {
+    pub fn security_feature(
+        &self,
+        f: &QName,
+        a: ActualParameters<N>,
+    ) -> Result<SecurityResult, Error> {
         if *f == *MAXDEPTH_QNAME {
             self.policy
                 .as_ref()
