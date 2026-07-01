@@ -794,7 +794,7 @@ where
 }
 
 /// Compile a node in a template to a sequence [Combinator]
-fn to_transform<N: Node>(
+pub(crate) fn to_transform<N: Node>(
     n: N,
     attr_sets: &HashMap<QName, Vec<Transform<N>>>,
 ) -> Result<Transform<N>, Error> {

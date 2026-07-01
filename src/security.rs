@@ -1,6 +1,8 @@
 //! Support for security policies.
 //!
 //! A security policy allows a module to limit, or constrain, access to a resource.
+//!
+//! # Security Features
 //! The resource is named, using a [QName], and the module will call into the in-force policy to retrieve the limitation set on the resource.
 //! The limitation is returned as a [SecurityResult].
 //! The module may provide [ActualParameters] to the feature, refer to the module's documentation for details.
@@ -34,6 +36,7 @@
 //! then the module will define a default value. The module should set a default that has minimal security implications for the application.
 //! Most likely this will be to deny access to the resource.
 //!
+//! # Security Policies
 //! Security policies are named. Many named policies can be loaded into the system.
 //! The application can nominate which policy it wants to be in force ("activated").
 //!
@@ -57,15 +60,20 @@
 //!    Feature::Permitted(None),
 //! );
 //! ```
+//!
+//! # Serialisation
+//! Security policies may be represented as an XML document.
+//! TODO: complete this section.
 
 use std::collections::HashMap;
 
-use crate::item::{Node, SequenceTrait};
+use crate::item::{Node, NodeType, SequenceTrait};
 use crate::transform::Transform;
 use crate::transform::callable::ActualParameters;
 use crate::transform::context::{Context, StaticContextBuilder};
 use crate::xdmerror::{Error, ErrorKind};
-use qualname::QName;
+use crate::xslt::to_transform;
+use qualname::{NamespaceUri, NcName, QName};
 
 /// The result of determining the limitation or constraint for a security feature.
 /// Permitted means that the application is allowed to access the resource.
@@ -166,6 +174,123 @@ impl<N: Node> Policy<N> {
         self.features
             .get(name)
             .map_or_else(|| Ok(SecurityResult::NotPermitted), |f| f.get(a))
+    }
+}
+
+/// Build a [Policy] from an XML document.
+/// This will panic if an error is found in the document.
+/// TODO: a TryFrom version.
+impl<N: Node> From<N> for Policy<N> {
+    //type Error = Error;
+    fn from(doc: N) -> Self {
+        // doc must be a document-type node
+        let secnsuri =
+            NamespaceUri::try_from("http://gitlab.gnome.org/World/Rust/markup-rs/Security")
+                .unwrap();
+        if let Some(top) = doc.first_child() {
+            if !top.name().is_some_and(|qn| {
+                qn == QName::new_from_parts(
+                    NcName::try_from("policy").unwrap(),
+                    Some(secnsuri.clone()),
+                )
+            }) {
+                panic!("not a security policy document")
+                /*return Err(Error::new(
+                    ErrorKind::TypeError,
+                    "not a security policy document",
+                ));*/
+            }
+            // TODO: support name as a QName
+            let name = top
+                .get_attribute(&QName::from_local_name(NcName::try_from("name").unwrap()))
+                .to_string();
+            if name != "" {
+                let mut policy = Policy::new(QName::from_local_name(
+                    NcName::try_from(name.as_str()).unwrap(),
+                ));
+
+                // Content is feature elements, skipping over white space
+                let fname = QName::new_from_parts(
+                    NcName::try_from("feature").unwrap(),
+                    Some(secnsuri.clone()),
+                );
+                let pname = QName::new_from_parts(
+                    NcName::try_from("permitted").unwrap(),
+                    Some(secnsuri.clone()),
+                );
+                let npname = QName::new_from_parts(
+                    NcName::try_from("not-permitted").unwrap(),
+                    Some(secnsuri.clone()),
+                );
+                doc.child_iter()
+                    .filter(|c| c.node_type() == NodeType::Text && c.name().unwrap() == fname)
+                    .for_each(|f| {
+                        let feat_name = f
+                            .get_attribute(&QName::from_local_name(
+                                NcName::try_from("name").unwrap(),
+                            ))
+                            .to_string();
+                        if feat_name != "" {
+                            // Check that there is only one child element
+                            let fc: Vec<N> = f
+                                .child_iter()
+                                .skip_while(|c| c.node_type() != NodeType::Element)
+                                .take(1)
+                                .collect();
+                            if fc.is_empty() {
+                                panic!("feature missing element")
+                            } else {
+                                // TODO: support QName for feature name
+                                if fc[0].name().unwrap() == npname {
+                                    policy.add(
+                                        QName::from_local_name(
+                                            NcName::try_from(feat_name.as_str()).unwrap(),
+                                        ),
+                                        Feature::NotPermitted,
+                                    );
+                                } else if fc[0].name().unwrap() == pname {
+                                    let feat_children: Vec<N> = fc[0].child_iter().collect();
+                                    if feat_children.is_empty() {
+                                        policy.add(
+                                            QName::from_local_name(
+                                                NcName::try_from(feat_name.as_str()).unwrap(),
+                                            ),
+                                            Feature::Permitted(None),
+                                        );
+                                    } else {
+                                        let mut body: Vec<Transform<N>> = vec![];
+                                        // attribute sets are not used in this context
+                                        let attr_sets: HashMap<QName, Vec<Transform<N>>> = HashMap::new();
+
+                                        feat_children.into_iter().try_for_each(|d| {
+                                            body.push(to_transform(d, &attr_sets)?);
+                                            Ok::<(), Error>(())
+                                        }).expect("unable to compile transformation");
+
+                                        policy.add(
+                                            QName::from_local_name(
+                                                NcName::try_from(feat_name.as_str()).unwrap(),
+                                            ),
+                                            Feature::Permitted(Some(Transform::SequenceItems(body))),
+                                        );
+                                    }
+                                } else {
+                                    panic!("wrong element in feature: must be permitted or not-permitted")
+                                }
+                            }
+                        } else {
+                            panic!("feature must have a name")
+                        }
+                    });
+
+                policy
+            } else {
+                panic!("name attribute is required")
+            }
+        } else {
+            panic!("empty document")
+            //Err(Error::new(ErrorKind::DynamicAbsent, "empty document"))
+        }
     }
 }
 
