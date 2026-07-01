@@ -222,8 +222,9 @@ impl<N: Node> From<N> for Policy<N> {
                     NcName::try_from("not-permitted").unwrap(),
                     Some(secnsuri.clone()),
                 );
-                doc.child_iter()
-                    .filter(|c| c.node_type() == NodeType::Text && c.name().unwrap() == fname)
+                top.child_iter()
+                    .inspect(|c| eprintln!("policy doc has child {:?}", c))
+                    .filter(|c| c.name().is_some_and(|n| n == fname))
                     .for_each(|f| {
                         let feat_name = f
                             .get_attribute(&QName::from_local_name(
@@ -282,7 +283,7 @@ impl<N: Node> From<N> for Policy<N> {
                             panic!("feature must have a name")
                         }
                     });
-
+                eprintln!("creating policy named \"{}\"", name.to_string());
                 policy
             } else {
                 panic!("name attribute is required")

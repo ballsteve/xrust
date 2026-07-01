@@ -5,7 +5,7 @@ use std::rc::Rc;
 use xrust::ErrorKind;
 use xrust::item::{Item, Node};
 use xrust::pattern::Pattern;
-use xrust::security::{Feature, Policy};
+use xrust::security::{Feature, Policy, SecurityResult};
 use xrust::transform::callable::ActualParameters;
 use xrust::transform::context::{ContextBuilder, StaticContextBuilder};
 use xrust::transform::template::Template;
@@ -674,4 +674,37 @@ where
     )?;
 
     ctxt.dispatch(&mut stctxt, &x).map(|_| ())
+}
+
+/// Test From
+pub fn sec_from_1<N: Node, G, H>(_make_empty_doc: G, make_from_str: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn(&str) -> Result<N, Error>,
+{
+    // First create a security policy document
+    let poldoc = make_from_str("<sec:policy name='testpolicy' xmlns:sec='http://gitlab.gnome.org/World/Rust/markup-rs/Security'
+        xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <sec:feature name='testfeature1'>
+    <sec:not-permitted/>
+  </sec:feature>
+  <sec:feature name='testfeature2'>
+    <sec:permitted/>
+  </sec:feature>
+  <sec:feature name='testfeature3'>
+    <sec:permitted>
+      <xsl:value-of select='42'/>
+    </sec:permitted>
+  </sec:feature>
+</sec:policy>").expect("unable to parse security document");
+    let policy = Policy::from(poldoc);
+    eprintln!("policy=={:?}", policy);
+    let f = policy
+        .get(
+            &QName::from_local_name(NcName::try_from("testfeature3").unwrap()),
+            ActualParameters::Named(vec![]),
+        )
+        .expect("unable to resolve security feature");
+    assert_eq!(f, SecurityResult::Permitted(Some(String::from("42"))));
+    Ok(())
 }
