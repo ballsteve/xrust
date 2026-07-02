@@ -693,15 +693,24 @@ where
   </sec:feature>
   <sec:feature name='testfeature3'>
     <sec:permitted>
-      <xsl:value-of select='42'/>
+      <xsl:sequence select='42'/>
     </sec:permitted>
+  </sec:feature>
+  <sec:feature name='testfeature4'>
+    <sec:permitted>42</sec:permitted>
   </sec:feature>
 </sec:policy>").expect("unable to parse security document");
     let policy = Policy::from(poldoc);
-    eprintln!("policy=={:?}", policy);
     let f = policy
         .get(
             &QName::from_local_name(NcName::try_from("testfeature3").unwrap()),
+            ActualParameters::Named(vec![]),
+        )
+        .expect("unable to resolve security feature");
+    assert_eq!(f, SecurityResult::Permitted(Some(String::from("42"))));
+    let f = policy
+        .get(
+            &QName::from_local_name(NcName::try_from("testfeature4").unwrap()),
             ActualParameters::Named(vec![]),
         )
         .expect("unable to resolve security feature");

@@ -63,7 +63,9 @@
 //!
 //! # Serialisation
 //! Security policies may be represented as an XML document.
-//! TODO: complete this section.
+//! See the From trait implementation for [Policy].
+
+#![allow(rustdoc::bare_urls)]
 
 use std::collections::HashMap;
 
@@ -179,6 +181,42 @@ impl<N: Node> Policy<N> {
 
 /// Build a [Policy] from an XML document.
 /// This will panic if an error is found in the document.
+///
+/// A security policy document has Q{http://gitlab.gnome.org/World/Rust/markup-rs/Security}policy as its toplevel element.
+/// The policy element must have a name attribute.
+///
+/// The policy element may have one or more Q{http://gitlab.gnome.org/World/Rust/markup-rs/Security}feature child elements.
+/// Each feature element must have a name attribute which has the qualified name of a security feature.
+/// The feature element must contain either a Q{http://gitlab.gnome.org/World/Rust/markup-rs/Security}Permitted or {http://gitlab.gnome.org/World/Rust/markup-rs/Security}not-permitted element.
+/// Which element is present determines whether the security feature is permitted or not.
+///
+/// The Q{http://gitlab.gnome.org/World/Rust/markup-rs/Security}permitted may contain child content.
+/// If there is no content then the feature is permitted, but has no value.
+/// If there is content then it is evaluated to determine the value for the feature.
+/// The content is an XSLT template. Only XSLT elements that do not create nodes may be used. For example, use xsl:sequence rather than xsl:value-of.
+///
+/// Example security policy document:
+///
+/// ```xml
+/// <sec:policy name="my-policy" xmlns:sec='http://gitlab.gnome.org/World/Rust/markup-rs/Security'
+///    xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+///   <sec:feature name="feature1">
+///     <sec:not-permitted/>
+///   </sec:feature>
+///   <sec:feature name="feature2">
+///     <sec:permitted/>
+///   </sec:feature>
+///   <sec:feature name="feature3">
+///     <sec:permitted>
+///       <xsl:sequence select='42'/>
+///     </sec:permitted>
+///   </sec:feature>
+///   <sec:feature name="feature4">
+///     <sec:permitted>42</sec:permitted>
+///   </sec:feature>
+/// </sec:policy>
+/// ```
+///
 /// TODO: a TryFrom version.
 impl<N: Node> From<N> for Policy<N> {
     //type Error = Error;
@@ -223,7 +261,6 @@ impl<N: Node> From<N> for Policy<N> {
                     Some(secnsuri.clone()),
                 );
                 top.child_iter()
-                    .inspect(|c| eprintln!("policy doc has child {:?}", c))
                     .filter(|c| c.name().is_some_and(|n| n == fname))
                     .for_each(|f| {
                         let feat_name = f
@@ -250,7 +287,7 @@ impl<N: Node> From<N> for Policy<N> {
                                         Feature::NotPermitted,
                                     );
                                 } else if fc[0].name().unwrap() == pname {
-                                    let feat_children: Vec<N> = fc[0].child_iter().collect();
+                                    let feat_children: Vec<N> = fc[0].child_iter().filter(|fc| fc.node_type() != NodeType::Text || !fc.value().to_string().trim().is_empty()).collect();
                                     if feat_children.is_empty() {
                                         policy.add(
                                             QName::from_local_name(
@@ -283,7 +320,6 @@ impl<N: Node> From<N> for Policy<N> {
                             panic!("feature must have a name")
                         }
                     });
-                eprintln!("creating policy named \"{}\"", name.to_string());
                 policy
             } else {
                 panic!("name attribute is required")
