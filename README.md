@@ -111,6 +111,7 @@ Status of [standards implementation](https://gitlab.gnome.org/World/Rust/markup-
 
 | Releases      | Notes                                                                                    |
 |---------------|------------------------------------------------------------------------------------------|
+| Version 2.2.0 | Add security policy documents. |
 | Version 2.1.0 | Introduce security mechanism. |
 | Version 2.0.3 | Fix ambiguity in forward and reverse axis names. |
 | Version 2.0.2 | Rationalise and simplify use of QNames in NameTest. |
