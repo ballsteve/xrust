@@ -236,9 +236,12 @@ impl<N: Node> Context<N> {
 
     /// Set the in-force security policy.
     /// Returns an error if calculating security feature values fail.
-    pub fn policy(&mut self, policy: Rc<Policy<N>>) -> Result<(), Error> {
+    pub fn policy<F>(&mut self, policy: Rc<Policy<N>>, make_doc: F) -> Result<(), Error>
+    where
+        F: Fn() -> N,
+    {
         // Re-calculate all cached security-related values
-        calculate_features(self, &policy)?;
+        calculate_features(self, &policy, make_doc)?;
 
         self.policy = Some(policy);
 
@@ -247,15 +250,20 @@ impl<N: Node> Context<N> {
     // Return the value of a security feature.
     // This will be determined by an in-force security policy.
     // If there is no security policy in force, then the feature is either not permitted or this library must supply a default value.
-    pub fn security_feature(
+    pub fn security_feature<F>(
         &self,
         f: &QName,
         a: ActualParameters<N>,
-    ) -> Result<SecurityResult, Error> {
+        make_doc: F,
+    ) -> Result<SecurityResult, Error>
+    where
+        F: Fn() -> N,
+    {
         if *f == *MAXDEPTH_QNAME {
-            self.policy
-                .as_ref()
-                .map_or_else(|| Ok(SecurityResult::NotPermitted), |p| p.get(f, a))
+            self.policy.as_ref().map_or_else(
+                || Ok(SecurityResult::NotPermitted),
+                |p| p.get(f, a, make_doc),
+            )
         } else {
             // Unknown feature, so default to not permitted
             Ok(SecurityResult::NotPermitted)
@@ -612,8 +620,15 @@ impl<N: Node> Context<N> {
     }
 }
 
-fn calculate_features<N: Node>(ctxt: &mut Context<N>, policy: &Rc<Policy<N>>) -> Result<(), Error> {
-    match policy.get(&*MAXDEPTH_QNAME, ActualParameters::Named(vec![]))? {
+fn calculate_features<F, N: Node>(
+    ctxt: &mut Context<N>,
+    policy: &Rc<Policy<N>>,
+    make_doc: F,
+) -> Result<(), Error>
+where
+    F: Fn() -> N,
+{
+    match policy.get(&*MAXDEPTH_QNAME, ActualParameters::Named(vec![]), make_doc)? {
         SecurityResult::NotPermitted => ctxt.max_depth = Some(MAXDEPTH),
         SecurityResult::Permitted(None) => ctxt.max_depth = None,
         SecurityResult::Permitted(Some(v)) => {
@@ -761,8 +776,11 @@ impl<N: Node> ContextBuilder<N> {
         self
     }
     /// Set the in-force security policy
-    pub fn policy(mut self, p: Rc<Policy<N>>) -> Result<Self, Error> {
-        calculate_features(&mut self.0, &p)?;
+    pub fn policy<F>(mut self, p: Rc<Policy<N>>, make_doc: F) -> Result<Self, Error>
+    where
+        F: Fn() -> N,
+    {
+        calculate_features(&mut self.0, &p, make_doc)?;
         self.0.policy = Some(p);
         Ok(self)
     }

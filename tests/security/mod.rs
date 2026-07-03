@@ -5,7 +5,7 @@ use std::rc::Rc;
 use xrust::ErrorKind;
 use xrust::item::{Item, Node};
 use xrust::pattern::Pattern;
-use xrust::security::{Feature, Policy, SecurityResult};
+use xrust::security::{Feature, Policy, SecurityResult, try_from_document};
 use xrust::transform::callable::ActualParameters;
 use xrust::transform::context::{ContextBuilder, StaticContextBuilder};
 use xrust::transform::template::Template;
@@ -13,6 +13,8 @@ use xrust::transform::{Axis, KindTest, NodeMatch, NodeTest, Transform};
 use xrust::value::Value;
 use xrust::xdmerror::Error;
 use xrust::xslt::from_document;
+
+use crate::smite::make_empty_doc;
 
 // Max Depth feature not set - will use default.
 // Small number of evaluations (1), should pass.
@@ -225,12 +227,21 @@ where
                 .unwrap(),
             ),
         ),
-        Feature::Permitted(None),
+        Feature::new(Transform::LiteralElement(
+            QName::new_from_parts(
+                NcName::try_from("not-permitted").unwrap(),
+                Some(
+                    NamespaceUri::try_from("http://gitlab.gnome.org/World/Rust/markup-rs/Security")
+                        .unwrap(),
+                ),
+            ),
+            Box::new(Transform::Empty),
+        )),
     );
 
     let x = Transform::ApplyTemplates(Box::new(Transform::Root), None, vec![]);
     let ctxt = ContextBuilder::new()
-        .policy(Rc::new(policy))
+        .policy(Rc::new(policy), make_empty_doc)
         .expect("unable to set security policy")
         .template(Template::new(
             // pattern "Top"
@@ -331,14 +342,21 @@ where
                 .unwrap(),
             ),
         ),
-        Feature::Permitted(Some(Transform::Literal(Item::Value(Rc::new(Value::from(
-            100,
-        )))))),
+        Feature::new(Transform::LiteralElement(
+            QName::new_from_parts(
+                NcName::try_from("permitted").unwrap(),
+                Some(
+                    NamespaceUri::try_from("http://gitlab.gnome.org/World/Rust/markup-rs/Security")
+                        .unwrap(),
+                ),
+            ),
+            Box::new(Transform::Literal(Item::Value(Rc::new(Value::from(100))))),
+        )),
     );
 
     let x = Transform::ApplyTemplates(Box::new(Transform::Root), None, vec![]);
     let ctxt = ContextBuilder::new()
-        .policy(Rc::new(policy))
+        .policy(Rc::new(policy), make_empty_doc)
         .expect("unable to set security policy")
         .template(Template::new(
             // pattern "Top"
@@ -439,14 +457,21 @@ where
                 .unwrap(),
             ),
         ),
-        Feature::Permitted(Some(Transform::Literal(Item::Value(Rc::new(Value::from(
-            1000,
-        )))))),
+        Feature::new(Transform::LiteralElement(
+            QName::new_from_parts(
+                NcName::try_from("permitted").unwrap(),
+                Some(
+                    NamespaceUri::try_from("http://gitlab.gnome.org/World/Rust/markup-rs/Security")
+                        .unwrap(),
+                ),
+            ),
+            Box::new(Transform::Literal(Item::Value(Rc::new(Value::from(1000))))),
+        )),
     );
 
     let x = Transform::ApplyTemplates(Box::new(Transform::Root), None, vec![]);
     let ctxt = ContextBuilder::new()
-        .policy(Rc::new(policy))
+        .policy(Rc::new(policy), make_empty_doc)
         .expect("unable to set security policy")
         .template(Template::new(
             // pattern "Top"
@@ -576,7 +601,7 @@ where
 }
 
 /// Test security_feature method
-pub fn sec_feature<N: Node, G>(make_empty_doc: G) -> Result<(), Error>
+pub fn sec_feature<N: Node, G>(make_empty_doc: &G) -> Result<(), Error>
 where
     G: Fn() -> N,
 {
@@ -604,14 +629,21 @@ where
                 .unwrap(),
             ),
         ),
-        Feature::Permitted(Some(Transform::Literal(Item::Value(Rc::new(Value::from(
-            1000,
-        )))))),
+        Feature::new(Transform::LiteralElement(
+            QName::new_from_parts(
+                NcName::try_from("permitted").unwrap(),
+                Some(
+                    NamespaceUri::try_from("http://gitlab.gnome.org/World/Rust/markup-rs/Security")
+                        .unwrap(),
+                ),
+            ),
+            Box::new(Transform::Literal(Item::Value(Rc::new(Value::from(1000))))),
+        )),
     );
 
     let x: Transform<N> = Transform::ApplyTemplates(Box::new(Transform::Root), None, vec![]);
     let ctxt = ContextBuilder::new()
-        .policy(Rc::new(policy))
+        .policy(Rc::new(policy), make_empty_doc)
         .expect("unable to set security policy")
         .template(Template::new(
             // pattern "Top"
@@ -671,13 +703,14 @@ where
             ),
         ),
         ActualParameters::Named(vec![]),
+        make_empty_doc,
     )?;
 
     ctxt.dispatch(&mut stctxt, &x).map(|_| ())
 }
 
 /// Test From
-pub fn sec_from_1<N: Node, G, H>(_make_empty_doc: G, make_from_str: H) -> Result<(), Error>
+pub fn sec_from_1<N: Node, G, H>(make_empty_doc: &G, make_from_str: H) -> Result<(), Error>
 where
     G: Fn() -> N,
     H: Fn(&str) -> Result<N, Error>,
@@ -700,11 +733,12 @@ where
     <sec:permitted>42</sec:permitted>
   </sec:feature>
 </sec:policy>").expect("unable to parse security document");
-    let policy = Policy::from(poldoc);
+    let policy = try_from_document(poldoc).expect("unable to create security policy");
     let f = policy
         .get(
             &QName::from_local_name(NcName::try_from("testfeature3").unwrap()),
             ActualParameters::Named(vec![]),
+            make_empty_doc,
         )
         .expect("unable to resolve security feature");
     assert_eq!(f, SecurityResult::Permitted(Some(String::from("42"))));
@@ -712,6 +746,7 @@ where
         .get(
             &QName::from_local_name(NcName::try_from("testfeature4").unwrap()),
             ActualParameters::Named(vec![]),
+            make_empty_doc,
         )
         .expect("unable to resolve security feature");
     assert_eq!(f, SecurityResult::Permitted(Some(String::from("42"))));

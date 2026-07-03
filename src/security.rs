@@ -3,7 +3,7 @@
 //! A security policy allows a module to limit, or constrain, access to a resource.
 //!
 //! # Security Features
-//! The resource is named, using a [QName], and the module will call into the in-force policy to retrieve the limitation set on the resource.
+//! The resource is named, using a [QName], and the module will call into the in-force policy to determine the limitation set on the resource.
 //! The limitation is returned as a [SecurityResult].
 //! The module may provide [ActualParameters] to the feature, refer to the module's documentation for details.
 //!
@@ -40,8 +40,22 @@
 //! Security policies are named. Many named policies can be loaded into the system.
 //! The application can nominate which policy it wants to be in force ("activated").
 //!
-//! Resource constraints may be specified either as an absolute value or with a template.
+//! Resource constraints are specified with a template.
 //! Templates use the same syntax as XSLT templates.
+//! The template is evaluated when a module wants to grant access to a resource.
+//! The parameters provided by the module, see above, are passed to the template.
+//! The template must return a single element, one of:
+//! ```xslt
+//! Q{http://gitlab.gnome.org/World/Rust/markup-rs/Security}not-permitted
+//! Q{http://gitlab.gnome.org/World/Rust/markup-rs/Security}permitted
+//! ```
+//!
+//! These elements map, respectively, to:
+//! * SecurityResult::NotPermitted
+//! * SecurityResult::Permitted(Option<String>)
+//!
+//! If the 'permitted' element does not contain content, then None is set in the SecurityResult::Permitted value.
+//! Otherwise a Some is inserted with the string value of the content.
 //!
 //! In this example, a security policy is created with the feature set to "permitted with no limits".
 //!
@@ -57,7 +71,13 @@
 //!    QName::from_local_name(
 //!        NcName::try_from("my_security_feature").unwrap(),
 //!    ),
-//!    Feature::Permitted(None),
+//!    Transform::LiteralElement(
+//!      QName::new_from_parts(
+//!        NcName::try_from("permitted").unwrap(),
+//!        NamespaceUri::try_from("http://gitlab.gnome.org/World/Rust/markup-rs/Security").unwrap(),
+//!      )),
+//!      Box::new(Transform::Empty),
+//!    ),
 //! );
 //! ```
 //!
@@ -72,7 +92,7 @@ use std::collections::HashMap;
 use crate::item::{Node, NodeType, SequenceTrait};
 use crate::transform::Transform;
 use crate::transform::callable::ActualParameters;
-use crate::transform::context::{Context, StaticContextBuilder};
+use crate::transform::context::{ContextBuilder, StaticContextBuilder};
 use crate::xdmerror::{Error, ErrorKind};
 use crate::xslt::to_transform;
 use qualname::{NamespaceUri, NcName, QName};
@@ -121,7 +141,15 @@ impl<N: Node> SecurityPolicies<N> {
     }
     /// Determine whether a feature, in the in-force policy, is permitted.
     /// All parameters must be named, i.e. positional parameters are ignored.
-    pub fn get(&self, f: &QName, a: ActualParameters<N>) -> Result<SecurityResult, Error> {
+    pub fn get<F>(
+        &self,
+        f: &QName,
+        a: ActualParameters<N>,
+        make_doc: F,
+    ) -> Result<SecurityResult, Error>
+    where
+        F: Fn() -> N,
+    {
         // If there is no in-force security policy then all features are not permitted
         if self.in_force.is_none() {
             return Ok(SecurityResult::NotPermitted);
@@ -130,7 +158,7 @@ impl<N: Node> SecurityPolicies<N> {
         // Does the in-force security policy have the requested feature?
         // If not then it is not permitted
         if let Some(p) = self.policies.get(&self.in_force.as_ref().unwrap()) {
-            p.get(f, a)
+            p.get(f, a, make_doc)
         } else {
             Ok(SecurityResult::NotPermitted)
         }
@@ -172,15 +200,22 @@ impl<N: Node> Policy<N> {
     }
     */
     /// Resolve the setting of a security [Feature].
-    pub fn get(&self, name: &QName, a: ActualParameters<N>) -> Result<SecurityResult, Error> {
+    pub fn get<F>(
+        &self,
+        name: &QName,
+        a: ActualParameters<N>,
+        make_doc: F,
+    ) -> Result<SecurityResult, Error>
+    where
+        F: Fn() -> N,
+    {
         self.features
             .get(name)
-            .map_or_else(|| Ok(SecurityResult::NotPermitted), |f| f.get(a))
+            .map_or_else(|| Ok(SecurityResult::NotPermitted), |f| f.get(a, make_doc))
     }
 }
 
 /// Build a [Policy] from an XML document.
-/// This will panic if an error is found in the document.
 ///
 /// A security policy document has Q{http://gitlab.gnome.org/World/Rust/markup-rs/Security}policy as its toplevel element.
 /// The policy element must have a name attribute.
@@ -193,7 +228,7 @@ impl<N: Node> Policy<N> {
 /// The Q{http://gitlab.gnome.org/World/Rust/markup-rs/Security}permitted may contain child content.
 /// If there is no content then the feature is permitted, but has no value.
 /// If there is content then it is evaluated to determine the value for the feature.
-/// The content is an XSLT template. Only XSLT elements that do not create nodes may be used. For example, use xsl:sequence rather than xsl:value-of.
+/// The content is an XSLT template. It must result in a single element node, optionally with content. See above for the interpretation of the element.
 ///
 /// Example security policy document:
 ///
@@ -216,118 +251,81 @@ impl<N: Node> Policy<N> {
 ///   </sec:feature>
 /// </sec:policy>
 /// ```
-///
-/// TODO: a TryFrom version.
-impl<N: Node> From<N> for Policy<N> {
-    //type Error = Error;
-    fn from(doc: N) -> Self {
-        // doc must be a document-type node
-        let secnsuri =
-            NamespaceUri::try_from("http://gitlab.gnome.org/World/Rust/markup-rs/Security")
-                .unwrap();
-        if let Some(top) = doc.first_child() {
-            if !top.name().is_some_and(|qn| {
-                qn == QName::new_from_parts(
-                    NcName::try_from("policy").unwrap(),
-                    Some(secnsuri.clone()),
-                )
-            }) {
-                panic!("not a security policy document")
-                /*return Err(Error::new(
-                    ErrorKind::TypeError,
-                    "not a security policy document",
-                ));*/
-            }
-            // TODO: support name as a QName
-            let name = top
-                .get_attribute(&QName::from_local_name(NcName::try_from("name").unwrap()))
-                .to_string();
-            if name != "" {
-                let mut policy = Policy::new(QName::from_local_name(
-                    NcName::try_from(name.as_str()).unwrap(),
-                ));
-
-                // Content is feature elements, skipping over white space
-                let fname = QName::new_from_parts(
-                    NcName::try_from("feature").unwrap(),
-                    Some(secnsuri.clone()),
-                );
-                let pname = QName::new_from_parts(
-                    NcName::try_from("permitted").unwrap(),
-                    Some(secnsuri.clone()),
-                );
-                let npname = QName::new_from_parts(
-                    NcName::try_from("not-permitted").unwrap(),
-                    Some(secnsuri.clone()),
-                );
-                top.child_iter()
-                    .filter(|c| c.name().is_some_and(|n| n == fname))
-                    .for_each(|f| {
-                        let feat_name = f
-                            .get_attribute(&QName::from_local_name(
-                                NcName::try_from("name").unwrap(),
-                            ))
-                            .to_string();
-                        if feat_name != "" {
-                            // Check that there is only one child element
-                            let fc: Vec<N> = f
-                                .child_iter()
-                                .skip_while(|c| c.node_type() != NodeType::Element)
-                                .take(1)
-                                .collect();
-                            if fc.is_empty() {
-                                panic!("feature missing element")
-                            } else {
-                                // TODO: support QName for feature name
-                                if fc[0].name().unwrap() == npname {
-                                    policy.add(
-                                        QName::from_local_name(
-                                            NcName::try_from(feat_name.as_str()).unwrap(),
-                                        ),
-                                        Feature::NotPermitted,
-                                    );
-                                } else if fc[0].name().unwrap() == pname {
-                                    let feat_children: Vec<N> = fc[0].child_iter().filter(|fc| fc.node_type() != NodeType::Text || !fc.value().to_string().trim().is_empty()).collect();
-                                    if feat_children.is_empty() {
-                                        policy.add(
-                                            QName::from_local_name(
-                                                NcName::try_from(feat_name.as_str()).unwrap(),
-                                            ),
-                                            Feature::Permitted(None),
-                                        );
-                                    } else {
-                                        let mut body: Vec<Transform<N>> = vec![];
-                                        // attribute sets are not used in this context
-                                        let attr_sets: HashMap<QName, Vec<Transform<N>>> = HashMap::new();
-
-                                        feat_children.into_iter().try_for_each(|d| {
-                                            body.push(to_transform(d, &attr_sets)?);
-                                            Ok::<(), Error>(())
-                                        }).expect("unable to compile transformation");
-
-                                        policy.add(
-                                            QName::from_local_name(
-                                                NcName::try_from(feat_name.as_str()).unwrap(),
-                                            ),
-                                            Feature::Permitted(Some(Transform::SequenceItems(body))),
-                                        );
-                                    }
-                                } else {
-                                    panic!("wrong element in feature: must be permitted or not-permitted")
-                                }
-                            }
-                        } else {
-                            panic!("feature must have a name")
-                        }
-                    });
-                policy
-            } else {
-                panic!("name attribute is required")
-            }
-        } else {
-            panic!("empty document")
-            //Err(Error::new(ErrorKind::DynamicAbsent, "empty document"))
+//impl<N: Node> From<N> for Policy<N> {
+pub fn try_from_document<N: Node>(doc: N) -> Result<Policy<N>, Error> {
+    // doc must be a document-type node
+    // TODO: make the QNames constants
+    let secnsuri =
+        NamespaceUri::try_from("http://gitlab.gnome.org/World/Rust/markup-rs/Security").unwrap();
+    if let Some(top) = doc.first_child() {
+        if !top.name().is_some_and(|qn| {
+            qn == QName::new_from_parts(NcName::try_from("policy").unwrap(), Some(secnsuri.clone()))
+        }) {
+            return Err(Error::new(
+                ErrorKind::TypeError,
+                "not a security policy document",
+            ));
         }
+        let name = top
+            .get_attribute(&QName::from_local_name(NcName::try_from("name").unwrap()))
+            .to_string();
+        if name != "" {
+            // Resolve qualified name to a QName using the doc's namespaces
+            let mut policy = Policy::new(top.to_qname(name)?);
+
+            // Content is feature elements, skipping over white space
+            let fname =
+                QName::new_from_parts(NcName::try_from("feature").unwrap(), Some(secnsuri.clone()));
+            top.child_iter()
+                .filter(|c| c.name().is_some_and(|n| n == fname))
+                .try_for_each(|f| {
+                    let feat_name = f
+                        .get_attribute(&QName::from_local_name(NcName::try_from("name").unwrap()))
+                        .to_string();
+                    if feat_name != "" {
+                        // Content is the template to evaluate
+                        let mut body: Vec<Transform<N>> = vec![];
+                        // attribute sets are not used in this context
+                        let attr_sets: HashMap<QName, Vec<Transform<N>>> = HashMap::new();
+
+                        // Strip whitespace
+                        let feat_children: Vec<N> = f
+                            .child_iter()
+                            .filter(|fc| {
+                                fc.node_type() != NodeType::Text
+                                    || !fc.value().to_string().trim().is_empty()
+                            })
+                            .collect();
+
+                        // Compile template
+                        feat_children.into_iter().try_for_each(|d| {
+                            body.push(to_transform(d, &attr_sets)?);
+                            Ok::<(), Error>(())
+                        })?;
+                        if body.len() != 1 {
+                            return Err(Error::new(
+                                ErrorKind::TypeError,
+                                "template must result in a single node",
+                            ));
+                        }
+                        policy.add(top.to_qname(feat_name)?, Feature(body.remove(0)));
+                    } else {
+                        return Err(Error::new(
+                            ErrorKind::DynamicAbsent,
+                            "feature must have a name",
+                        ));
+                    }
+                    Ok(())
+                })?;
+            Ok(policy)
+        } else {
+            Err(Error::new(
+                ErrorKind::DynamicAbsent,
+                "name attribute is required",
+            ))
+        }
+    } else {
+        Err(Error::new(ErrorKind::DynamicAbsent, "empty document"))
     }
 }
 
@@ -335,45 +333,93 @@ impl<N: Node> From<N> for Policy<N> {
 /// Access to a resource may, or may not, be permitted.
 /// If access is permitted, then it may also be constrained so some maximum value.
 /// This value is computed dynamically using a [Transform].
-/// If no [Transform] is given then the access to the resource is unlimited.
+/// The transformation is not allowed to access external resources.
 #[derive(Clone, Debug)]
-pub enum Feature<N: Node> {
-    Permitted(Option<Transform<N>>),
-    NotPermitted,
-}
+pub struct Feature<N: Node>(Transform<N>);
 
 impl<N: Node> Feature<N> {
-    /// Determine whether this security feature is permitted,
+    /// Create a Feature
+    pub fn new(t: Transform<N>) -> Self {
+        Feature(t)
+    }
+
+    /// Evaluate the template to determine whether this security feature is permitted,
     /// and if so then to what limit, i.e. a maximum value.
-    pub fn get(&self, a: ActualParameters<N>) -> Result<SecurityResult, Error> {
-        match self {
-            Feature::NotPermitted => Ok(SecurityResult::NotPermitted),
-            Feature::Permitted(o) => Ok(SecurityResult::Permitted(if let Some(t) = o {
-                // The template is a callable.
-                // If the transformation results in an error then that it propegated back via the result
-                let mut stctxt = StaticContextBuilder::new()
-                    .message(|_| Ok(()))
-                    .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
-                    .fetcher(|_: &_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
-                    .build();
-                let mut ctxt = Context::new();
-                //let mut actuals = HashMap::new();
-                if let ActualParameters::Named(ap) = a {
-                    ap.iter().try_for_each(|(an, av)| {
-                        ctxt.var_push(an.to_string(), ctxt.dispatch(&mut stctxt, av)?);
-                        //actuals.insert(an, ctxt.dispatch(&mut stctxt, av)?);
-                        Ok(())
-                    })?
+    pub fn get<F>(&self, a: ActualParameters<N>, make_doc: F) -> Result<SecurityResult, Error>
+    where
+        F: Fn() -> N,
+    {
+        // The template is a callable.
+        // If the transformation results in an error then that it propagated back via the result
+        let mut stctxt = StaticContextBuilder::new()
+            .message(|_| Ok(()))
+            .parser(|_| {
+                Err(Error::new(
+                    ErrorKind::StaticBadFunction,
+                    "external resources are not allowed",
+                ))
+            })
+            .fetcher(|_: &_| {
+                Err(Error::new(
+                    ErrorKind::StaticBadFunction,
+                    "external resources are not allowed",
+                ))
+            })
+            .build();
+        let rd = make_doc();
+        let mut ctxt = ContextBuilder::new().result_document(rd).build();
+        if let ActualParameters::Named(ap) = a {
+            ap.iter().try_for_each(|(an, av)| {
+                ctxt.var_push(an.to_string(), ctxt.dispatch(&mut stctxt, av)?);
+                Ok(())
+            })?
+        }
+        // TODO: make these constants
+        let np = QName::new_from_parts(
+            NcName::try_from("not-permitted").unwrap(),
+            Some(
+                NamespaceUri::try_from("http://gitlab.gnome.org/World/Rust/markup-rs/Security")
+                    .unwrap(),
+            ),
+        );
+        let p = QName::new_from_parts(
+            NcName::try_from("permitted").unwrap(),
+            Some(
+                NamespaceUri::try_from("http://gitlab.gnome.org/World/Rust/markup-rs/Security")
+                    .unwrap(),
+            ),
+        );
+
+        // Now evaluate the template. It must result in a single element node.
+        let r = ctxt.dispatch(&mut stctxt, &self.0)?;
+        if r.len() == 1 {
+            if r[0].is_element_node() {
+                if r[0].name().unwrap() == np {
+                    Ok(SecurityResult::NotPermitted)
+                } else if r[0].name().unwrap() == p {
+                    let content = r[0].to_string();
+                    if content.is_empty() {
+                        Ok(SecurityResult::Permitted(None))
+                    } else {
+                        Ok(SecurityResult::Permitted(Some(content)))
+                    }
+                } else {
+                    Err(Error::new(
+                        ErrorKind::TypeError,
+                        "result must be a permitted or not-permitted element",
+                    ))
                 }
-                // Now evaluate the template.
-                // How to decide whether to return a (Not)Permitted result or a value?
-                // If the singleton result is a boolean, then (Not)Permitted otherwise value.
-                let r = ctxt.dispatch(&mut stctxt, t)?;
-                // TODO: should the return value be the original Sequence?
-                Some(r.to_string())
             } else {
-                None
-            })),
+                Err(Error::new(
+                    ErrorKind::DynamicAbsent,
+                    "result must be an element",
+                ))
+            }
+        } else {
+            Err(Error::new(
+                ErrorKind::DynamicAbsent,
+                "result must be a single element",
+            ))
         }
     }
 }
@@ -382,15 +428,24 @@ impl<N: Node> Feature<N> {
 mod tests {
     use super::*;
     use crate::item::Item;
-    use crate::trees::nullo::Nullo;
+    use crate::trees::smite::RNode;
     use crate::value::Value;
     use std::rc::Rc;
 
     #[test]
     fn feature_get_np() {
-        let f: Feature<Nullo> = Feature::NotPermitted;
+        let f = Feature(Transform::LiteralElement(
+            QName::new_from_parts(
+                NcName::try_from("not-permitted").unwrap(),
+                Some(
+                    NamespaceUri::try_from("http://gitlab.gnome.org/World/Rust/markup-rs/Security")
+                        .unwrap(),
+                ),
+            ),
+            Box::new(Transform::Empty),
+        ));
         assert_eq!(
-            f.get(ActualParameters::Named(vec![]))
+            f.get(ActualParameters::Named(vec![]), RNode::new_document)
                 .expect("unable to determine status of security feature"),
             SecurityResult::NotPermitted
         )
@@ -398,9 +453,18 @@ mod tests {
 
     #[test]
     fn feature_get_unlimited() {
-        let f: Feature<Nullo> = Feature::Permitted(None);
+        let f = Feature(Transform::LiteralElement(
+            QName::new_from_parts(
+                NcName::try_from("permitted").unwrap(),
+                Some(
+                    NamespaceUri::try_from("http://gitlab.gnome.org/World/Rust/markup-rs/Security")
+                        .unwrap(),
+                ),
+            ),
+            Box::new(Transform::Empty),
+        ));
         assert_eq!(
-            f.get(ActualParameters::Named(vec![]))
+            f.get(ActualParameters::Named(vec![]), RNode::new_document)
                 .expect("unable to determine status of security feature"),
             SecurityResult::Permitted(None)
         )
@@ -408,11 +472,18 @@ mod tests {
 
     #[test]
     fn feature_get_limited() {
-        let f: Feature<Nullo> = Feature::Permitted(Some(Transform::Literal(Item::Value(Rc::new(
-            Value::from(1234),
-        )))));
+        let f = Feature(Transform::LiteralElement(
+            QName::new_from_parts(
+                NcName::try_from("permitted").unwrap(),
+                Some(
+                    NamespaceUri::try_from("http://gitlab.gnome.org/World/Rust/markup-rs/Security")
+                        .unwrap(),
+                ),
+            ),
+            Box::new(Transform::Literal(Item::Value(Rc::new(Value::from(1234))))),
+        ));
         assert_eq!(
-            f.get(ActualParameters::Named(vec![]))
+            f.get(ActualParameters::Named(vec![]), RNode::new_document)
                 .expect("unable to determine status of security feature"),
             SecurityResult::Permitted(Some(String::from("1234")))
         )
