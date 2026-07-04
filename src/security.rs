@@ -9,9 +9,10 @@
 //!
 //! ```rust
 //! # use std::rc::Rc;
+//! # use xrust::trees::smite::RNode;
 //! use xrust::security::{SecurityResult, Policy, Feature};
 //! use xrust::{Error, ErrorKind, Node};
-//! use xrust::item::Item;
+//! use xrust::item::{Item, Node};
 //! use xrust::value::Value;
 //! use xrust::transform::Transform;
 //! use xrust::transform::callable::ActualParameters;
@@ -23,7 +24,8 @@
 //!       ActualParameters::Named(vec![
 //!          (QName::from_local_name(NcName::try_from("input").unwrap()),
 //!           Transform::Literal(Item::Value(Rc::new(Value::from("value")))))
-//!       ])
+//!       ]),
+//!       RNode::new_document,
 //!    )? {
 //!        SecurityResult::NotPermitted => Err(Error::new(ErrorKind::NotPermitted, "access denied")),
 //!        SecurityResult::Permitted(None) => Ok(None),
@@ -61,8 +63,9 @@
 //!
 //! ```rust
 //! use xrust::security::{Feature, Policy};
+//! use xrust::transform::Transform;
 //! use xrust::trees::smite::RNode;
-//! use qualname::{QName, NcName};
+//! use qualname::{QName, NcName, NamespaceUri};
 //!
 //! let mut policy: Policy<RNode> = Policy::new(QName::from_local_name(
 //!    NcName::try_from("test_policy").unwrap(),
@@ -71,13 +74,13 @@
 //!    QName::from_local_name(
 //!        NcName::try_from("my_security_feature").unwrap(),
 //!    ),
-//!    Transform::LiteralElement(
+//!    Feature::new(Transform::LiteralElement(
 //!      QName::new_from_parts(
 //!        NcName::try_from("permitted").unwrap(),
-//!        NamespaceUri::try_from("http://gitlab.gnome.org/World/Rust/markup-rs/Security").unwrap(),
-//!      )),
+//!        Some(NamespaceUri::try_from("http://gitlab.gnome.org/World/Rust/markup-rs/Security").unwrap()),
+//!      ),
 //!      Box::new(Transform::Empty),
-//!    ),
+//!    )),
 //! );
 //! ```
 //!
@@ -89,7 +92,7 @@
 
 use std::collections::HashMap;
 
-use crate::item::{Node, NodeType, SequenceTrait};
+use crate::item::{Node, NodeType};
 use crate::transform::Transform;
 use crate::transform::callable::ActualParameters;
 use crate::transform::context::{ContextBuilder, StaticContextBuilder};
@@ -289,16 +292,15 @@ pub fn try_from_document<N: Node>(doc: N) -> Result<Policy<N>, Error> {
                         let attr_sets: HashMap<QName, Vec<Transform<N>>> = HashMap::new();
 
                         // Strip whitespace
-                        let feat_children: Vec<N> = f
-                            .child_iter()
-                            .filter(|fc| {
-                                fc.node_type() != NodeType::Text
-                                    || !fc.value().to_string().trim().is_empty()
+                        f.descend_iter()
+                            .filter(|ws| {
+                                ws.node_type() == NodeType::Text
+                                    && ws.value().to_string().trim().is_empty()
                             })
-                            .collect();
+                            .for_each(|mut ws| ws.pop().expect("unable to remove whitespace node"));
 
                         // Compile template
-                        feat_children.into_iter().try_for_each(|d| {
+                        f.child_iter().try_for_each(|d| {
                             body.push(to_transform(d, &attr_sets)?);
                             Ok::<(), Error>(())
                         })?;

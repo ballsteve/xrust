@@ -14,8 +14,6 @@ use xrust::value::Value;
 use xrust::xdmerror::Error;
 use xrust::xslt::from_document;
 
-use crate::smite::make_empty_doc;
-
 // Max Depth feature not set - will use default.
 // Small number of evaluations (1), should pass.
 pub fn max_depth_np_1<N: Node, G>(make_empty_doc: G) -> Result<(), Error>
@@ -229,7 +227,7 @@ where
         ),
         Feature::new(Transform::LiteralElement(
             QName::new_from_parts(
-                NcName::try_from("not-permitted").unwrap(),
+                NcName::try_from("permitted").unwrap(),
                 Some(
                     NamespaceUri::try_from("http://gitlab.gnome.org/World/Rust/markup-rs/Security")
                         .unwrap(),
