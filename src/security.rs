@@ -9,9 +9,8 @@
 //!
 //! ```rust
 //! # use std::rc::Rc;
-//! # use xrust::trees::smite::RNode;
 //! use xrust::security::{SecurityResult, Policy, Feature};
-//! use xrust::{Error, ErrorKind, Node};
+//! use xrust::{Error, ErrorKind};
 //! use xrust::item::{Item, Node};
 //! use xrust::value::Value;
 //! use xrust::transform::Transform;
@@ -25,7 +24,6 @@
 //!          (QName::from_local_name(NcName::try_from("input").unwrap()),
 //!           Transform::Literal(Item::Value(Rc::new(Value::from("value")))))
 //!       ]),
-//!       RNode::new_document,
 //!    )? {
 //!        SecurityResult::NotPermitted => Err(Error::new(ErrorKind::NotPermitted, "access denied")),
 //!        SecurityResult::Permitted(None) => Ok(None),
@@ -144,15 +142,7 @@ impl<N: Node> SecurityPolicies<N> {
     }
     /// Determine whether a feature, in the in-force policy, is permitted.
     /// All parameters must be named, i.e. positional parameters are ignored.
-    pub fn get<F>(
-        &self,
-        f: &QName,
-        a: ActualParameters<N>,
-        make_doc: F,
-    ) -> Result<SecurityResult, Error>
-    where
-        F: Fn() -> N,
-    {
+    pub fn get(&self, f: &QName, a: ActualParameters<N>) -> Result<SecurityResult, Error> {
         // If there is no in-force security policy then all features are not permitted
         if self.in_force.is_none() {
             return Ok(SecurityResult::NotPermitted);
@@ -161,7 +151,7 @@ impl<N: Node> SecurityPolicies<N> {
         // Does the in-force security policy have the requested feature?
         // If not then it is not permitted
         if let Some(p) = self.policies.get(&self.in_force.as_ref().unwrap()) {
-            p.get(f, a, make_doc)
+            p.get(f, a)
         } else {
             Ok(SecurityResult::NotPermitted)
         }
@@ -203,18 +193,10 @@ impl<N: Node> Policy<N> {
     }
     */
     /// Resolve the setting of a security [Feature].
-    pub fn get<F>(
-        &self,
-        name: &QName,
-        a: ActualParameters<N>,
-        make_doc: F,
-    ) -> Result<SecurityResult, Error>
-    where
-        F: Fn() -> N,
-    {
+    pub fn get(&self, name: &QName, a: ActualParameters<N>) -> Result<SecurityResult, Error> {
         self.features
             .get(name)
-            .map_or_else(|| Ok(SecurityResult::NotPermitted), |f| f.get(a, make_doc))
+            .map_or_else(|| Ok(SecurityResult::NotPermitted), |f| f.get(a))
     }
 }
 
@@ -255,79 +237,93 @@ impl<N: Node> Policy<N> {
 /// </sec:policy>
 /// ```
 //impl<N: Node> From<N> for Policy<N> {
-pub fn try_from_document<N: Node>(doc: N) -> Result<Policy<N>, Error> {
-    // doc must be a document-type node
-    // TODO: make the QNames constants
-    let secnsuri =
-        NamespaceUri::try_from("http://gitlab.gnome.org/World/Rust/markup-rs/Security").unwrap();
-    if let Some(top) = doc.first_child() {
-        if !top.name().is_some_and(|qn| {
-            qn == QName::new_from_parts(NcName::try_from("policy").unwrap(), Some(secnsuri.clone()))
-        }) {
-            return Err(Error::new(
-                ErrorKind::TypeError,
-                "not a security policy document",
-            ));
-        }
-        let name = top
-            .get_attribute(&QName::from_local_name(NcName::try_from("name").unwrap()))
-            .to_string();
-        if name != "" {
-            // Resolve qualified name to a QName using the doc's namespaces
-            let mut policy = Policy::new(top.to_qname(name)?);
+pub trait SecurityPolicy {
+    fn to_policy(&self) -> Result<Policy<Self>, Error>
+    where
+        Self: Node,
+    {
+        // TODO: make the QNames constants
+        let secnsuri =
+            NamespaceUri::try_from("http://gitlab.gnome.org/World/Rust/markup-rs/Security")
+                .unwrap();
+        if let Some(top) = self.first_child() {
+            if !top.name().is_some_and(|qn| {
+                qn == QName::new_from_parts(
+                    NcName::try_from("policy").unwrap(),
+                    Some(secnsuri.clone()),
+                )
+            }) {
+                return Err(Error::new(
+                    ErrorKind::TypeError,
+                    "not a security policy document",
+                ));
+            }
+            let name = top
+                .get_attribute(&QName::from_local_name(NcName::try_from("name").unwrap()))
+                .to_string();
+            if name != "" {
+                // Resolve qualified name to a QName using the doc's namespaces
+                let mut policy = Policy::new(top.to_qname(name)?);
 
-            // Content is feature elements, skipping over white space
-            let fname =
-                QName::new_from_parts(NcName::try_from("feature").unwrap(), Some(secnsuri.clone()));
-            top.child_iter()
-                .filter(|c| c.name().is_some_and(|n| n == fname))
-                .try_for_each(|f| {
-                    let feat_name = f
-                        .get_attribute(&QName::from_local_name(NcName::try_from("name").unwrap()))
-                        .to_string();
-                    if feat_name != "" {
-                        // Content is the template to evaluate
-                        let mut body: Vec<Transform<N>> = vec![];
-                        // attribute sets are not used in this context
-                        let attr_sets: HashMap<QName, Vec<Transform<N>>> = HashMap::new();
+                // Content is feature elements, skipping over white space
+                let fname = QName::new_from_parts(
+                    NcName::try_from("feature").unwrap(),
+                    Some(secnsuri.clone()),
+                );
+                top.child_iter()
+                    .filter(|c| c.name().is_some_and(|n| n == fname))
+                    .try_for_each(|f| {
+                        let feat_name = f
+                            .get_attribute(&QName::from_local_name(
+                                NcName::try_from("name").unwrap(),
+                            ))
+                            .to_string();
+                        if feat_name != "" {
+                            // Content is the template to evaluate
+                            let mut body: Vec<Transform<Self>> = vec![];
+                            // attribute sets are not used in this context
+                            let attr_sets: HashMap<QName, Vec<Transform<Self>>> = HashMap::new();
 
-                        // Strip whitespace
-                        f.descend_iter()
-                            .filter(|ws| {
-                                ws.node_type() == NodeType::Text
-                                    && ws.value().to_string().trim().is_empty()
-                            })
-                            .for_each(|mut ws| ws.pop().expect("unable to remove whitespace node"));
+                            // Strip whitespace
+                            f.descend_iter()
+                                .filter(|ws| {
+                                    ws.node_type() == NodeType::Text
+                                        && ws.value().to_string().trim().is_empty()
+                                })
+                                .for_each(|mut ws| {
+                                    ws.pop().expect("unable to remove whitespace node")
+                                });
 
-                        // Compile template
-                        f.child_iter().try_for_each(|d| {
-                            body.push(to_transform(d, &attr_sets)?);
-                            Ok::<(), Error>(())
-                        })?;
-                        if body.len() != 1 {
+                            // Compile template
+                            f.child_iter().try_for_each(|d| {
+                                body.push(to_transform(d, &attr_sets)?);
+                                Ok::<(), Error>(())
+                            })?;
+                            if body.len() != 1 {
+                                return Err(Error::new(
+                                    ErrorKind::TypeError,
+                                    "template must result in a single node",
+                                ));
+                            }
+                            policy.add(top.to_qname(feat_name)?, Feature::new(body.remove(0)));
+                        } else {
                             return Err(Error::new(
-                                ErrorKind::TypeError,
-                                "template must result in a single node",
+                                ErrorKind::DynamicAbsent,
+                                "feature must have a name",
                             ));
                         }
-                        policy.add(top.to_qname(feat_name)?, Feature(body.remove(0)));
-                    } else {
-                        return Err(Error::new(
-                            ErrorKind::DynamicAbsent,
-                            "feature must have a name",
-                        ));
-                    }
-                    Ok(())
-                })?;
-            Ok(policy)
+                        Ok(())
+                    })?;
+                Ok(policy)
+            } else {
+                Err(Error::new(
+                    ErrorKind::DynamicAbsent,
+                    "name attribute is required",
+                ))
+            }
         } else {
-            Err(Error::new(
-                ErrorKind::DynamicAbsent,
-                "name attribute is required",
-            ))
+            Err(Error::new(ErrorKind::DynamicAbsent, "empty document"))
         }
-    } else {
-        Err(Error::new(ErrorKind::DynamicAbsent, "empty document"))
     }
 }
 
@@ -337,22 +333,23 @@ pub fn try_from_document<N: Node>(doc: N) -> Result<Policy<N>, Error> {
 /// This value is computed dynamically using a [Transform].
 /// The transformation is not allowed to access external resources.
 #[derive(Clone, Debug)]
-pub struct Feature<N: Node>(Transform<N>);
+pub struct Feature<N: Node> {
+    t: Transform<N>,
+}
 
 impl<N: Node> Feature<N> {
     /// Create a Feature
     pub fn new(t: Transform<N>) -> Self {
-        Feature(t)
+        Feature { t }
     }
 
     /// Evaluate the template to determine whether this security feature is permitted,
     /// and if so then to what limit, i.e. a maximum value.
-    pub fn get<F>(&self, a: ActualParameters<N>, make_doc: F) -> Result<SecurityResult, Error>
-    where
-        F: Fn() -> N,
-    {
+    pub fn get(&self, a: ActualParameters<N>) -> Result<SecurityResult, Error> {
         // The template is a callable.
-        // If the transformation results in an error then that it propagated back via the result
+        // The template must return an element, so there needs to be a result document.
+        // The use of a document is completely internal to this function,
+        // but there needs to be a concrete type available to create a fresh document.
         let mut stctxt = StaticContextBuilder::new()
             .message(|_| Ok(()))
             .parser(|_| {
@@ -368,7 +365,7 @@ impl<N: Node> Feature<N> {
                 ))
             })
             .build();
-        let rd = make_doc();
+        let rd = N::new_document();
         let mut ctxt = ContextBuilder::new().result_document(rd).build();
         if let ActualParameters::Named(ap) = a {
             ap.iter().try_for_each(|(an, av)| {
@@ -393,7 +390,7 @@ impl<N: Node> Feature<N> {
         );
 
         // Now evaluate the template. It must result in a single element node.
-        let r = ctxt.dispatch(&mut stctxt, &self.0)?;
+        let r = ctxt.dispatch(&mut stctxt, &self.t)?;
         if r.len() == 1 {
             if r[0].is_element_node() {
                 if r[0].name().unwrap() == np {
@@ -436,7 +433,7 @@ mod tests {
 
     #[test]
     fn feature_get_np() {
-        let f = Feature(Transform::LiteralElement(
+        let f = Feature::new(Transform::LiteralElement(
             QName::new_from_parts(
                 NcName::try_from("not-permitted").unwrap(),
                 Some(
@@ -444,10 +441,10 @@ mod tests {
                         .unwrap(),
                 ),
             ),
-            Box::new(Transform::Empty),
+            Box::new(Transform::<RNode>::Empty),
         ));
         assert_eq!(
-            f.get(ActualParameters::Named(vec![]), RNode::new_document)
+            f.get(ActualParameters::Named(vec![]))
                 .expect("unable to determine status of security feature"),
             SecurityResult::NotPermitted
         )
@@ -455,7 +452,7 @@ mod tests {
 
     #[test]
     fn feature_get_unlimited() {
-        let f = Feature(Transform::LiteralElement(
+        let f = Feature::new(Transform::LiteralElement(
             QName::new_from_parts(
                 NcName::try_from("permitted").unwrap(),
                 Some(
@@ -463,10 +460,10 @@ mod tests {
                         .unwrap(),
                 ),
             ),
-            Box::new(Transform::Empty),
+            Box::new(Transform::<RNode>::Empty),
         ));
         assert_eq!(
-            f.get(ActualParameters::Named(vec![]), RNode::new_document)
+            f.get(ActualParameters::Named(vec![]))
                 .expect("unable to determine status of security feature"),
             SecurityResult::Permitted(None)
         )
@@ -474,7 +471,7 @@ mod tests {
 
     #[test]
     fn feature_get_limited() {
-        let f = Feature(Transform::LiteralElement(
+        let f = Feature::new(Transform::LiteralElement(
             QName::new_from_parts(
                 NcName::try_from("permitted").unwrap(),
                 Some(
@@ -482,10 +479,12 @@ mod tests {
                         .unwrap(),
                 ),
             ),
-            Box::new(Transform::Literal(Item::Value(Rc::new(Value::from(1234))))),
+            Box::new(Transform::Literal(Item::<RNode>::Value(Rc::new(
+                Value::from(1234),
+            )))),
         ));
         assert_eq!(
-            f.get(ActualParameters::Named(vec![]), RNode::new_document)
+            f.get(ActualParameters::Named(vec![]))
                 .expect("unable to determine status of security feature"),
             SecurityResult::Permitted(Some(String::from("1234")))
         )

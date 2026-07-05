@@ -5,7 +5,7 @@ use std::rc::Rc;
 use xrust::ErrorKind;
 use xrust::item::{Item, Node};
 use xrust::pattern::Pattern;
-use xrust::security::{Feature, Policy, SecurityResult, try_from_document};
+use xrust::security::{Feature, Policy, SecurityPolicy, SecurityResult};
 use xrust::transform::callable::ActualParameters;
 use xrust::transform::context::{ContextBuilder, StaticContextBuilder};
 use xrust::transform::template::Template;
@@ -239,7 +239,7 @@ where
 
     let x = Transform::ApplyTemplates(Box::new(Transform::Root), None, vec![]);
     let ctxt = ContextBuilder::new()
-        .policy(Rc::new(policy), make_empty_doc)
+        .policy(Rc::new(policy))
         .expect("unable to set security policy")
         .template(Template::new(
             // pattern "Top"
@@ -354,7 +354,7 @@ where
 
     let x = Transform::ApplyTemplates(Box::new(Transform::Root), None, vec![]);
     let ctxt = ContextBuilder::new()
-        .policy(Rc::new(policy), make_empty_doc)
+        .policy(Rc::new(policy))
         .expect("unable to set security policy")
         .template(Template::new(
             // pattern "Top"
@@ -469,7 +469,7 @@ where
 
     let x = Transform::ApplyTemplates(Box::new(Transform::Root), None, vec![]);
     let ctxt = ContextBuilder::new()
-        .policy(Rc::new(policy), make_empty_doc)
+        .policy(Rc::new(policy))
         .expect("unable to set security policy")
         .template(Template::new(
             // pattern "Top"
@@ -641,7 +641,7 @@ where
 
     let x: Transform<N> = Transform::ApplyTemplates(Box::new(Transform::Root), None, vec![]);
     let ctxt = ContextBuilder::new()
-        .policy(Rc::new(policy), make_empty_doc)
+        .policy(Rc::new(policy))
         .expect("unable to set security policy")
         .template(Template::new(
             // pattern "Top"
@@ -701,14 +701,16 @@ where
             ),
         ),
         ActualParameters::Named(vec![]),
-        make_empty_doc,
     )?;
 
     ctxt.dispatch(&mut stctxt, &x).map(|_| ())
 }
 
 /// Test From
-pub fn sec_from_1<N: Node, G, H>(make_empty_doc: &G, make_from_str: H) -> Result<(), Error>
+pub fn sec_from_1<N: Node + SecurityPolicy, G, H>(
+    _make_empty_doc: &G,
+    make_from_str: H,
+) -> Result<(), Error>
 where
     G: Fn() -> N,
     H: Fn(&str) -> Result<N, Error>,
@@ -731,12 +733,13 @@ where
     <sec:permitted>42</sec:permitted>
   </sec:feature>
 </sec:policy>").expect("unable to parse security document");
-    let policy = try_from_document(poldoc).expect("unable to create security policy");
+    let policy = poldoc
+        .to_policy()
+        .expect("unable to create security policy");
     let f = policy
         .get(
             &QName::from_local_name(NcName::try_from("testfeature3").unwrap()),
             ActualParameters::Named(vec![]),
-            make_empty_doc,
         )
         .expect("unable to resolve security feature");
     assert_eq!(f, SecurityResult::Permitted(Some(String::from("42"))));
@@ -744,7 +747,6 @@ where
         .get(
             &QName::from_local_name(NcName::try_from("testfeature4").unwrap()),
             ActualParameters::Named(vec![]),
-            make_empty_doc,
         )
         .expect("unable to resolve security feature");
     assert_eq!(f, SecurityResult::Permitted(Some(String::from("42"))));
