@@ -62,6 +62,7 @@
 //! ```rust
 //! use xrust::security::{Feature, Policy};
 //! use xrust::transform::Transform;
+//! use xrust::transform::callable::FormalParameters;
 //! use xrust::trees::smite::RNode;
 //! use qualname::{QName, NcName, NamespaceUri};
 //!
@@ -78,7 +79,8 @@
 //!        Some(NamespaceUri::try_from("http://gitlab.gnome.org/World/Rust/markup-rs/Security").unwrap()),
 //!      ),
 //!      Box::new(Transform::Empty),
-//!    )),
+//!    ),
+//!    FormalParameters::Named(vec![])),
 //! );
 //! ```
 //!
@@ -91,11 +93,12 @@
 use std::collections::HashMap;
 
 use crate::item::{Node, NodeType};
+use crate::parser::xpath::parse;
 use crate::transform::Transform;
-use crate::transform::callable::ActualParameters;
+use crate::transform::callable::{ActualParameters, FormalParameters};
 use crate::transform::context::{ContextBuilder, StaticContextBuilder};
 use crate::xdmerror::{Error, ErrorKind};
-use crate::xslt::to_transform;
+use crate::xslt::{ATTRNAME, ATTRSELECT, XSLPARAM, to_transform};
 use qualname::{NamespaceUri, NcName, QName};
 
 /// The result of determining the limitation or constraint for a security feature.
@@ -294,18 +297,88 @@ pub trait SecurityPolicy {
                                     ws.pop().expect("unable to remove whitespace node")
                                 });
 
+                            // Get any formal parameters
+                            let mut params: Vec<(QName, Option<Transform<Self>>)> = Vec::new();
+                            f.child_iter()
+                                .filter(|d| d.name().is_some_and(|e| e == *XSLPARAM))
+                                .try_for_each(|d| {
+                                    let p_name = d.get_attribute(&ATTRNAME);
+                                    if p_name.to_string().is_empty() {
+                                        Err(Error::new(
+                                            ErrorKind::StaticAbsent,
+                                            "name attribute is missing",
+                                        ))
+                                    } else {
+                                        let sel = d.get_attribute(&ATTRSELECT);
+                                        if sel.to_string().is_empty() {
+                                            // xsl:param content is the sequence constructor
+                                            let mut body = vec![];
+                                            d.child_iter().try_for_each(|e| {
+                                                body.push(to_transform(e, &attr_sets)?);
+                                                Ok(())
+                                            })?;
+                                            params.push((
+                                                QName::from_local_name(
+                                                    NcName::try_from(p_name.to_string().as_str())
+                                                        .map_err(|_| {
+                                                        Error::new(
+                                                            ErrorKind::ParseError,
+                                                            "not a QName",
+                                                        )
+                                                    })?,
+                                                ),
+                                                Some(Transform::SequenceItems(body)),
+                                            ));
+                                            Ok(())
+                                        } else {
+                                            // select attribute value is an expression
+                                            params.push((
+                                                QName::from_local_name(
+                                                    NcName::try_from(p_name.to_string().as_str())
+                                                        .map_err(|_| {
+                                                        Error::new(
+                                                            ErrorKind::ParseError,
+                                                            "not a QName",
+                                                        )
+                                                    })?,
+                                                ),
+                                                Some(parse::<Self>(
+                                                    &sel.to_string(),
+                                                    Some(d.clone()),
+                                                    None,
+                                                )?),
+                                            ));
+                                            Ok(())
+                                        }
+                                    }
+                                })?;
                             // Compile template
-                            f.child_iter().try_for_each(|d| {
-                                body.push(to_transform(d, &attr_sets)?);
-                                Ok::<(), Error>(())
-                            })?;
-                            if body.len() != 1 {
+                            f.child_iter()
+                                .filter(|d| d.name().is_some_and(|e| e != *XSLPARAM))
+                                .try_for_each(|d| {
+                                    body.push(to_transform(d, &attr_sets)?);
+                                    Ok::<(), Error>(())
+                                })?;
+                            if body.len() == 0 {
                                 return Err(Error::new(
                                     ErrorKind::TypeError,
-                                    "template must result in a single node",
+                                    format!("template for feature {} must not be empty", feat_name),
                                 ));
                             }
-                            policy.add(top.to_qname(feat_name)?, Feature::new(body.remove(0)));
+                            if body.len() == 1 {
+                                policy.add(
+                                    top.to_qname(feat_name)?,
+                                    Feature::new(body.remove(0), FormalParameters::Named(params)),
+                                )
+                            } else {
+                                policy.add(
+                                    top.to_qname(feat_name)?,
+                                    Feature::new(
+                                        Transform::SequenceItems(body),
+                                        FormalParameters::Named(params),
+                                    ),
+                                )
+                            }
                         } else {
                             return Err(Error::new(
                                 ErrorKind::DynamicAbsent,
@@ -335,12 +408,13 @@ pub trait SecurityPolicy {
 #[derive(Clone, Debug)]
 pub struct Feature<N: Node> {
     t: Transform<N>,
+    parameters: FormalParameters<N>,
 }
 
 impl<N: Node> Feature<N> {
     /// Create a Feature
-    pub fn new(t: Transform<N>) -> Self {
-        Feature { t }
+    pub fn new(t: Transform<N>, parameters: FormalParameters<N>) -> Self {
+        Feature { t, parameters }
     }
 
     /// Evaluate the template to determine whether this security feature is permitted,
@@ -367,11 +441,27 @@ impl<N: Node> Feature<N> {
             .build();
         let rd = N::new_document();
         let mut ctxt = ContextBuilder::new().result_document(rd).build();
+        // TODO: match actual parameters to formal.
+        // TODO: create default value for named formal parameters that are absent from the actuals
         if let ActualParameters::Named(ap) = a {
             ap.iter().try_for_each(|(an, av)| {
                 ctxt.var_push(an.to_string(), ctxt.dispatch(&mut stctxt, av)?);
                 Ok(())
-            })?
+            })?;
+            if let FormalParameters::Named(fp) = &self.parameters {
+                // If the parameter has not already been defined by an actual,
+                // set it to its default value
+                fp.iter().try_for_each(|frm| {
+                    if ctxt.var_value(frm.0.to_string()).is_none() {
+                        if let Some(vv) = &frm.1 {
+                            ctxt.var_push(frm.0.to_string(), ctxt.dispatch(&mut stctxt, &vv)?);
+                        } else {
+                            ctxt.var_push(frm.0.to_string(), vec![]);
+                        }
+                    }
+                    Ok(())
+                })?;
+            }
         }
         // TODO: make these constants
         let np = QName::new_from_parts(
@@ -433,16 +523,21 @@ mod tests {
 
     #[test]
     fn feature_get_np() {
-        let f = Feature::new(Transform::LiteralElement(
-            QName::new_from_parts(
-                NcName::try_from("not-permitted").unwrap(),
-                Some(
-                    NamespaceUri::try_from("http://gitlab.gnome.org/World/Rust/markup-rs/Security")
+        let f = Feature::new(
+            Transform::LiteralElement(
+                QName::new_from_parts(
+                    NcName::try_from("not-permitted").unwrap(),
+                    Some(
+                        NamespaceUri::try_from(
+                            "http://gitlab.gnome.org/World/Rust/markup-rs/Security",
+                        )
                         .unwrap(),
+                    ),
                 ),
+                Box::new(Transform::<RNode>::Empty),
             ),
-            Box::new(Transform::<RNode>::Empty),
-        ));
+            FormalParameters::Named(vec![]),
+        );
         assert_eq!(
             f.get(ActualParameters::Named(vec![]))
                 .expect("unable to determine status of security feature"),
@@ -452,16 +547,21 @@ mod tests {
 
     #[test]
     fn feature_get_unlimited() {
-        let f = Feature::new(Transform::LiteralElement(
-            QName::new_from_parts(
-                NcName::try_from("permitted").unwrap(),
-                Some(
-                    NamespaceUri::try_from("http://gitlab.gnome.org/World/Rust/markup-rs/Security")
+        let f = Feature::new(
+            Transform::LiteralElement(
+                QName::new_from_parts(
+                    NcName::try_from("permitted").unwrap(),
+                    Some(
+                        NamespaceUri::try_from(
+                            "http://gitlab.gnome.org/World/Rust/markup-rs/Security",
+                        )
                         .unwrap(),
+                    ),
                 ),
+                Box::new(Transform::<RNode>::Empty),
             ),
-            Box::new(Transform::<RNode>::Empty),
-        ));
+            FormalParameters::Named(vec![]),
+        );
         assert_eq!(
             f.get(ActualParameters::Named(vec![]))
                 .expect("unable to determine status of security feature"),
@@ -471,18 +571,23 @@ mod tests {
 
     #[test]
     fn feature_get_limited() {
-        let f = Feature::new(Transform::LiteralElement(
-            QName::new_from_parts(
-                NcName::try_from("permitted").unwrap(),
-                Some(
-                    NamespaceUri::try_from("http://gitlab.gnome.org/World/Rust/markup-rs/Security")
+        let f = Feature::new(
+            Transform::LiteralElement(
+                QName::new_from_parts(
+                    NcName::try_from("permitted").unwrap(),
+                    Some(
+                        NamespaceUri::try_from(
+                            "http://gitlab.gnome.org/World/Rust/markup-rs/Security",
+                        )
                         .unwrap(),
+                    ),
                 ),
+                Box::new(Transform::Literal(Item::<RNode>::Value(Rc::new(
+                    Value::from(1234),
+                )))),
             ),
-            Box::new(Transform::Literal(Item::<RNode>::Value(Rc::new(
-                Value::from(1234),
-            )))),
-        ));
+            FormalParameters::Named(vec![]),
+        );
         assert_eq!(
             f.get(ActualParameters::Named(vec![]))
                 .expect("unable to determine status of security feature"),

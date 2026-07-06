@@ -36,3 +36,7 @@ fn security_feature() {
 fn security_from_1() {
     security::sec_from_1(&smite::make_empty_doc, smite::make_from_str).expect("test failed")
 }
+#[test]
+fn security_from_2() {
+    security::sec_from_2(&smite::make_empty_doc, smite::make_from_str).expect("test failed")
+}
