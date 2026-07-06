@@ -47,6 +47,7 @@ use crate::item::{Node as ItemNode, NodeType};
 use crate::output::{OutputDefinition, OutputSpec};
 use crate::parser::xml::qname::qualname_to_qname;
 use crate::parser::{ParseError, ParserStateBuilder, StaticStateBuilder};
+use crate::security::SecurityPolicy;
 use crate::validators::{Schema, ValidationError};
 use crate::value::{Value, ValueData};
 use crate::xdmerror::*;
@@ -194,6 +195,8 @@ impl PartialEq for Node {
         }
     }
 }
+
+impl SecurityPolicy for RNode {}
 
 impl ItemNode for RNode {
     type NodeIterator = Box<dyn Iterator<Item = RNode>>;

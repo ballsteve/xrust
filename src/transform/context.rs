@@ -202,6 +202,12 @@ impl<N: Node> Context<N> {
     fn var_pop(&mut self, name: String) {
         self.vars.get_mut(name.as_str()).map(|u| u.pop());
     }
+    /// Get the value of a variable if it is set
+    #[allow(dead_code)]
+    pub(crate) fn var_value(&self, name: String) -> Option<Sequence<N>> {
+        self.vars.get(name.as_str()).map(|u| u[0].clone())
+    }
+
     #[allow(dead_code)]
     pub(crate) fn dump_vars(&self) -> String {
         self.vars.iter().fold(String::new(), |mut acc, (k, v)| {
