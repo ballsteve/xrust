@@ -92,7 +92,7 @@ use std::sync::LazyLock;
 use url::Url;
 
 // Define constant QNames for faster comparison
-static XSLTNS: LazyLock<Option<NamespaceUri>> =
+pub static XSLTNS: LazyLock<Option<NamespaceUri>> =
     LazyLock::new(|| Some(NamespaceUri::try_from("http://www.w3.org/1999/XSL/Transform").unwrap()));
 static XRUSTNS: LazyLock<Option<NamespaceUri>> =
     LazyLock::new(|| Some(NamespaceUri::try_from("http://github.com/ballsteve/xrust").unwrap()));
@@ -118,7 +118,7 @@ static XSLTEMPLATE: LazyLock<QName> =
     LazyLock::new(|| QName::new_from_parts(NcName::try_from("template").unwrap(), XSLTNS.clone()));
 static XSLKEY: LazyLock<QName> =
     LazyLock::new(|| QName::new_from_parts(NcName::try_from("key").unwrap(), XSLTNS.clone()));
-static XSLPARAM: LazyLock<QName> =
+pub static XSLPARAM: LazyLock<QName> =
     LazyLock::new(|| QName::new_from_parts(NcName::try_from("param").unwrap(), XSLTNS.clone()));
 static XSLFUNCTION: LazyLock<QName> =
     LazyLock::new(|| QName::new_from_parts(NcName::try_from("function").unwrap(), XSLTNS.clone()));
@@ -188,7 +188,7 @@ static ATTRINDENT: LazyLock<QName> =
     LazyLock::new(|| QName::new_from_parts(NcName::try_from("indent").unwrap(), None));
 static ATTRHREF: LazyLock<QName> =
     LazyLock::new(|| QName::new_from_parts(NcName::try_from("href").unwrap(), None));
-static ATTRNAME: LazyLock<QName> =
+pub static ATTRNAME: LazyLock<QName> =
     LazyLock::new(|| QName::new_from_parts(NcName::try_from("name").unwrap(), None));
 static ATTRMATCH: LazyLock<QName> =
     LazyLock::new(|| QName::new_from_parts(NcName::try_from("match").unwrap(), None));
@@ -198,7 +198,7 @@ static ATTRPRIORITY: LazyLock<QName> =
     LazyLock::new(|| QName::new_from_parts(NcName::try_from("priority").unwrap(), None));
 static ATTRUSE: LazyLock<QName> =
     LazyLock::new(|| QName::new_from_parts(NcName::try_from("use").unwrap(), None));
-static ATTRSELECT: LazyLock<QName> =
+pub static ATTRSELECT: LazyLock<QName> =
     LazyLock::new(|| QName::new_from_parts(NcName::try_from("select").unwrap(), None));
 static ATTRDOE: LazyLock<QName> = LazyLock::new(|| {
     QName::new_from_parts(NcName::try_from("disable-output-escaping").unwrap(), None)
@@ -794,7 +794,7 @@ where
 }
 
 /// Compile a node in a template to a sequence [Combinator]
-fn to_transform<N: Node>(
+pub(crate) fn to_transform<N: Node>(
     n: N,
     attr_sets: &HashMap<QName, Vec<Transform<N>>>,
 ) -> Result<Transform<N>, Error> {

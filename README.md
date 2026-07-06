@@ -71,9 +71,11 @@ NamespaceNode objects are Rc-shared because they are often used but rarely chang
 
 ## Security
 
-XML documents and XSLT stylesheets are able to access external resources and so pose a security risk. χrust provides [a mechanism](https://docs.rs/xrust/latest/xrust/security/index.html) to be able to restrict access to certain resources. χrust is "secure by default" - resources default to the most secure restriction, which is often to not allow access at all, and the application override the default in order to permit the resource to be used.
+XML documents and XSLT stylesheets are able to access external resources and so pose a security risk. χrust provides [a mechanism](https://docs.rs/xrust/latest/xrust/security/index.html) to be able to restrict access to certain resources. χrust is "secure by default" - resources default to the most secure restriction, which is often to not allow access at all, and an application must override the default in order to permit the resource to be used.
 
-χrust allows a module to define a _security feature_. An application may create a _security policy_ that specifies a number of features. When the module needs to access the resource, it will lookup the required feature in the current policy and evaluate it to determine whether the resource may be accessed and/or the amount that may be consumed.
+χrust allows a module to define a _security feature_. A security feature determines whether access to a resource is permitted, and if so it may also constrain the use of the resource to some limit. For example, if the resource is an external entity then one security feature will control whether the entity can be access at all and a second security feature may limit the size of the entity.
+
+An application may create a _security policy_ that includes a number of features. When the module needs to access the resource, it will lookup the required feature in the current policy and evaluate it to determine whether the resource may be accessed and/or the amount that may be consumed.
 
 ## Applications
 
@@ -111,6 +113,7 @@ Status of [standards implementation](https://gitlab.gnome.org/World/Rust/markup-
 
 | Releases      | Notes                                                                                    |
 |---------------|------------------------------------------------------------------------------------------|
+| Version 2.2.0 | Add security policy documents. |
 | Version 2.1.0 | Introduce security mechanism. |
 | Version 2.0.3 | Fix ambiguity in forward and reverse axis names. |
 | Version 2.0.2 | Rationalise and simplify use of QNames in NameTest. |
